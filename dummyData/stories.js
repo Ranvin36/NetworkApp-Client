@@ -1,0 +1,49 @@
+const Stories = [
+    {
+        id:0,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:1,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:2,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:3,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:4,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:5,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:6,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:7,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:8,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+]
+
+export default Stories

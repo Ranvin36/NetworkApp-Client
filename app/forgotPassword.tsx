@@ -1,0 +1,54 @@
+import { useState } from "react"
+import { StyleSheet, View,Text } from "react-native"
+import TextInputLayout from "@/components/TextInput"
+import BackArrow from "@/components/backArrow"
+import TouchButton from "@/components/touchButton"
+import axios from "axios"
+import { ipAddress } from "@/constants/ipAddress"
+import { useDispatch } from "react-redux"
+import { setOtp } from "./redux/otpSlice"
+import { router } from "expo-router"
+import { setUser } from "./redux/userSlice"
+function ForgotPassword(){
+    const [email,setEmail] = useState("")
+    const dispatch = useDispatch()
+    async function SendOtp(){
+        const data = {"email":email}
+        const response  =  await axios.post(`http://${ipAddress}:3001/users/password-email`,data)
+        dispatch(setOtp(response.data.data.otp))
+        dispatch(setUser(response.data.findUser))
+        router.push("/passwordAuth")
+    }
+    return(
+        <View style={styles.container}>
+            <BackArrow/>
+               <View style={styles.texts}>
+                <Text style={{fontFamily:"Poppins-Bold" , fontSize:35}}>Forgot,</Text>
+                <Text style={{fontFamily:"Poppins-Bold" , fontSize:33}}>Your Password?</Text>
+            </View>
+            <View style={{marginVertical:10}}>
+                <Text style={{fontFamily:"Poppins-Light"}}>An Otp Will Be Sent To The Below Email</Text>
+            </View>
+            <View>
+                <TextInputLayout placeholder="Enter Your Email" onChange={setEmail} icon="email-outline"/>
+            </View>
+            <TouchButton text="Send Otp" onPress={SendOtp}/>
+        </View>
+    )
+}
+
+
+export default ForgotPassword
+
+const styles = StyleSheet.create({
+    container:{
+        paddingVertical:70,
+        paddingHorizontal:30,
+        backgroundColor:"#fff",
+        height:"100%"
+    },
+    texts:{
+        marginTop:30,
+
+    }
+})
