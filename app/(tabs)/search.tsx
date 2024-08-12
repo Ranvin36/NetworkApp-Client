@@ -2,13 +2,14 @@ import { View , Text, StyleSheet, TextInput , Image, FlatList,TouchableOpacity, 
 import { Colors } from "@/constants/Colors";
 import { AntDesign } from '@expo/vector-icons';
 import search from "../../dummyData/search"
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef} from "react";
 import axios from "axios";
 import { ipAddress } from "@/constants/ipAddress";
 import { useSelector } from "react-redux";
 import { rootStore } from "../redux/store";
 import { router } from "expo-router";
-import Animated,{ useAnimatedStyle,withTiming } from "react-native-reanimated";
+import Animated,{ useAnimatedStyle,withTiming,scrollTo} from "react-native-reanimated";
+import SearchPosts from "@/components/searchPosts";
 
 export default function Page(){
     const {width:SCREEN_WIDTH,height:SCREEN_HEIGHT} = Dimensions.get('window')
@@ -18,6 +19,7 @@ export default function Page(){
     const [searchUsers,setSearchUsers] =  useState([])
     const [selectedOption,setSelectedOption] = useState(0)
     const tabs = ['All','People','Posts','Snaps','Reels']
+    const scrollRef = useRef()
     function ChangeText(text){ 
         setSearchText(text)
     }
@@ -38,11 +40,19 @@ export default function Page(){
         router.push({pathname:`viewProfile/${id}` , params:{id}})
     }
 
+    function TabClick(index){
+        setSelectedOption(index)
+        scrollRef?.current?.scrollTo({
+            x:SCREEN_WIDTH* index
+        })
+    }
+
     const lineStyles = useAnimatedStyle(() =>{
         return {
             left: withTiming(itemWidth/tabs.length * selectedOption +32 ,{duration:300})
         } 
     },[selectedOption])
+    
 
     useEffect(() => {
         GetSearchResults()
@@ -54,7 +64,11 @@ export default function Page(){
     return(
         <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
             <View style={styles.search}>
-                <TextInput placeholder="Search A Friend" style={{borderWidth:0,fontFamily:'Poppins-Light',paddingVertical:10}} onChangeText={(e) => ChangeText(e)}/>
+                <TextInput placeholder="Search A Friend" value={searchText} style={{borderWidth:0,fontFamily:'Poppins-Light',paddingVertical:10,minWidth:150}} onChangeText={(e) => ChangeText(e)}/>
+                {searchText.length>0 && 
+                <TouchableOpacity onPress={() =>setSearchText('')}>
+                    <AntDesign name="closecircleo" size={22} color="black" />
+                </TouchableOpacity>}
             </View>
 
 
@@ -64,7 +78,7 @@ export default function Page(){
                         <Animated.View style={[{width:200/tabs.length,backgroundColor:Colors.light.text,height:3,borderRadius:10,position:"absolute",bottom:-5},lineStyles]}></Animated.View>
                         {tabs && tabs.map((item,index) =>{
                             return(
-                                <TouchableOpacity key={index} style={{width:itemWidth/tabs.length,justifyContent:"center",alignItems:"center"}} onPress={() =>setSelectedOption(index)}>
+                                <TouchableOpacity key={index} style={{width:itemWidth/tabs.length,justifyContent:"center",alignItems:"center"}} onPress={() =>TabClick(index)}>
                                     <Text style={{fontFamily:"Poppins-Light"}}>{item}</Text>
                                 </TouchableOpacity>
                             )
@@ -73,6 +87,7 @@ export default function Page(){
                     </View>
                     <View>
                         <ScrollView
+                        ref={scrollRef}
                         horizontal
                         pagingEnabled
                         scrollEventThrottle={16}
@@ -124,7 +139,7 @@ export default function Page(){
                                 }}/>
                             </View>
                             <View style={styles.contentLayout}>
-                                <FlatList data={searchUsers} renderItem={({item}) =>{
+                                {/* <FlatList data={searchUsers} renderItem={({item}) =>{
                                     // console.log(item)
                                     return(
                                         <TouchableOpacity style={styles.tabLayout} onPress={() =>ViewProfile(item._id)}>
@@ -142,7 +157,10 @@ export default function Page(){
                                             </View>
                                         </TouchableOpacity>
                                     )
-                                }}/>
+                                }}/> */}
+                          
+                                <SearchPosts searchParam={searchText}/>
+                                
                             </View>
 
                         </ScrollView>
@@ -200,7 +218,9 @@ const styles = StyleSheet.create({
         borderRadius:50,
         paddingHorizontal:20,
         marginHorizontal:20,
-        justifyContent:"center",
+        justifyContent:"space-between",
+        flexDirection:"row",
+        alignItems:"center"
     },
     popularSearch:{
         paddingHorizontal:20,

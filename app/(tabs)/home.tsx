@@ -26,7 +26,7 @@ import StoriesComp from "@/components/storiesComp";
 
 const {height : SCREEN_HEIGHT , width : SCREEN_WIDTH} = Dimensions.get('window')
 export default function Home(){
-    const socket = io(`${ipAddress}:3000`)
+    const socket = io(`http://${ipAddress}:3001`, { transports: ["websocket"] });
     const user = useSelector((state:rootStore)=>state.user)
     const translateY = useSharedValue(0)
     const context = useSharedValue({y:0})
@@ -233,8 +233,6 @@ export default function Home(){
         uploadSnapShot(uri,name,type)
     }
 
-    console.log(page)
-
     useEffect(()=>{
         socket.on('postLiked',(data) =>{
             console.log("INSIDE")
@@ -294,6 +292,21 @@ export default function Home(){
         }
     })
 
+    useEffect(() =>{
+        socket.on('connection',() =>{
+            console.log("Connected")
+        })      
+        socket.on('disconnect',() =>{
+            console.log("Disconnected")
+        })  
+        socket.on('chat-message' , (msg) =>{
+            console.log(msg)
+        })  
+
+        return() =>{
+            socket.disconnect()
+        }
+    },[])
 
 
     return(

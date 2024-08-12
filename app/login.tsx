@@ -37,13 +37,9 @@ function Login(){
     async function LoginBtn(){
         try{
             dispatch(setUser({}))
-            console.log("TEST1")
             const data={email,password}
-            console.log("TEST2")
             const response = await axios.post(`http://${ipAddress}:3001/users/login`,data)
-            console.log("TEST3")
             dispatch(setUser(response.data))
-            console.log("TEST4")
             SetOtp(response.data.token)
             console.log("DONE")
         }

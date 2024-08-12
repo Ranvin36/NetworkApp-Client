@@ -207,6 +207,8 @@ function Profile() {
 
     }
 
+    console.log(selected)
+
 
     return (
         <ScrollView showsVerticalScrollIndicator={false} refreshControl={
@@ -219,11 +221,14 @@ function Profile() {
                             <View>
                                 <Text style={{fontFamily:"Poppins-Regular",fontSize:18}}>{selected && selected.length} Selected</Text>
                             </View>
-                            <View style={{flexDirection:"row",width:55,justifyContent:"space-between"}}>
-                                <TouchableOpacity onPress={DeletePosts}>
+                            <View style={{flexDirection:"row",width:55,marginRight:18,justifyContent:"space-between"}}>
+                                <TouchableOpacity onPress={DeletePosts} style={styles.icons}>
                                     <MaterialIcons name="delete-outline" size={24} color="black" />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setSelected([])}>
+                                <TouchableOpacity style={styles.icons} onPress={() => router.push({pathname:`/editPost/${selected[0]}` ,params:{id:selected[0]}})}>
+                                    <Feather name="edit-2" size={22} color="black" />
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => setSelected([])} style={styles.icons}>
                                     <MaterialCommunityIcons name="close-circle-outline" size={24} color="black" />
                                 </TouchableOpacity>
                             </View>
@@ -413,5 +418,8 @@ const styles = StyleSheet.create({
     postLayout: {
         width: Dimensions.get('window').width / 3,
         height: 200
+    },
+    icons:{
+        marginRight:5
     }
 })

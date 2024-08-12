@@ -21,6 +21,7 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
     function ViewProfile(id){
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
+    console.log(item._id)
 
 
     return(

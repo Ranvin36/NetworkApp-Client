@@ -1,0 +1,39 @@
+import { View,Text,TouchableOpacity, StyleSheet,Dimensions } from "react-native"
+import { Ionicons,AntDesign } from "@expo/vector-icons"
+
+function UploadAcc({uploadPost,selectImage,placeholder}){
+    return(
+        <View style={{flexDirection:"row",alignItems:"center",alignSelf:"center",marginVertical:15}}>
+            <TouchableOpacity style={styles.uploadButton} onPress={uploadPost}>
+                    <Text style={{fontFamily:"Poppins-Bold",color:"#fff"}}>{placeholder}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.uploadIcons} onPress={selectImage}>
+                <Ionicons name="image-outline" size={24} color="black" />            
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.uploadIcons}  onPress={selectImage}>
+                <AntDesign name="videocamera" size={24} color="black" />                      
+            </TouchableOpacity>
+        </View>
+    )
+}
+
+export default UploadAcc
+
+const styles = StyleSheet.create({
+    uploadIcons:{
+        backgroundColor:"#fff",
+        width:40,
+        height:40,
+        borderRadius:50,
+        justifyContent:"center",
+        alignItems:"center",
+        marginLeft:5
+    },
+    uploadButton:{
+        backgroundColor:"#d92b68",
+        padding:12,
+        borderRadius:30,
+        alignItems:"center",
+        width:Dimensions.get('window').width/1.7
+    }
+})

@@ -13,15 +13,24 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-na
 import { CameraView } from "expo-camera";
 import {actions, RichEditor, RichToolbar} from "react-native-pell-rich-editor";
 import * as Haptics from "expo-haptics"
+import CreatePostHeader from "@/components/createPostHeader";
+import PostPreview from "@/components/postPreview";
+import DescriptionBox from "@/components/descriptionBox";
+import UploadAcc from "@/components/uploadAcc";
+import { categiores } from "@/components/createCategories";
+
+
 function Add(){
     const [image,setImage]  = useState([])
     const [text,setText] = useState('')
     const [description,setDescription] = useState('')
     const [selected,setSelected] = useState(0)
+    const [selectedTab,setSelectedTab] = useState(0)
     const user = useSelector((state:rootStore) => state.user.user)
     const backgroundPosition = useSharedValue(15)
     const buttons = [{title:"Upload"},{title:"Camera"}]
     const [facing,setFacing] = useState('back')
+    const  itemWidth = Dimensions.get('window').width /2
     const selectImage = async () =>{
         const pickImage = await ImagePicker.launchImageLibraryAsync({
             mediaTypes:ImagePicker.MediaTypeOptions.All,
@@ -83,6 +92,13 @@ function Add(){
         setFacing((current) => current == 'front' ? 'back' : 'front')
     }
 
+    const lineStyle = useAnimatedStyle(() =>{
+        return{
+            left: withTiming(itemWidth/categiores.length  * selectedTab +25)
+        }
+    })
+
+
     return(
         <ScrollView>
             {/* <View style={{backgroundColor:Colors.light.text,paddingVertical:20,borderRadius:10,width:300,position:"absolute",zIndex:1,marginVertical:55,
@@ -102,119 +118,31 @@ function Add(){
                         </View> */}
             {selected==0 ?
                 <View style={styles.container}>
-                <Text style={{fontFamily:"Poppins-Bold",fontSize:23,paddingHorizontal:25,}}>Create Post</Text>
-                <View style={[styles.userAccount , {width:185,marginTop:8}]}>
-                    <View>
-                        <Image source={{uri : user.data.profilePicture}} style={{width:50,height:50,borderRadius:50}} />
-                    </View>
-                    <View style={{marginLeft:6}}>
-                        <Text style={{fontFamily:"Poppins-Light"}}>{user.data.username}</Text>
-                        <Text style={{fontFamily:"Poppins-Bold",fontSize:12,marginTop:-5}}>Public</Text>
-                    </View>
+                <Text style={{fontFamily:"Poppins-Bold",fontSize:23,paddingHorizontal:25}}>Create {categiores[selectedTab]}</Text>
+                <View style={styles.tabs}>
+                    <Animated.View style={[{backgroundColor:Colors.light.text,width:200/7,justifyContent:"center",height:3,borderRadius:50,position:"absolute",bottom:-5},lineStyle]}/>
+                    {categiores && categiores.map((item,index) =>{
+                        return(
+                            <TouchableOpacity style={{width:itemWidth/categiores.length , alignItems:"center",justifyContent:"center"}} onPress={() =>setSelectedTab(index)}>
+                                <Text style={{fontFamily:"Poppins-Light"}}>{item}</Text>
+                            </TouchableOpacity>
+                        )
+                    })}
                 </View>
 
-                                        
+                <CreatePostHeader user={user.data}/>
+
+
                 <View style={{justifyContent:"space-between",height:Dimensions.get('window').height-350}}>
-                    <View style={{}}>
-
-                        {/* <View style={styles.InputContainer}>
-                            <View style={styles.textInput}>
-                                <TextInput placeholder="Type Your Heading" style={styles.input} onChangeText={(e)=>setText(e)} />
-                            </View>
-                        </View> */}
-                        <View style={styles.InputContainer}>
-                            <View style={styles.textInput}>
-                                <TextInput style={[styles.input,{paddingBottom:50}]} placeholder="Description" multiline={true} onChangeText={(e)=>setText(e)}/>
-                            </View>
-                        </View>
-                    
-                        {/* <View style={styles.InputContainer}>
-                            <Text style={styles.headingText}>Upload Image</Text>
-                            {image.length<1 ?                    
-                                <TouchableOpacity style={{justifyContent:"center",alignItems:"center",borderWidth:1,borderRadius:5,padding:50}} onPress={selectImage}>
-                                    <Feather name="upload-cloud" size={24} color="black"/>
-                                </TouchableOpacity>
-                                    :
-                                <TouchableOpacity onPress={()=>setImage([])}>
-                                    <Image source={{uri:image.uri}} height={300} style={{width:"100%",borderRadius:10}}/>
-
-                                </TouchableOpacity>
-                            }
-                        </View> */}
+                            <View>
+                                <DescriptionBox onChange={setText} text={text}/>
+                
                             </View>
                             <View style={{paddingHorizontal:27}}>
                                 <Text style={{fontFamily:"Poppins-Bold"}}>Preview</Text>
                             </View>
-                            <View style={{backgroundColor:"#fff",borderRadius:15,padding:10,width:Dimensions.get('window').width-50 ,alignSelf:"center"}}>
-                                <View style={{flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
-                                    <View style={[styles.userAccount,{marginTop:0,paddingHorizontal:0}]}>
-                                        <View>
-                                            <Image source={{uri : user.data.profilePicture}} style={{width:30,height:30,borderRadius:50}} />
-                                        </View>
-                                        <View  style={{marginLeft:6}}>
-                                            <Text style={{fontFamily:"Poppins-Light",fontSize:10}}>{user.data.username}</Text>
-                                        </View>
-                                    </View>
-                                    <View style={{flexDirection:"row",alignItems:"center"}}>
-                                        <View style={{backgroundColor:"#f2f2f2",borderRadius:30,paddingHorizontal:10,paddingVertical:5}}>
-                                            <Text style={{fontFamily:"Poppins-Bold",fontSize:10}}>Follow</Text>
-                                        </View>
-                                        <TouchableOpacity onPress={()=>{
-                                            Haptics.notificationAsync(
-                                                Haptics.NotificationFeedbackType.Success
-                                            )
-                                        }}>
-                                            <Entypo name="dots-three-vertical" size={15} color="black" />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                                <View style={{marginVertical:5}}>
-                                    {image.uri ?
-                                    <View style={{position:"relative"}}>
-                                        <Image source={{uri : image.uri}} style={{width:Dimensions.get('window').width-70,alignSelf:"center",height:200,borderRadius:15}} />
-                                        <TouchableOpacity style={{position:"absolute" ,right:10, top:10}} onPress={() => setImage([])}>
-                                            <AntDesign name="closecircle" size={24} color="#fff" />
-                                        </TouchableOpacity>
-                                    </View>
-                                    :
-                                    <View style={{position:"relative"}}>
-                                        <Image source={require('../../assets/images/user.jpg')} style={{width:Dimensions.get('window').width-70,alignSelf:"center",height:200,borderRadius:15}} />
-                                    </View>
-                                            
-                                    }
-                                </View>
-                                <View style={{marginHorizontal:2}}>
-                                    <Text style={{fontFamily:'Poppins-Light',fontSize:12}}>{text ? text : "Post Heading"}</Text>
-                                </View>
-                                <View style={styles.interactions}>
-                                    <View style={{flexDirection:"row"}}>
-                                        <TouchableOpacity style={styles.iconCont}>
-                                            <AntDesign name="hearto" size={20} color="black"/>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.iconCont}>
-                                            <Ionicons name="chatbubble-outline" size={20} color="black" />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.iconCont}>
-                                            <Feather name="send" size={20} color="black" />
-                                        </TouchableOpacity>
-                                    </View>
-                                    <View>
-                                        <Feather name="bookmark" size={20} color="black" />
-                                    </View>
-                                </View>
-
-                            </View>
-                            <View style={{flexDirection:"row",alignItems:"center",alignSelf:"center",marginVertical:30}}>
-                                <TouchableOpacity style={styles.uploadButton} onPress={uploadPost}>
-                                        <Text style={{fontFamily:"Poppins-Bold",color:"#fff"}}>Upload Post</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.uploadIcons} onPress={selectImage}>
-                                    <Ionicons name="image-outline" size={24} color="black" />            
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.uploadIcons}  onPress={selectImage}>
-                                    <AntDesign name="videocamera" size={24} color="black" />                      
-                                </TouchableOpacity>
-                            </View>
+                            <PostPreview user={user.data} image={image} text={text} setImage={setImage}/>
+                            <UploadAcc uploadPost={uploadPost} selectImage={selectImage} placeholder="Upload Post"/>
             </View>
                 </View>
                         :
@@ -245,7 +173,7 @@ export default Add
 
 const styles = StyleSheet.create({
     container:{
-        paddingVertical:45,
+        paddingVertical:40,
         height:Dimensions.get('window').height
     },
     userAccount:{
@@ -309,6 +237,12 @@ const styles = StyleSheet.create({
     iconsText:{
         fontFamily:'Poppins-Light',
         marginHorizontal:5
+    },
+    tabs:{
+        flexDirection:"row",
+        position:"relative",  
+        marginVertical:10,
+        paddingHorizontal:10,
     },
     iconProps:{borderRadius:50,backgroundColor:Colors.light.text,padding:10,width:55,height:55,justifyContent:"center",alignItems:"center"}
 })
