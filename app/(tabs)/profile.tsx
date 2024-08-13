@@ -33,6 +33,8 @@ function Profile() {
     const dispatch = useDispatch()
     const position = useSharedValue(70)
     const scrollViewRef = useRef()
+    const postLayout = Dimensions.get('window').width / 3
+    const [loading,setLoading]  = useState(false)
 
     async function UpdateProfilePic() {
         const selectImage = await ImagePicker.launchImageLibraryAsync({
@@ -129,12 +131,13 @@ function Profile() {
     }
 
     async function GetLikedPosts(){
+        setLoading(true)
         const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user.data._id}`,{
             headers:{
                 Authorization:`Bearer ${user.token}`
             }
         })
-
+        
         const likedPost = response.data.data.likes
         const data = {IDS : likedPost}
         const posts = await axios.post(`http://${ipAddress}:3001/posts/liked`,data,{
@@ -143,6 +146,7 @@ function Profile() {
             }
         })
         setLikePosts(posts.data.data)
+        setLoading(false)
     }
 
     async function DeletePosts(){
@@ -323,7 +327,11 @@ function Profile() {
                             const isImage = item.image
                             return(
                                 <View  >
-                                    <ProfileActivity item={item} isImage={isImage} userId={user.data._id} setSelected={setSelected} selected={selected}/>
+                                    <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
+                                        {loading ? null :
+                                            <ProfileActivity item={item} isImage={isImage} userId={user.data._id} setSelected={setSelected} selected={selected}/> 
+                                        }
+                                    </Skeleton>
                                 </View>
                                     
                             )
@@ -333,9 +341,14 @@ function Profile() {
                 <View style={{width:Dimensions.get('window').width}}>
                     <FlatList data={likedPosts}  numColumns={3} keyExtractor={(item) => item}  renderItem={({item}) => {
                         return(
+                            <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
+                                {loading ? null :  
                                 <TouchableOpacity onPress={() => router.push("/profileLike")}>
+
                                     <Image source={{uri:item.image}} style={styles.postLayout} />
                                 </TouchableOpacity>
+                                }
+                            </Skeleton>
                         )
                     }} />
                 </View>

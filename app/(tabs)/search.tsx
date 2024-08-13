@@ -10,11 +10,13 @@ import { rootStore } from "../redux/store";
 import { router } from "expo-router";
 import Animated,{ useAnimatedStyle,withTiming,scrollTo} from "react-native-reanimated";
 import SearchPosts from "@/components/searchPosts";
+import  {Skeleton} from "moti/skeleton"
 
 export default function Page(){
     const {width:SCREEN_WIDTH,height:SCREEN_HEIGHT} = Dimensions.get('window')
     const itemWidth = SCREEN_WIDTH-40
     const user = useSelector((state:rootStore) => state.user.user)
+    const [loading,setLoading] = useState(true)
     const [searchText,setSearchText] = useState("")
     const [searchUsers,setSearchUsers] =  useState([])
     const [selectedOption,setSelectedOption] = useState(0)
@@ -25,6 +27,7 @@ export default function Page(){
     }
 
     async function GetSearchResults(){
+        setLoading(true)
         const data = {"name":searchText}
         console.log(data)
         const response = await axios.post(`http://${ipAddress}:3001/users/search-user`,data,{
@@ -33,6 +36,7 @@ export default function Page(){
             }
         })
         setSearchUsers(response.data.data)
+        setLoading(false)
     }
 
     async function ViewProfile(id){
@@ -101,17 +105,25 @@ export default function Page(){
                                     // console.log(item)
                                     return(
                                         <TouchableOpacity style={styles.tabLayout} onPress={() =>ViewProfile(item._id)}>
-                                            {item.profilePicture ?
-                                                <View>
-                                                    <Image source={{uri:item.profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
-                                                </View>
-                                                :
-                                                <View>
-                                                    <Image source={require("../../assets/images/user.jpg")} style={{width:50,height:50,borderRadius:50}}/>
-                                                </View>
+                                            <Skeleton colorMode="light" width={50} height={50} radius='round'>
+                                                {loading ? null :                                                
+                                                    item.profilePicture ?
+                                                        <View>
+                                                            <Image source={{uri:item.profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
+                                                        </View>
+                                                        :
+                                                        <View>
+                                                            <Image source={require("../../assets/images/user.jpg")} style={{width:50,height:50,borderRadius:50}}/>
+                                                        </View>
+                                                    
                                             }
+                                            </Skeleton>
                                             <View style={{marginHorizontal:10}}>
-                                                <Text style={{fontFamily:"Poppins-Light"}}>{item.username}</Text>
+                                                <Skeleton colorMode="light" height={20} width={150}>
+                                                    {loading ? null :
+                                                    <Text style={{fontFamily:"Poppins-Light"}}>{item.username}</Text>
+                                                    }
+                                                </Skeleton>
                                             </View>
                                         </TouchableOpacity>
                                     )
@@ -122,42 +134,32 @@ export default function Page(){
                                     // console.log(item)
                                     return(
                                         <TouchableOpacity style={styles.tabLayout} onPress={() =>ViewProfile(item._id)}>
-                                            {item.profilePicture ?
-                                                <View>
-                                                    <Image source={{uri:item.profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
-                                                </View>
-                                                :
-                                                <View>
-                                                    <Image source={require("../../assets/images/user.jpg")} style={{width:50,height:50,borderRadius:50}}/>
-                                                </View>
-                                            }
+                                            <Skeleton colorMode="light" width={50} height={50} radius='round'>
+                                                {loading ? null :
+                                                
+                                                    item.profilePicture ?
+                                                        <View>
+                                                            <Image source={{uri:item.profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
+                                                        </View>
+                                                        :
+                                                        <View>
+                                                            <Image source={require("../../assets/images/user.jpg")} style={{width:50,height:50,borderRadius:50}}/>
+                                                        </View>
+                                                    
+                                                }
+                                            </Skeleton>
                                             <View style={{marginHorizontal:10}}>
-                                                <Text style={{fontFamily:"Poppins-Light"}}>{item.username}</Text>
+                                                <Skeleton colorMode="light"  height={20} width={150}>
+                                                    {loading ? null :
+                                                    <Text style={{fontFamily:"Poppins-Light"}}>{item.username}</Text>
+                                                    }
+                                                </Skeleton>
                                             </View>
                                         </TouchableOpacity>
                                     )
                                 }}/>
                             </View>
                             <View style={styles.contentLayout}>
-                                {/* <FlatList data={searchUsers} renderItem={({item}) =>{
-                                    // console.log(item)
-                                    return(
-                                        <TouchableOpacity style={styles.tabLayout} onPress={() =>ViewProfile(item._id)}>
-                                            {item.profilePicture ?
-                                                <View>
-                                                    <Image source={{uri:item.profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
-                                                </View>
-                                                :
-                                                <View>
-                                                    <Image source={require("../../assets/images/user.jpg")} style={{width:50,height:50,borderRadius:50}}/>
-                                                </View>
-                                            }
-                                            <View style={{marginHorizontal:10}}>
-                                                <Text style={{fontFamily:"Poppins-Light"}}>{item.username}</Text>
-                                            </View>
-                                        </TouchableOpacity>
-                                    )
-                                }}/> */}
                           
                                 <SearchPosts searchParam={searchText}/>
                                 

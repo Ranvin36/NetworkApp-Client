@@ -8,7 +8,7 @@ import { useSelector } from "react-redux"
 import { rootStore } from "@/app/redux/store"
 
 const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
-function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet}){
+function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActiveBottomPost}){
     const user = useSelector((state:rootStore) => state.user.user)
     const creatorImage = item.creator[0].profilePicture
     const imgUrl = item.image
@@ -21,7 +21,10 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
     function ViewProfile(id){
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
-    console.log(item._id)
+    function BottomSheetAction(){
+        setActiveBottomPost(item._id)
+        openBottomSheet()
+    }
 
 
     return(
@@ -53,11 +56,7 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
                     </TouchableOpacity>
                     
                 }
-                <TouchableOpacity onPress={()=>{
-                    Haptics.notificationAsync(
-                        Haptics.NotificationFeedbackType.Success
-                    )
-                }}>
+                <TouchableOpacity onPress={BottomSheetAction}>
                     <Entypo name="dots-three-vertical" size={20} color="black" />
                 </TouchableOpacity>
             </View>
