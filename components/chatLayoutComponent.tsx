@@ -5,7 +5,7 @@ function ChatLayoutComponent({item}){
     const userId = item[0].userId[0]
 
     return(
-        <TouchableOpacity style={styles.chat} onPress={() => router.push({pathname:`chatRoom/${userId}` , params:{userId}})}>
+        <TouchableOpacity style={styles.chat}>
             <View style={styles.chatsLayout}>
                 {item[0].profilePicture ?
                     <View> 
@@ -32,7 +32,6 @@ export default ChatLayoutComponent
 
 const styles = StyleSheet.create({
     chatsLayout:{
-        marginVertical:5,
         flexDirection:"row",
         alignItems:"center"
     },
@@ -40,6 +39,6 @@ const styles = StyleSheet.create({
         flexDirection:"row",
         justifyContent:"space-between",
         alignItems:"center",
-        width:"100%"
+        width:"100%",
     }
 })

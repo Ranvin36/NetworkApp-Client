@@ -1,21 +1,25 @@
 import { View,Text, StyleSheet, StatusBar,Image, FlatList ,TextInput, TouchableOpacity ,ScrollView , RefreshControl, Dimensions,ImageBackground} from "react-native"
 import { useSelector } from "react-redux"
-import { rootStore } from "../redux/store"
 import { router } from "expo-router";
 import axios from "axios";
 import { useEffect, useState,useCallback, useRef  } from "react";
-import { ipAddress } from "@/constants/ipAddress";
 import { Audio } from 'expo-av';
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler"
 import Animated , { useAnimatedStyle, useSharedValue, withSpring,scrollTo, useDerivedValue, useAnimatedReaction, runOnJS, withTiming, withRepeat, withSequence, Easing} from "react-native-reanimated";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import * as Haptics from "expo-haptics"
 import { CameraView , useCameraPermissions } from "expo-camera"
 import  {Video,ResizeMode} from  'expo-av'
 import React from "react";
+import * as ImagePicker from "expo-image-picker"
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+import { ipAddress } from "@/constants/ipAddress";
+import { rootStore } from "../redux/store";
 import { Colors } from "@/constants/Colors";
 import PostComponent from "@/components/postComponent";
-import * as ImagePicker from "expo-image-picker"
+import { CreateComment, FollowUser, LikePost, UnFollowUser, UnlikePost } from "@/components/CallBacks/CallBackFunctions";
 
 // Icon Packs
 import { Feather } from '@expo/vector-icons';
@@ -26,13 +30,13 @@ import StoriesComp from "@/components/storiesComp";
 
 const {height : SCREEN_HEIGHT , width : SCREEN_WIDTH} = Dimensions.get('window')
 export default function Home(){
-    const socket = io(`http://${ipAddress}:3001`, { transports: ["websocket"] });
+    const socket = io(`http://${ipAddress}:3001`)
     const user = useSelector((state:rootStore)=>state.user)
     const translateY = useSharedValue(0)
     const context = useSharedValue({y:0})
     const [posts,setPosts] = useState([])
     const [comment,setComment] = useState('')
-    const [activePost,setActivePost] = useState()
+    const [activePost,setActivePost] = useState(0)
     const [isSheetOpened,setIsSheetOpened] = useState(true)
     const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 3)
     const [follows,setFollows] = useState([])
@@ -48,7 +52,6 @@ export default function Home(){
     const [page,setPage]=  useState(1)
     const [contentLoading,setContentLoading] = useState(false)
     const scaleAnim = useSharedValue(0)
-
     useAnimatedReaction(
         () => isSheetOpenedDerived.value,
         (isOpen)=>{
@@ -69,6 +72,16 @@ export default function Home(){
         }
     })
 
+    const Refresh = useCallback(()=>{
+        setRefresh(true)
+        setPage(1)
+        setPosts([])
+        setTimeout(()=>{
+            setDummyData((prevData) => [...prevData, `Item ${dummyData.length+1}`]) 
+            setRefresh(false)
+        },2000)
+    },[])
+
     const rBottomSheetStyle = useAnimatedStyle(() =>{
         return{
             transform : [{translateY: translateY.value}]
@@ -88,15 +101,6 @@ export default function Home(){
     },[page,user.user.token])
     
 
-    const Refresh = useCallback(()=>{
-        setRefresh(true)
-        setPage(1)
-        setPosts([])
-        setTimeout(()=>{
-            setDummyData((prevData) => [...prevData, `Item ${dummyData.length+1}`]) 
-            setRefresh(false)
-        },2000)
-    },[])
 
     async function PlaySound(){
         const {sound}  = await Audio.Sound.createAsync(require('../../assets/videos/ding.mp3'))
@@ -111,7 +115,7 @@ export default function Home(){
         }
         else{
             translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
-            const findPosts = posts && posts.find((item) => item._id === id)
+            const findPosts = posts && posts.find((item:any) => item._id === id)
             if(findPosts){
                 setActiveComments(findPosts.comments ? findPosts.comments : [])
             }
@@ -122,69 +126,33 @@ export default function Home(){
         }
     }
 
-    
-    async function FollowUser(uid){
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-        try{
-            const response = await axios.post(`http://${ipAddress}:3001/users/add-follower/${uid}`,null,{
-                headers:{
-                    Authorization:`Bearer ${user.user.token}`
-                }
-            })
-            setFollowCount((prev) => [...prev, 1])
-        }
-        catch(error){
-            console.log(error)
-        }
+    async function HandleFollowUser(uid:number){
+        await FollowUser(uid,user,setFollowCount)
+    }
+    async function HandleUnfollowUser(uid:number){
+        await UnFollowUser(uid,user,setFollowCount)
+    }
+
+    async function HandleLikePost(uid:number){
+        await LikePost(uid,user,dummyData,setDummyData)
     }
     
-    async function UnFollowUser(uid){
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-        const response = await axios.delete(`http://${ipAddress}:3001/users/remove-follower/${uid}`,{
-            headers:{
-                Authorization:`Bearer ${user.user.token}`
-            }
-        })
-
-        setFollowCount((prev) => [...prev,1])
+    async function HandleUnLikePost(uid:number){
+        await UnlikePost(uid,user,dummyData,setDummyData)
+    }
+    
+    async function HandleCreateComment(){
+        await CreateComment(activePost,user,comment)
     }
 
-   const GetFollowers = useCallback(async () =>{
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user.user.data._id}`,{
-            headers:{
-                Authorization:`Bearer ${user.user.token}`
-            }
-        })
-        setFollows(response.data)
-    },[user.user.data._id, user.user.token])
-
-    async function LikePost(uid){
-        const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
-            headers:{
-                Authorization:`Bearer ${user.user.token}`
-            }
-        })
-        console.log(response.data)
-        PlaySound()
-        setDummyData((prevData) => [...prevData, `Item ${dummyData.length+1}`]) 
-    }
-    async function unlikePost(uid){
-        const response = await axios.post(`http://${ipAddress}:3001/posts/unlike-posts/${uid}`,null,{
-            headers:{
-                Authorization:`Bearer ${user.user.token}`
-            }
-        })
-        getPosts()
-    }
-
-    async function CreateComment(){
-        const data = {"message":comment}
-        const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
-            headers:{
-                Authorization: `Bearer ${user.user.token}`
-            }
-        })
-    }
+    const GetFollowers = useCallback(async () =>{
+         const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user.user.data._id}`,{
+             headers:{
+                 Authorization:`Bearer ${user.user.token}`
+             }
+         })
+         setFollows(response.data)
+     },[user.user.data._id, user.user.token])
 
     async function GetStories(){
         const response = await axios.get(`http://${ipAddress}:3001/snapshot/`,{
@@ -202,8 +170,6 @@ export default function Home(){
             name,
             type
         })
-        console.log(formData)
-
         const response = await axios.post(`http://${ipAddress}:3001/snapshot/create`,formData,{
             headers:{
                 'Content-Type': 'multipart/form-data',
@@ -233,17 +199,6 @@ export default function Home(){
         uploadSnapShot(uri,name,type)
     }
 
-    useEffect(()=>{
-        socket.on('postLiked',(data) =>{
-            console.log("INSIDE")
-            console.log(data,"data")
-        })
-
-        return (()=>{
-            socket.off('postLiked')
-        })
-    },[])
-
    const scaleDown = () =>{
         scaleAnim.value = withTiming(0,{duration:200})
         setTimeout(()=>{
@@ -252,6 +207,7 @@ export default function Home(){
         },500)
     }
     const scaleUp = (index:number) =>{
+        socket.emit("chatMessage","HEYS")
         setActiveStory(index)
         setStoryVisisble(true)
         scaleAnim.value = withTiming(1,{duration:200})
@@ -263,50 +219,41 @@ export default function Home(){
         }
 
     })
-
-    useEffect(() =>{
-        GetStories()
-    },[dummyData])
-
-    useEffect(()=>{
-        GetFollowers()
-    },[followCount,GetFollowers])
-
-    useEffect(()=>{
-        getPosts()
-    },[dummyData])
     
     function isCloseToBottom({layoutMeasurement, contentOffset, contentSize}){
         const paddingToBottom = 20;
         return layoutMeasurement.height + contentOffset.y >=
         contentSize.height - paddingToBottom;
     }   
+    
+        const rotateSpinner = useAnimatedStyle(() =>{
+            return{
+                transform:[{
+                    rotate: withRepeat(
+                            withTiming(360+'deg',{duration:1000, easing: Easing.linear}),-1)
+                    
+                }]
+            }
+        })
 
-    const rotateSpinner = useAnimatedStyle(() =>{
-        return{
-            transform:[{
-                rotate: withRepeat(
-                        withTiming(360+'deg',{duration:1000, easing: Easing.linear}),-1)
-                
-            }]
+        async function GetLocalStorageUser(){
+            const getUser = await AsyncStorage.getItem('user')
+            return getUser != null ? JSON.parse(getUser) : null;
         }
-    })
 
-    useEffect(() =>{
-        socket.on('connection',() =>{
-            console.log("Connected")
-        })      
-        socket.on('disconnect',() =>{
-            console.log("Disconnected")
-        })  
-        socket.on('chat-message' , (msg) =>{
-            console.log(msg)
-        })  
-
-        return() =>{
-            socket.disconnect()
-        }
-    },[])
+    
+        useEffect(() =>{
+            GetStories()
+        },[dummyData])
+    
+        useEffect(()=>{
+            GetFollowers()
+        },[followCount,GetFollowers])
+    
+        useEffect(()=>{
+            getPosts()
+        },[dummyData])
+    
 
 
     return(
@@ -332,7 +279,7 @@ export default function Home(){
                     <AntDesign name="hearto" size={20} color="black" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.headerIcon} onPress={()=> router.push('/chats')}>
-                    <Feather name="bookmark" size={20} color="black" />
+                    <AntDesign name="message1" size={20} color="black" />   
                 </TouchableOpacity>
             </View>
         </View>
@@ -364,7 +311,7 @@ export default function Home(){
             <View style={styles.postsContainer}>
                 <FlatList data={posts} showsVerticalScrollIndicator={false} renderItem={({item}) =>{
                         return(
-                         <PostComponent  item={item} follows={follows} UnFollowUser={UnFollowUser} FollowUser={FollowUser} unlikePost={unlikePost} LikePost={LikePost} toggleBottomSheet={toggleBottomSheet}/>
+                         <PostComponent  item={item} follows={follows} UnFollowUser={HandleUnfollowUser} FollowUser={HandleFollowUser} unlikePost={HandleUnLikePost} LikePost={HandleLikePost} toggleBottomSheet={toggleBottomSheet}/>
                         )
                 }}/>
                 {contentLoading 
@@ -447,7 +394,7 @@ export default function Home(){
                                             <View style={{backgroundColor:"#f2f2f2",paddingVertical:10,borderRadius:5}}>
                                                 <TextInput placeholder="Type Your Comment." style={{paddingHorizontal:5,fontFamily:"Poppins-Light",width:SCREEN_WIDTH/1.3}} onChangeText={(e) => setComment(e)}/>
                                             </View>
-                                            <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:35,height:35,justifyContent:"center",alignItems:"center"}} onPress={CreateComment}>
+                                            <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:35,height:35,justifyContent:"center",alignItems:"center"}} onPress={HandleCreateComment}>
                                                 <Ionicons name="send-outline" size={20} color="#fff" />
                                             </TouchableOpacity>
                                         </View>

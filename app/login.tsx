@@ -24,7 +24,7 @@ function Login(){
     const selector = useSelector((state:rootStore)=>state.user)
     const dispatch = useDispatch()
     const router = useRouter()
-    async function SetOtp(token){
+    async function SetOtp(token:string){
         const data = {"phoneNum":94767544717}
         const response = await axios.post(`http://${ipAddress}:3001/users/send-otp`,data,{
             headers:{

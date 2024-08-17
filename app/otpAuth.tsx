@@ -8,11 +8,14 @@ import {router} from "expo-router"
 import {ipAddress} from "../constants/ipAddress"
 import OtpDigits from "@/components/otpDigits"
 import TouchButton from "@/components/touchButton"
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 function OtpAuth(){
     const [otp,setOtp] = useState(['','','',''])
     const [validOtp,setValidOtp] = useState(true) 
-    const user = useSelector((state:rootStore) => state.user.user)
+    const user = useSelector((state:rootStore) => state.user)
+    const updatedUser = {"user":user}
     const receivedOtp = useSelector((state:rootStore) => state.otp.otp)
     function handleOtpChange(value,index){
         console.log(value)
@@ -20,12 +23,16 @@ function OtpAuth(){
         newOtp[index] = value
         setOtp(newOtp)
     }
-    // console.log(otp, receivedOtp.data.otp,user.token)
-    console.log(user,"USER")
     async function VerifyOtp(){
         try{
             const data = {"sentOtp":receivedOtp.data.otp , "receivedOtp":otp}
             const response = await axios.post(`http://${ipAddress}:3001/users/verify-otp`,data)
+            try{
+                await AsyncStorage.setItem('user', JSON.stringify(user))
+            }
+            catch(error){
+                console.log(error)
+            }
             router.push("/home")
         }
         catch(error){

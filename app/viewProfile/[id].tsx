@@ -1,7 +1,7 @@
 import { ipAddress } from "@/constants/ipAddress"
 import axios from "axios"
 import { useLocalSearchParams } from "expo-router"
-import { useEffect,useState,useRef} from "react"
+import { useEffect,useState,useRef,useCallback} from "react"
 import { StyleSheet, Text, View,Image, TouchableOpacity, Dimensions, FlatList} from "react-native"
 import { useSelector } from "react-redux"
 import { rootStore } from "../redux/store"
@@ -14,14 +14,17 @@ import { Entypo } from "@expo/vector-icons"
 import { Video,ResizeMode } from "expo-av"
 import { Colors } from "@/constants/Colors"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
+import  {FollowUser,UnFollowUser} from "../../components/CallBacks/CallBackFunctions"
 
 function Page(){
   const {width:SCREEN_WIDTH , height:SCREEN_HEIGHT} = Dimensions.get('window')
   const {id} = useLocalSearchParams()
-  const user = useSelector((state:rootStore)=>state.user.user)
+  const user = useSelector((state:rootStore)=>state.user)
   const [profileUser,setProfileUser] = useState([])
   const [selectedIndex,setSelectedIndex] = useState(0)
   const [selected, setSelected] = useState([])
+  const [followCount, setFollowCount] = useState([])
+  const [follows, setFollows] = useState([])
   const [posts,setPosts] = useState([])
   const position = useSharedValue(40)
   const [bottomSheetOpened,setBottomSheetOpened] = useState(false)
@@ -57,7 +60,7 @@ function Page(){
   async function GetUser(){
     const response  = await axios.get(`http://${ipAddress}:3001/users/get-user/${id}`,{
         headers:{
-            Authorization:`Bearer ${user.token}`
+            Authorization:`Bearer ${user.user.token}`
         }
     })
     setProfileUser(response.data.data)
@@ -66,7 +69,7 @@ function Page(){
   async function GetPosts(){
     const response = await axios.get(`http://${ipAddress}:3001/posts/${id}`,{
       headers:{
-        Authorization:`Bearer ${user.token}`
+        Authorization:`Bearer ${user.user.token}`
       }
     })
 
@@ -107,6 +110,22 @@ function Page(){
       transform: [{translateY:offSet.value}]
     }
   })
+  
+  async function HandleFollowUser(){
+    await FollowUser(id,user,setFollowCount)
+}
+async function HandleUnfollowUser(){
+    await UnFollowUser(id,user,setFollowCount)
+}
+
+const GetFollowers = useCallback(async () =>{
+  const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user.user.data._id}`,{
+      headers:{
+          Authorization:`Bearer ${user.user.token}`
+      }
+  })
+  setFollows(response.data[0].following)
+},[user.user.data._id, user.user.token])
 
   useEffect(()=>{
     GetUser()
@@ -114,6 +133,10 @@ function Page(){
 
   useEffect(()=>{
     GetPosts()
+  },[])
+
+  useEffect(()=>{
+    GetFollowers()
   },[])
 
   useEffect(() => {
@@ -125,9 +148,8 @@ function Page(){
     position.value=40
   },[])
 
-  
-
-
+  const isFollowing = follows.filter((item) => item._id ===  id) 
+  console.log(isFollowing)
 
   return(
     <View>
@@ -175,9 +197,15 @@ function Page(){
           </View>
         </View>
         <View style={styles.buttons}>
-          <View style={styles.button}>
-            <Text style={{fontFamily:"Poppins-Bold",color:"#fff",textAlign:"center",fontSize:14}}>Follow</Text>
-          </View>
+          {isFollowing.length>0?
+            <TouchableOpacity style={styles.button} onPress={HandleUnfollowUser}>
+              <Text style={{fontFamily:"Poppins-Bold",color:"#fff",textAlign:"center",fontSize:14}}>UnFollow</Text>
+            </TouchableOpacity>
+              :          
+            <TouchableOpacity style={styles.button} onPress={HandleFollowUser}>
+              <Text style={{fontFamily:"Poppins-Bold",color:"#fff",textAlign:"center",fontSize:14}}>Follow</Text>
+            </TouchableOpacity>
+          }
           <TouchableOpacity style={[styles.button,{backgroundColor:"#f3f3f3f3"}]} onPress={() => router.push({pathname:`chatRoom/${id}`})}>
             <Text style={{fontFamily:"Poppins-Bold",color:Colors.light.text,textAlign:"center",fontSize:14}}>Message</Text>
           </TouchableOpacity>

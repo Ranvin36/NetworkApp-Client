@@ -5,6 +5,12 @@
 		},
 		{
 			"path": "../NetworkApp-Server"
+		},
+		{
+			"path": "../Chat-Server"
+		},
+		{
+			"path": "../Chat-Client"
 		}
 	],
 	"settings": {}

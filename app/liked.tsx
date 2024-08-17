@@ -42,7 +42,6 @@ function Liked() {
         })
 
         setLikePosts(posts.data.data)
-        await new Promise(resolve => setTimeout(resolve,1000))
         setLoading(false)
 
     }
@@ -56,7 +55,7 @@ function Liked() {
         <View style={styles.container}>
             <Text style={{fontFamily:"Poppins-Bold",fontSize:25}}>Favourites</Text>
             <View style={styles.containerLayout}>
-                <FlatList data={loading ? contactsPlaceholderList : likedPosts}  renderItem={({item}) =>{
+                <FlatList data={likedPosts}  renderItem={({item}) =>{
                         return(
                         <TouchableOpacity style={styles.favouritesLayout} onPress={() => router.push("/profileLike")}>
                             <Skeleton.Group show={loading}>

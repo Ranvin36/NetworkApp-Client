@@ -29,7 +29,6 @@ function SearchPosts({searchParam}){
     const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 3)
     const isBottomSheetOpened = useDerivedValue(() => offSet.value == 0 )
 
-    console.log("POST ID" , activateBottomPost)
     const SheetGesture = Gesture.Pan().onStart((event) =>{
         context.value = offSet.value
     }).onUpdate((event) =>{

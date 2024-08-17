@@ -8,13 +8,16 @@ import { useSelector } from "react-redux";
 import { rootStore } from "../redux/store";
 import { useEffect, useState } from "react";
 import { ipAddress } from "@/constants/ipAddress";
+import  {io, Socket} from "socket.io-client"
+import SelectedOptions from "@/components/SelectedOptions";
 function ChatRoom(){
+    const socket = io(`http://${ipAddress}:3001`)
     const {id} = useLocalSearchParams()
     const user = useSelector((state:rootStore) => state.user.user)
     const [chatUser, setChatUser] = useState([])
     const [messages, setMessage] = useState([])
     const [textInput,setTextInput] = useState("")
-    console.log(id ,"ID")
+    const [selectedChats,setSelectedChat] = useState([])
     async function GetUser(){
         const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${id}`,{
             headers:{
@@ -33,19 +36,31 @@ function ChatRoom(){
 
         console.log(response.data)
         setMessage(response.data.findMessages)
+
     }
 
     async function SendMessage(){
-        const data = {"message" : textInput}
-        const response = await axios.post(`http://${ipAddress}:3001/chats/create-chat/${id}` , data , {
+        const data = {"message" : textInput , "opponentId" :id , "userAuth" :{"_id" : user.data._id , "username":user.data.username,"profilePicture":user.data.profilePicture}}
+        // const response = await axios.post(`http://${ipAddress}:3001/chats/create-chat/${id}` , data , {
+        //     headers:{
+        //         Authorization: `Bearer ${user.token}`
+        //     }
+        // })
+        // console.log(response.data)
+        socket.emit("chatMessage",data)
+
+    }
+
+    async function DeleteChat(){
+        const data ={"id" : selectedChats[0]}
+        const response = await axios.post(`http://${ipAddress}:3001/chats/delete-message`,data,{
             headers:{
-                Authorization: `Bearer ${user.token}`
+                Authorization:`Bearer ${user.token}`
             }
         })
         console.log(response.data)
     }
 
-    console.log(messages)
 
     useEffect(() => {
         GetUser()
@@ -54,56 +69,79 @@ function ChatRoom(){
         GetMessage()
     },[])
 
+    useEffect(() => {
+        socket.on("messages" , (data) =>{
+            console.log("data",data)
+            setMessage(data)
+        })
+
+        return()=>{
+            socket.off("messages")
+        }
+    },[socket])
+
+    useEffect(() => {
+        socket.on("fetchMessages" , (data) =>{
+            console.log(data ,  "data")
+            setMessage((prev) => [...prev,data.findMessages])
+        })
+    },[socket])
+
+    useEffect(() =>{
+        socket.on("receiveMessasge" ,  (data) =>{
+            console.log(data ,  "FETCHED")
+            setMessage((prev) => [...prev,data])
+        })
+        return ()=>{
+            socket.disconnect()
+        }
+    },[])
+
+    console.log(selectedChats)
 
     return(
         <View style={styles.container}>
-           <View style={styles.header}>
-            <TouchableOpacity style={{marginRight:5}} onPress={() => router.back()}>
-                <MaterialIcons name="keyboard-arrow-left" size={27} color="black" />        
-            </TouchableOpacity>
-            <View style={styles.details}>
-                {!chatUser.profilePicture ?                
-                    <View>
-                        <Image source={require("../../assets/images/user.jpg")} style={{width:50,height:50,borderRadius:50}}/>
-                    </View>
-                            :
-                    <View>
-                        <Image source={{uri:chatUser.profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
-                    </View>
-            }
-                    <View style={{marginLeft:10}}>
-                        <Text style={{fontFamily:"Poppins-Bold",fontSize:14}}>{chatUser.username}</Text>
-                        <Text style={{fontFamily:"Poppins-Light", fontSize:12,marginTop:-5}}>Online</Text>
-                    </View>
+            {!selectedChats.length>0 ?
+            <View style={styles.header}>
+                <TouchableOpacity style={{marginRight:5}} onPress={() => router.back()}>
+                    <MaterialIcons name="keyboard-arrow-left" size={27} color="black" />        
+                </TouchableOpacity>
+                <View style={styles.details}>
+                    {!chatUser.profilePicture ?                
+                        <View>
+                            <Image source={require("../../assets/images/user.jpg")} style={{width:50,height:50,borderRadius:50}}/>
+                        </View>
+                                :
+                        <View>
+                            <Image source={{uri:chatUser.profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
+                        </View>
+                }
+                        <View style={{marginLeft:10}}>
+                            <Text style={{fontFamily:"Poppins-Bold",fontSize:14}}>{chatUser.username}</Text>
+                            <Text style={{fontFamily:"Poppins-Light", fontSize:12,marginTop:-5}}>Online</Text>
+                        </View>
+                </View>
             </View>
+            :
+           <View style={styles.selected}>
+                <SelectedOptions selectedChats={selectedChats} setSelectedChat={setSelectedChat} DeleteChat={DeleteChat}/>
            </View>
+            }
            <View style={styles.messageArea}>
             <FlatList data={messages} renderItem={({item}) =>{
-              
-                const updatedAt = item.updatedAt;
-                const updatedAtDate = new Date(updatedAt)
-
-                const hours = updatedAtDate.getUTCHours()
-                const minutes = updatedAtDate.getUTCMinutes()  
-                const seconds = updatedAtDate.getUTCSeconds()  
-
-                const currentDate = new Date()
-                const updatedTimeDate = new Date(currentDate)
-                updatedTimeDate.setUTCHours(hours,minutes,seconds,0)
-                 const updatedTime = updatedTimeDate.toISOString();
-                 console.log(`Updated Time: ${updatedTimeDate}`);
-                 return(
-                <View style={{marginVertical:5}}>
-                    <View style={{alignItems: item.senderId == user.data._id ? "flex-end" : "flex-start"}}>
-                        <View style={styles.message}>
-                            <Text style={styles.messageText}>{item.message}</Text>
+                const isSelected = selectedChats.filter((selected) => selected == item._id)     
+                return(
+                <TouchableOpacity style={{backgroundColor:isSelected.length>0?"#ccc":null}} onLongPress={() => setSelectedChat((prev) => [...prev,item._id])}>
+                    <View style={[styles.messageBackground,{alignItems: item.senderId == user.data._id ? "flex-end" : "flex-start"}]}>
+                        <View style={[styles.message , {backgroundColor:item.senderId  == user.data._id ?  Colors.light.text  : "#fff"}]}>
+                            <Text style={[styles.messageText , {color:item.senderId ==   user.data._id ? "#fff" :"#000"}]}>{item.message}</Text>
                         </View>
-                        <View>
+                        {/* <View>
                             <Text style={styles.messageText}>{`${updatedTime}`}</Text>
                             
-                        </View>
+                        </View> */}
                     </View>
-                </View>
+                </TouchableOpacity>
                 )
             }}/>
            </View>
@@ -132,6 +170,12 @@ const styles = StyleSheet.create({
         flexDirection:"row",
         alignItems:"center"
     },
+    selected:{
+        paddingTop:45,
+        paddingVertical:20,
+        backgroundColor:"#fff",
+
+    },
     details:{
         flexDirection:"row",
         alignItems:"center"
@@ -139,17 +183,26 @@ const styles = StyleSheet.create({
     messageArea:{
         width:"100%",
         justifyContent:"space-between",
-        padding:10
+        paddingVertical:10,
+        // paddingHorizontal:20
     },
     message:{
         backgroundColor:Colors.light.text,
-        borderRadius:10,
-        paddingHorizontal:15,
-        paddingVertical:10
+        borderRadius:5,
+        paddingHorizontal:20,
+        paddingVertical:10,
+        maxWidth:250
     },
     messageText:{
         fontFamily:"Poppins-Light",
-        color:"#fff"
+        color:"#fff",
+        fontSize:15
+    },
+    messageBackground:{
+        marginVertical:5,
+        marginHorizontal:20,
+
+
     }
 })
 

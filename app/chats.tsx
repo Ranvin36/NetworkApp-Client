@@ -1,16 +1,36 @@
 import ChatLayoutComponent from "@/components/chatLayoutComponent"
 import Stories from "@/dummyData/stories"
-import { SafeAreaView, View ,Text, StyleSheet,Image,TextInput, FlatList } from "react-native"
+import { SafeAreaView, View ,Text, StyleSheet,Image,TextInput, FlatList, Dimensions } from "react-native"
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import { useSelector } from "react-redux";
 import { rootStore } from "./redux/store";
 import axios from "axios";
 import { ipAddress } from "@/constants/ipAddress";
 import { useEffect, useState } from "react";
+import {io} from"socket.io-client"
+import { TouchableOpacity } from "react-native-gesture-handler";
+import * as Haptics from "expo-haptics"
+import { router } from "expo-router";
+import {AntDesign,Entypo,Feather} from '@expo/vector-icons';
+import SelectedOptions from "@/components/SelectedOptions";
 
 function Chats(){
+    const socket = io(`http://${ipAddress}:3001`)
     const user = useSelector((state:rootStore) => state.user.user)
     const [chatData,setChatData] = useState([])
+    const [searchText, setSearchText] = useState("")
+    const [selectedChats , setSelectedChat] = useState([])
+
+
+    function FilterSearch() {
+        const searchFilter = chatData.filter((item) => 
+            item.receiverData[0].username.toLowerCase().includes(searchText.toLowerCase(),
+    )
+        );
+    
+        setChatData(searchFilter);
+    }
+    
     async function GetChats(){
         const response = await axios.get(`http://${ipAddress}:3001/chats/` ,{
             headers:{
@@ -20,20 +40,51 @@ function Chats(){
         setChatData(response.data.findChats)
     }
 
+
+    async function selectChat(id:number){
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+        setSelectedChat((prev):any => [...prev,id])
+    }
+
+    async function DeleteChat(){
+        const data  ={id:selectedChats[0]}
+        const response = await axios.post(`http://${ipAddress}:3001/chats/delete/`,data ,{
+            headers:{
+                Authorization : `Bearer ${user.token}`
+            }
+        })
+
+        console.log(response.data)
+    }
+
+
     useEffect(() => {
         GetChats()
     },[])
+
+    useEffect(() =>{
+        FilterSearch()
+    },[searchText])
+
     return(
         <View style={styles.container}>
             {chatData &&  chatData.creatorData && chatData.creatorData.length>0 && <Text>{chatData.creatorData[0].username}</Text>}
-            <View>
+            {selectedChats.length>0 ?
+            <>         
+
+                <SelectedOptions setSelectedChat={setSelectedChat} selectedChats={selectedChats} DeleteChat={DeleteChat}/>
+                <View style={{backgroundColor:"#ccc",width:"100%",height:1}}></View>
+            </>
+                :
+            <View style={{marginHorizontal:20}}>
                 <Text style={{fontFamily:"Poppins-Bold",fontSize:25}}>Chats</Text>
             </View>
-            <View style={{backgroundColor:"#f2f2f2",paddingHorizontal:13,paddingVertical:8,borderRadius:10,marginVertical:5,height:45,flexDirection:"row"}}>
-                <View style={{marginRight:3,marginTop:2}}>
+            }
+            <View style={styles.searchContainer}>
+                <View style={{marginRight:3,marginTop:7}}>
                     <EvilIcons name="search" size={24} color="black" />
                 </View>
-                <TextInput placeholder="Search Friends" style={{fontFamily:"Poppins-Light",width:"90%"}}/>
+                <TextInput placeholder="Search Friends" style={{fontFamily:"Poppins-Light",width:"90%"}} onChangeText={(e)=>setSearchText(e)}/>
             </View>
             <View style={{marginTop:5}}>
                 {chatData.length>0 ?
@@ -41,14 +92,21 @@ function Chats(){
                                 if(item && item.creatorData && item.creatorData.length>0){
                                         const creatorId = item.creatorData[0].userId[0].toString()
                                         const userId = user.data._id
+                                        const isSeleceted = selectedChats.filter((chatId) => chatId == item._id )
                                         if(creatorId == userId){
+                                            const receiverId  = item.receiverData[0].userId
                                             return(
-                                                <ChatLayoutComponent item={item.receiverData}/>
+                                                <TouchableOpacity style={[isSeleceted.length>0 ? styles.chatContainer : null,{marginVertical:5,marginHorizontal:10,paddingHorizontal:10}]} onLongPress={() =>selectChat(item._id)} onPress={() => router.push({pathname:`chatRoom/${receiverId}` , params:{id:receiverId}})}>
+                                                    <ChatLayoutComponent item={item.receiverData}/>
+                                                </TouchableOpacity>
                                             )
                                         }                                        
                                         else{
+                                            const creatorId  = item.creatorData[0].userId
                                             return(
-                                            <ChatLayoutComponent item={item.creatorData}/>
+                                                <TouchableOpacity onLongPress={() => selectChat(item._id)} onPress={() => router.push({pathname:`chatRoom/${creatorId}` , params:{id:creatorId}})}>
+                                                    <ChatLayoutComponent item={item.creatorData}/>
+                                                </TouchableOpacity>
                                             )
                                         }
                                     }   
@@ -71,14 +129,32 @@ export default Chats
 
 const styles = StyleSheet.create({
     container:{
-        paddingHorizontal:20,
-        paddingVertical:40,
+        // paddingHorizontal:20,
+        paddingVertical:45,
         backgroundColor:"#fff",
-        height:"100%"
+        height:"100%",width:Dimensions.get('window').width
     },
     chatsLayout:{
         marginVertical:5,
         flexDirection:"row",
         alignItems:"center"
+    },
+    chatContainer:{
+        backgroundColor:"#f2f2f2",
+        marginHorizontal:10,
+        paddingHorizontal:10,
+        borderRadius:10,
+        paddingVertical:10
+    },
+    searchContainer:{backgroundColor:"#f2f2f2",
+        paddingHorizontal:13,
+        marginHorizontal:15,
+        paddingVertical:8,
+        borderRadius:10
+        ,marginVertical:5,
+        height:55,
+        flexDirection:"row"},
+    selectedIcons:{
+        marginLeft:10
     }
 })
