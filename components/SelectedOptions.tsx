@@ -2,13 +2,15 @@ import { StyleSheet, View,TouchableOpacity,Text} from "react-native"
 import { AntDesign , Entypo , Feather } from "@expo/vector-icons"
 function SelectedOptions({setSelectedChat,selectedChats,DeleteChat}){
     return(
-        <View style={{marginHorizontal:20,marginVertical:10,flexDirection:"row",justifyContent:"space-between"}}>
+        <View style={{marginHorizontal:20,marginVertical:10,flexDirection:"row",justifyContent:"space-between",width:"100%"}}>
         <View style={{flexDirection:"row",alignItems:"center"}}>
-            <TouchableOpacity onPress={() => setSelectedChat([])}  style={styles.selectedIcons}>
-                <AntDesign name="closecircleo" size={24} color="black" />
-            </TouchableOpacity>
-            <View style={{marginLeft:5}}>
-                <Text style={{fontFamily:"Poppins-Light"}}>{selectedChats.length>0 && selectedChats.length}</Text>
+            <View style={{flexDirection:"row",alignItems:"center"}}>                
+                <TouchableOpacity onPress={() => setSelectedChat([])}>
+                    <AntDesign name="closecircleo" size={24} color="black" />
+                </TouchableOpacity>
+                <View style={{marginLeft:5}}>
+                    <Text style={{fontFamily:"Poppins-Light"}}>{selectedChats.length>0 && selectedChats.length}</Text>
+                </View>
             </View>
 
         </View>
@@ -33,6 +35,6 @@ export default SelectedOptions
 
 const styles =  StyleSheet.create({
     selectedIcons:{
-        marginLeft:10
+        marginRight:19
     }
 })

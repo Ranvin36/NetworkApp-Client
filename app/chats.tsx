@@ -56,6 +56,7 @@ function Chats(){
 
         console.log(response.data)
     }
+    
 
 
     useEffect(() => {
@@ -72,7 +73,9 @@ function Chats(){
             {selectedChats.length>0 ?
             <>         
 
-                <SelectedOptions setSelectedChat={setSelectedChat} selectedChats={selectedChats} DeleteChat={DeleteChat}/>
+                <View style={{marginBottom:1}}>
+                    <SelectedOptions setSelectedChat={setSelectedChat} selectedChats={selectedChats} DeleteChat={DeleteChat}/>
+                </View>
                 <View style={{backgroundColor:"#ccc",width:"100%",height:1}}></View>
             </>
                 :

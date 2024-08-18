@@ -1,5 +1,5 @@
 import { View,Text, StyleSheet, StatusBar,Image, FlatList ,TextInput, TouchableOpacity ,ScrollView , RefreshControl, Dimensions,ImageBackground} from "react-native"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { router } from "expo-router";
 import axios from "axios";
 import { useEffect, useState,useCallback, useRef  } from "react";
@@ -20,6 +20,7 @@ import { rootStore } from "../redux/store";
 import { Colors } from "@/constants/Colors";
 import PostComponent from "@/components/postComponent";
 import { CreateComment, FollowUser, LikePost, UnFollowUser, UnlikePost } from "@/components/CallBacks/CallBackFunctions";
+import { setOpened } from "../redux/navbarSlice";
 
 // Icon Packs
 import { Feather } from '@expo/vector-icons';
@@ -31,6 +32,7 @@ import StoriesComp from "@/components/storiesComp";
 const {height : SCREEN_HEIGHT , width : SCREEN_WIDTH} = Dimensions.get('window')
 export default function Home(){
     const socket = io(`http://${ipAddress}:3001`)
+    const dispatch = useDispatch()
     const user = useSelector((state:rootStore)=>state.user)
     const translateY = useSharedValue(0)
     const context = useSharedValue({y:0})
@@ -108,6 +110,7 @@ export default function Home(){
     }
 
     const toggleBottomSheet = async(id) =>{
+        dispatch(setOpened(false))
         setActivePost(id)
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         if(isSheetOpened){
@@ -302,7 +305,9 @@ export default function Home(){
                     
                     {stories && stories.map((item,index)=>{
                         return(
-                            <StoriesComp item={item} onPress={() => scaleUp(index)}/>
+                            <View key={index}>
+                                <StoriesComp item={item} onPress={() => scaleUp(index)}/>
+                            </View>
                         )
                     })}
             </View>

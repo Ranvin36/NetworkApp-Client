@@ -52,7 +52,7 @@ export default function RootLayout() {
     }, [dispatch]);
 
     if (!fontsLoaded) {
-      return null; // Or a loading spinner
+      return null;
     }
 
     return (

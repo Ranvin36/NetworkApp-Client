@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './userSlice'
 import otpReducer from './otpSlice'
+import navbarReducer from './navbarSlice'
 
 const store = configureStore({
     reducer:{
         user:userReducer,
-        otp:otpReducer
+        otp:otpReducer,
+        navbar:navbarReducer
     }
 })
 

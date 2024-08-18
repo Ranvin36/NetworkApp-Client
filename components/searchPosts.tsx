@@ -9,7 +9,6 @@ import * as Haptics from "expo-haptics"
 import Animated,{ useSharedValue,withSpring,useDerivedValue,useAnimatedStyle,useAnimatedReaction,runOnJS} from "react-native-reanimated"
 import { Gesture,GestureDetector} from "react-native-gesture-handler"
 import { router } from "expo-router"
-// import  {GetFollowers} from  "../requests/userRequests"
 
 function SearchPosts({searchParam}){
     const user = useSelector((state:rootStore)=>state.user.user)
@@ -170,6 +169,11 @@ function SearchPosts({searchParam}){
     }    
         useEffect(() =>{
             GetFollowers()
+        },[])
+
+        useEffect(() =>{
+            offSet.value=withSpring(SCREEN_HEIGHT , {damping:50})
+
         },[])
 
     return(

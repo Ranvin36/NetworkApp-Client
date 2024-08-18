@@ -1,11 +1,15 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { useSelector } from 'react-redux';
+import { rootStore } from '@/app/redux/store';
 
 
 export default function TabBar({ state, descriptors, navigation }) {
+  const navbarOpened = useSelector((state:rootStore) => state.navbar.navbar)
+  console.log("Navbar Opened",navbarOpened)
   return (
-    <View style={{ flexDirection: 'row',borderTopLeftRadius:30,paddingVertical:20,borderTopRightRadius:30,zIndex:1,backgroundColor:"#fff",elevation:10,position:"absolute",bottom:0}}>
+    <View style={{ flexDirection: 'row',alignItems:"center",paddingVertical:10,marginHorizontal:10,borderRadius:50,display:navbarOpened?"none" :"flex",zIndex:1,backgroundColor:"#fff",elevation:10,position:"absolute",bottom:10}}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =
@@ -37,9 +41,18 @@ export default function TabBar({ state, descriptors, navigation }) {
         }
 
         const icons ={
-            home : (props) => <AntDesign name="home" size={28} color="#d92b68" {...props} />, 
-            profile : (props) => <AntDesign name="user" size={28} color="#d92b68" {...props} />, 
-            add : (props) => <AntDesign name="pluscircle" size={28} color="#d92b68" {...props} />, 
+            home : (props) =>
+             <View style={{backgroundColor: isFocused?"#f2f2f2":null,padding:10,borderRadius:50}}>
+               <AntDesign name="home" size={28} color="#d92b68" {...props} />
+            </View>,
+            profile : (props) => 
+              <View style={{backgroundColor: isFocused?"#f2f2f2":null,padding:10,borderRadius:50}}>
+                <AntDesign name="user" size={28} color="#d92b68" {...props} />
+             </View>,
+            add : (props) => 
+              <View style={{backgroundColor: isFocused?"#f2f2f2":null,padding:10,borderRadius:50}}>
+                <AntDesign name="pluscircle" size={28} color="#d92b68" {...props} />
+             </View>,
             reels : (props) => <AntDesign name="videocamera" size={28} color="#d92b68" {...props} />, 
             search : (props) => <AntDesign name="search1" size={28} color="#d92b68" {...props} />, 
 

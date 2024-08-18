@@ -1,4 +1,4 @@
-import { StyleSheet, View ,Text, Image, TextInput, Dimensions, FlatList, TouchableOpacity } from "react-native"
+import { StyleSheet, View ,Text, Image, TextInput, Dimensions, FlatList, TouchableOpacity,ActivityIndicator } from "react-native"
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Colors } from "@/constants/Colors";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { ipAddress } from "@/constants/ipAddress";
 import  {io, Socket} from "socket.io-client"
 import SelectedOptions from "@/components/SelectedOptions";
+import moment from "moment"
 function ChatRoom(){
     const socket = io(`http://${ipAddress}:3001`)
     const {id} = useLocalSearchParams()
@@ -18,6 +19,7 @@ function ChatRoom(){
     const [messages, setMessage] = useState([])
     const [textInput,setTextInput] = useState("")
     const [selectedChats,setSelectedChat] = useState([])
+    const [sendingMessage, setSendingMessage] = useState(false)
     async function GetUser(){
         const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${id}`,{
             headers:{
@@ -48,6 +50,7 @@ function ChatRoom(){
         // })
         // console.log(response.data)
         socket.emit("chatMessage",data)
+        setSendingMessage(true)
 
     }
 
@@ -91,6 +94,7 @@ function ChatRoom(){
         socket.on("receiveMessasge" ,  (data) =>{
             console.log(data ,  "FETCHED")
             setMessage((prev) => [...prev,data])
+            setSendingMessage(false)
         })
         return ()=>{
             socket.disconnect()
@@ -129,6 +133,7 @@ function ChatRoom(){
             }
            <View style={styles.messageArea}>
             <FlatList data={messages} renderItem={({item}) =>{
+                const formattedUpdatedAt = moment(item.updatedAt).format('h:mm a');
                 const isSelected = selectedChats.filter((selected) => selected == item._id)     
                 return(
                 <TouchableOpacity style={{backgroundColor:isSelected.length>0?"#ccc":null}} onLongPress={() => setSelectedChat((prev) => [...prev,item._id])}>
@@ -136,10 +141,10 @@ function ChatRoom(){
                         <View style={[styles.message , {backgroundColor:item.senderId  == user.data._id ?  Colors.light.text  : "#fff"}]}>
                             <Text style={[styles.messageText , {color:item.senderId ==   user.data._id ? "#fff" :"#000"}]}>{item.message}</Text>
                         </View>
-                        {/* <View>
-                            <Text style={styles.messageText}>{`${updatedTime}`}</Text>
+                        <View>
+                            <Text style={styles.messageText}>{`${formattedUpdatedAt}`}</Text>
                             
-                        </View> */}
+                        </View> 
                     </View>
                 </TouchableOpacity>
                 )
@@ -150,7 +155,11 @@ function ChatRoom(){
                         <TextInput placeholder="Message Here" style={{fontFamily:"Poppins-Light"}} onChangeText={(e) => setTextInput(e)} />
                     </View>
                     <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:35,height:35,justifyContent:"center",alignItems:"center"}} onPress={SendMessage}>
-                        <MaterialCommunityIcons name="send" size={24} color="#fff" />
+                        {!sendingMessage ?
+                            <MaterialCommunityIcons name="send" size={24} color="#fff" /> 
+                        :
+                            <ActivityIndicator color="#fff"/>
+                    }
                     </TouchableOpacity>
                 </View>
            </View>
@@ -184,19 +193,18 @@ const styles = StyleSheet.create({
         width:"100%",
         justifyContent:"space-between",
         paddingVertical:10,
-        // paddingHorizontal:20
     },
     message:{
         backgroundColor:Colors.light.text,
-        borderRadius:5,
+        borderRadius:10,
         paddingHorizontal:20,
         paddingVertical:10,
         maxWidth:250
     },
     messageText:{
         fontFamily:"Poppins-Light",
-        color:"#fff",
-        fontSize:15
+        color:"#000",
+        fontSize:13
     },
     messageBackground:{
         marginVertical:5,

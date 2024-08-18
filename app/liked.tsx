@@ -27,6 +27,7 @@ function Liked() {
     const [likedPosts,setLikePosts] = useState([])
     const [loading,setLoading] = useState(true)
     async function GetLikedPosts(){
+        setLoading(true)
         const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user.data._id}`,{
             headers:{
                 Authorization:`Bearer ${user.token}`
@@ -58,32 +59,29 @@ function Liked() {
                 <FlatList data={likedPosts}  renderItem={({item}) =>{
                         return(
                         <TouchableOpacity style={styles.favouritesLayout} onPress={() => router.push("/profileLike")}>
-                            <Skeleton.Group show={loading}>
                                 <View style={styles.flexElements}>
-                                    <Skeleton radius="round" colorMode="light" {...SkeletonCommonProps}>
-                                            <Image source={{uri:item?.creator?.[0]?.profilePicture}} style={{width:55,height:55,borderRadius:50}}/>
+                                    <Skeleton radius="round" colorMode="light" width={50} height={50}>
+                                        {loading ? null : <Image source={{uri:item?.creator?.[0]?.profilePicture}} style={{width:55,height:55,borderRadius:50}}/>
+                                    }
                                         
                                     </Skeleton>
                                     <View style={{marginHorizontal:5}}>
                                         <View style={{marginBottom:5}}>
-                                        <Skeleton height={25} colorMode="light" width={"80%"} {...SkeletonCommonProps}>
+                                        <Skeleton height={25} colorMode="light" width={"80%"}>
+                                            {loading ? null : <Text style={{fontFamily:"Poppins-Bold"}}>{item?.creator?.[0]?.username || 'Loading'}</Text>}
                                             
-                                            
-                                                <Text style={{fontFamily:"Poppins-Bold"}}>{item?.creator?.[0]?.username || 'Loading'}</Text>
                                         </Skeleton>
                                         </View>
 
-                                        <Skeleton height={25} colorMode="light" width={'70%'} {...SkeletonCommonProps}>
-                                            
-                                                <Text style={{fontFamily:"Poppins-Regular",marginTop:-5}}>{item?.text|| 'Loading'}</Text>
-                                            
+                                        <Skeleton height={25} colorMode="light" width={'70%'}>
+                                            {loading ? null : <Text style={{fontFamily:"Poppins-Regular",marginTop:-5}}>{item?.text|| 'Loading'}</Text>    }
+                                        
                                         </Skeleton>
                                     </View>
                                 </View>
                                 <View style={{marginLeft:20}}>
                                     <Text style={{fontFamily:"Poppins-Light"}}>Tue. 15:30</Text>
                                 </View>
-                            </Skeleton.Group>
                         </TouchableOpacity>
                         )
                 }}/>
