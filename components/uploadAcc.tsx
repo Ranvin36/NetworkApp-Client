@@ -1,11 +1,11 @@
-import { View,Text,TouchableOpacity, StyleSheet,Dimensions } from "react-native"
+import { View,Text,TouchableOpacity, StyleSheet,Dimensions, ActivityIndicator } from "react-native"
 import { Ionicons,AntDesign } from "@expo/vector-icons"
 
-function UploadAcc({uploadPost,selectImage,placeholder}){
+function UploadAcc({uploadPost,selectImage,placeholder,loading}){
     return(
         <View style={{flexDirection:"row",alignItems:"center",alignSelf:"center",marginVertical:15}}>
             <TouchableOpacity style={styles.uploadButton} onPress={uploadPost}>
-                    <Text style={{fontFamily:"Poppins-Bold",color:"#fff"}}>{placeholder}</Text>
+                    {loading ?  <ActivityIndicator color="#fff"/> : <Text style={{fontFamily:"Poppins-Bold",color:"#fff"}}>{placeholder}</Text>}
             </TouchableOpacity>
             <TouchableOpacity style={styles.uploadIcons} onPress={selectImage}>
                 <Ionicons name="image-outline" size={24} color="black" />            

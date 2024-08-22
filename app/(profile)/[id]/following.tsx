@@ -31,9 +31,14 @@ export default function Page(){
             <View style={styles.container}>
               {followerData && followerData.length > 0  ?            
                 <FlatList  data={followerData} renderItem={({item}) =>{
-                      return(
-                        <FollowerLayout data={item.following}/>
-                      )
+                  if(item.following && item.following.length>0){
+                    return(
+                      <FollowerLayout data={item.following}/>
+                    )
+                  }
+                  else{
+                    return null
+                  }
                 }}/>
                               :
                   <View style={{alignItems:"center",justifyContent:"center",height:"90%"}}>

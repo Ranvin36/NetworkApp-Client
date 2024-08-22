@@ -9,6 +9,7 @@ import * as Haptics from "expo-haptics"
 import Animated,{ useSharedValue,withSpring,useDerivedValue,useAnimatedStyle,useAnimatedReaction,runOnJS} from "react-native-reanimated"
 import { Gesture,GestureDetector} from "react-native-gesture-handler"
 import { router } from "expo-router"
+import { AntDesign,Entypo,MaterialIcons,MaterialCommunityIcons } from "@expo/vector-icons"
 
 function SearchPosts({searchParam}){
     const user = useSelector((state:rootStore)=>state.user.user)
@@ -20,37 +21,28 @@ function SearchPosts({searchParam}){
     const [activateBottomPost, setActiveBottomPost] = useState(0)
     const  [activeComments, setActiveComments] = useState([])
     const [isSheetOpened, setIsSheetOpened] = useState(false)
-    const [bottomSheetOpened, setBottomSheetOpened] = useState(true)
-    const translateY = useSharedValue(0)
+    const [bottomSheetOpened, setBottomSheetOpened] = useState(false)
+    const [sheetOpened,setSheetOpened] = useState(false)
     const offSet = useSharedValue(0)
     const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
+    const translateY = useSharedValue(SCREEN_HEIGHT)
     const context = useSharedValue(0)
     const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 3)
     const isBottomSheetOpened = useDerivedValue(() => offSet.value == 0 )
 
     const SheetGesture = Gesture.Pan().onStart((event) =>{
-        context.value = offSet.value
+        context.value = event.translationY
     }).onUpdate((event) =>{
-        offSet.value = event.translationY + context.value
-        offSet.value = Math.max(offSet.value , -SCREEN_HEIGHT/10)
+        translateY.value = event.translationY + context.value
+        translateY.value = Math.max(translateY.value , -SCREEN_HEIGHT/30)  
     }).onEnd((event) =>{
-        if(offSet.value > -SCREEN_HEIGHT/30){
-            offSet.value=withSpring(SCREEN_HEIGHT , {damping:50})
+        if(translateY.value < SCREEN_HEIGHT/8){
+            translateY.value = withSpring(0, {damping:50})
         }
-        else if(offSet.value > -SCREEN_HEIGHT/20){
-            offSet.value=withSpring(0 , {damping:50})
-        }
-        if(offSet.value < -SCREEN_HEIGHT/30){
-            offSet.value=withSpring(0 , {damping:50})
+        else{
+            runOnJS(CloseBottomSheet)()
         }
     })
-
-    
-    useAnimatedReaction(() => isBottomSheetOpened.value,
-    (isOpen) =>{
-        runOnJS(setBottomSheetOpened)(isOpen)
-    }
-  )
 
 
     async function GetSearchPost(){
@@ -68,39 +60,31 @@ function SearchPosts({searchParam}){
         GetSearchPost()
     },[searchParam])
 
-    const toggleBottomSheet = async(id) =>{
-        setActivePost(id)
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-        if(isSheetOpened){
-            translateY.value = withSpring(0,{damping:50})
-        }
-        else{
-            translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
-            const findPosts = posts && posts.find((item) => item._id === id)
-            if(findPosts){
-                setActiveComments(findPosts.comments ? findPosts.comments : [])
-            }
-            else{
-                setActiveComments([])
-                return
-            }
-        }
-    }
-    function openBottomSheet(){
-        if(bottomSheetOpened){
-            offSet.value=withSpring(SCREEN_HEIGHT , {damping:50})
-        }
-        else{
-          offSet.value=withSpring(0 , {damping:50})
+    // const toggleBottomSheet = async(id) =>{
+    //     setActivePost(id)
+    //     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+    //     if(isSheetOpened){
+    //         translateY.value = withSpring(0,{damping:50})
+    //     }
+    //     else{
+    //         translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
+    //         const findPosts = posts && posts.find((item) => item._id === id)
+    //         if(findPosts){
+    //             setActiveComments(findPosts.comments ? findPosts.comments : [])
+    //         }
+    //         else{
+    //             setActiveComments([])
+    //             return
+    //         }
+    //     }
+    // }
     
-        }    
-      }
-    
-      const animateBottomSheet = useAnimatedStyle(() =>{
+      const sheetStyle = useAnimatedStyle(() =>{
         return{
-          transform: [{translateY:offSet.value}]
+            transform:[{translateY:translateY.value}]
         }
-      })
+    })
+
 
     async function CreateComment(){
         const data = {"message":comment}
@@ -171,43 +155,57 @@ function SearchPosts({searchParam}){
             GetFollowers()
         },[])
 
-        useEffect(() =>{
-            offSet.value=withSpring(SCREEN_HEIGHT , {damping:50})
-
-        },[])
+        function CloseBottomSheet(){
+            setSheetOpened(false)
+            translateY.value = withSpring(SCREEN_HEIGHT, {damping:50})
+        }
+    
+        function OpenBottomSheet(){
+            setSheetOpened(true)
+            translateY.value = withSpring(-200, {damping:50})
+        }
 
     return(
         <View>
+            <TouchableOpacity onPress={() =>CloseBottomSheet()} style={{backgroundColor:"#000",display:sheetOpened ?"flex" : "none",width:'100%',height:Dimensions.get('window').height,opacity:0.5,position:"absolute",left:0,top:0,zIndex:1}}></TouchableOpacity>
             <FlatList data={postData} renderItem={({item}) => {
                 return(
-                    <View>
-                        <PostComponent item={item} LikePost={LikePost} unlikePost={unlikePost} follows={follows} FollowUser={FollowUser} UnFollowUser={UnFollowUser} toggleBottomSheet={toggleBottomSheet} openBottomSheet={openBottomSheet} setActiveBottomPost={setActiveBottomPost}/> 
+                    <View style={{paddingHorizontal:25}}>
+                        <PostComponent item={item} LikePost={LikePost} unlikePost={unlikePost} follows={follows} FollowUser={FollowUser} UnFollowUser={UnFollowUser} openBottomSheet={OpenBottomSheet} setActiveBottomPost={setActiveBottomPost}/> 
 
                     </View>
                 )
             }}/>
-            <GestureDetector gesture={SheetGesture}>
-              <Animated.View style={[styles.bottomSheet,animateBottomSheet]}>
-                        <View style={{width:30,borderRadius:20,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:20}}></View>
-                        <View style={styles.bottomSheetLayout}>
-                          <TouchableOpacity style={styles.textWrap} onPress={() => router.push({pathname:`/editPost/${activateBottomPost}` ,params:{id:activateBottomPost}})}>
-                            <Text style={styles.bottomSheetText}>Edit</Text>
-                          </TouchableOpacity>
-                          <View style={styles.textWrap}>
-                            <Text style={styles.bottomSheetText}>Block</Text>
-                          </View>
-                          <View style={styles.textWrap}>
-                            <Text style={styles.bottomSheetText}>Profile Activity</Text>
-                          </View>
-                          <View style={styles.textWrap}>
-                            <Text style={styles.bottomSheetText}>Save Profile</Text>
-                          </View>
-                          <View style={styles.textWrap}>
-                            <Text style={styles.bottomSheetText}>Enable Notifications From This Account</Text>
-                          </View>
+                 <GestureDetector gesture={SheetGesture}>
+                    <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:"#fff",zIndex:2,borderRadius:10,width:"90%",bottom:10,alignSelf:"center"}]}>
+                        <View style={{width:15,borderRadius:50,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:10}}></View>
+                        <View style={{paddingHorizontal:20,paddingVertical:15}}>
+                            <View style={{marginVertical:10,flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
+                                <Text style={{fontFamily:"Poppins-Bold",fontSize:20}}>Ranvin Wick</Text>
+                                <TouchableOpacity onPress={CloseBottomSheet}>
+                                    <AntDesign name="closecircleo" size={20} color="black" />
+                                </TouchableOpacity>
+                            </View>
+                            <TouchableOpacity style={styles.sheetOption} onPress={() => router.push({pathname:`/viewProfile/${id}`,params:{id}})}>
+                                <Text style={styles.bottomSheetText}>View Profile</Text>
+                                <MaterialCommunityIcons name="face-man-outline" size={20} color="black" style={{marginBottom:3}}  />
+
+                            </TouchableOpacity>
+                            <View style={styles.sheetOption}>
+                                <Text style={styles.bottomSheetText}>Block</Text>
+                                <Entypo name="block" size={18} color="black" />
+                            </View>
+                            <View style={styles.sheetOption}>
+                                <Text style={styles.bottomSheetText}>Archive</Text>
+                                <Entypo name="archive" size={18} color="black" />
+                            </View>
+                            <View style={styles.sheetOption}>
+                                <Text style={styles.bottomSheetText}>Report</Text>
+                                <MaterialIcons name="report-gmailerrorred" size={20} color="black" />
+                            </View>
                         </View>
-              </Animated.View>
-      </GestureDetector>
+                    </Animated.View>
+                </GestureDetector>
 
         </View>
     )
@@ -237,5 +235,10 @@ const styles= StyleSheet.create({
       },
       textWrap:{
         marginVertical:6
-      }
+      },
+      sheetOption:{
+        marginVertical:2,
+        flexDirection:"row",
+        justifyContent:"space-between"
+    }
 })

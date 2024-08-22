@@ -1,5 +1,5 @@
 import { View,StyleSheet,Text,Image,TouchableOpacity, Dimensions } from "react-native"
-import { Ionicons,AntDesign,Feather,Entypo } from "@expo/vector-icons"
+import { Ionicons,AntDesign,Feather,Entypo,FontAwesome} from "@expo/vector-icons"
 import { Colors } from "@/constants/Colors"
 import { Video,ResizeMode } from "expo-av"
 import * as Haptics from "expo-haptics"
@@ -8,16 +8,16 @@ import { useSelector } from "react-redux"
 import { rootStore } from "@/app/redux/store"
 
 const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
-function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActiveBottomPost}){
+function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActiveBottomPost,AddBookmark}){
     const user = useSelector((state:rootStore) => state.user.user)
     const creatorImage = item.creator[0].profilePicture
     const imgUrl = item.image
     const videoUrl = item.video
     const like = item.likes
     const comments  = item.comments
+    const ifBookmarked = item.bookmarks && item.bookmarks.filter((post) => post.toString() == user.data._id) 
     const ifFollowing = follows && follows.filter((followItem) => followItem?.following[0]?._id == item.creator[0]?.creator_id)
     const ifLiked = like && like.filter((liked) => liked == user.data._id)
-
     function ViewProfile(id){
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
@@ -63,7 +63,7 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
         </View>
         {imgUrl ?                             
                 <View>
-                    <Image source={{uri :imgUrl}} style={{height:300,borderRadius:20}}/>
+                    <Image source={{uri :imgUrl}} style={{height:300,width:"100%",borderRadius:20}}/>
                 </View>
                 :
                 <Video source={{uri:videoUrl}}  
@@ -99,9 +99,13 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
                     <Feather name="send" size={24} color="black" />
                 </TouchableOpacity>
             </View>
-            <View>
-                <Feather name="bookmark" size={24} color="black" />
-            </View>
+            <TouchableOpacity onPress={()=>ifBookmarked.length>0 ? null : AddBookmark(item._id)}>
+                {ifBookmarked.length>0 ?
+                <FontAwesome name="bookmark" size={24} color={Colors.light.text} />    
+                :
+                <Feather name="bookmark" size={24} color="#000" />
+            }
+            </TouchableOpacity>
         </View>
     </View>
     )

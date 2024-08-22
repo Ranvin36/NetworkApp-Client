@@ -159,7 +159,7 @@ export default function Page(){
                                     )
                                 }}/>
                             </View>
-                            <View style={styles.contentLayout}>
+                            <View style={[styles.contentLayout,{paddingHorizontal:0}]}>
                           
                                 <SearchPosts searchParam={searchText}/>
                                 

@@ -1,7 +1,7 @@
 import { router } from "expo-router"
 import { View,Image,Text, StyleSheet , TouchableOpacity} from "react-native"
 
-function ChatLayoutComponent({item}){
+function ChatLayoutComponent({item,lastMessage}){
     const userId = item[0].userId[0]
 
     return(
@@ -18,7 +18,7 @@ function ChatLayoutComponent({item}){
                 }
                 <View style={{marginHorizontal:10}}>
                     <Text style={{fontFamily:"Poppins-Bold"}}>{item[0].username}</Text>
-                    <Text style={{fontFamily:"Poppins-Light",marginTop:-5}}>Heys</Text>
+                    <Text style={{fontFamily:"Poppins-Light",marginTop:-5}}>{lastMessage}</Text>
                 </View>
             </View>
             <View>

@@ -28,6 +28,7 @@ import { Entypo } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { Ionicons,EvilIcons } from '@expo/vector-icons';
 import StoriesComp from "@/components/storiesComp";
+import { ConnectionState } from "realm";
 
 const {height : SCREEN_HEIGHT , width : SCREEN_WIDTH} = Dimensions.get('window')
 export default function Home(){
@@ -137,15 +138,33 @@ export default function Home(){
     }
 
     async function HandleLikePost(uid:number){
-        await LikePost(uid,user,dummyData,setDummyData)
+        console.log("INSIDE")
+        const data = {"postId":uid , "userId":user.user.data._id}
+        socket.emit("likePost",data)
+        // await LikePost(uid,user,dummyData,setDummyData)
     }
     
     async function HandleUnLikePost(uid:number){
         await UnlikePost(uid,user,dummyData,setDummyData)
     }
+
+    async function AddBookmark(uid:number){
+        console.log(uid)
+        const response = await axios.post(`http://${ipAddress}:3001/posts/bookmark/create/${uid}`,null,{
+            headers:{
+                Authorization : `Bearer ${user.user.token}`
+            }
+        })
+        console.log(response.data)
+    }
     
     async function HandleCreateComment(){
-        await CreateComment(activePost,user,comment)
+        const data = {"message":comment}
+        const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
+            headers:{
+                Authorization: `Bearer ${user.user.token}`
+            }
+        })
     }
 
     const GetFollowers = useCallback(async () =>{
@@ -256,8 +275,16 @@ export default function Home(){
         useEffect(()=>{
             getPosts()
         },[dummyData])
-    
-
+        useEffect(() =>{
+            socket.on("receivePost" , (data) =>{
+                setPosts((prev) => prev.map((item) => item._id == data.postId ?{ 
+                ...item ,
+                likes:item.likes ? [...item.likes,data.userId] :[data.userId]} : item) )
+            })
+            return () =>{
+                socket.off("receivePost")
+            }
+        },[])
 
     return(
         <View>
@@ -316,7 +343,7 @@ export default function Home(){
             <View style={styles.postsContainer}>
                 <FlatList data={posts} showsVerticalScrollIndicator={false} renderItem={({item}) =>{
                         return(
-                         <PostComponent  item={item} follows={follows} UnFollowUser={HandleUnfollowUser} FollowUser={HandleFollowUser} unlikePost={HandleUnLikePost} LikePost={HandleLikePost} toggleBottomSheet={toggleBottomSheet}/>
+                         <PostComponent  item={item} follows={follows} UnFollowUser={HandleUnfollowUser} FollowUser={HandleFollowUser} unlikePost={HandleUnLikePost} LikePost={HandleLikePost} toggleBottomSheet={toggleBottomSheet} AddBookmark={AddBookmark}/>
                         )
                 }}/>
                 {contentLoading 

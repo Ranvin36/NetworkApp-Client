@@ -1,7 +1,7 @@
 import BackArrow from "@/components/backArrow"
 import {View,Text, StyleSheet, TextInput, TouchableOpacity, Image,ScrollView, Pressable, Dimensions} from "react-native"
 import * as ImagePicker from 'expo-image-picker'
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { ipAddress } from "@/constants/ipAddress";
 import { useSelector } from "react-redux";
@@ -17,17 +17,21 @@ import CreatePostHeader from "@/components/createPostHeader";
 import PostPreview from "@/components/postPreview";
 import DescriptionBox from "@/components/descriptionBox";
 import UploadAcc from "@/components/uploadAcc";
+import UploadReel from "@/components/UploadReel";
 import { categiores } from "@/components/createCategories";
 
 
 function Add(){
+    const {width:SCREEN_WIDTH,height:SCREEN_HEIGHT} = Dimensions.get('window')
     const [image,setImage]  = useState([])
     const [text,setText] = useState('')
     const [description,setDescription] = useState('')
     const [selected,setSelected] = useState(0)
     const [selectedTab,setSelectedTab] = useState(0)
+    const [loading,setLoading] = useState(false)
     const user = useSelector((state:rootStore) => state.user.user)
     const backgroundPosition = useSharedValue(15)
+    const scrollRef = useRef()
     const buttons = [{title:"Upload"},{title:"Camera"}]
     const [facing,setFacing] = useState('back')
     const  itemWidth = Dimensions.get('window').width /2
@@ -54,17 +58,14 @@ function Add(){
                      type: pickImage.assets[0].mimeType || 'image/jpeg'
                 })
             }
+            console.log(pickImage.assets)
         }
     }
 
     async function uploadPost(){
-        console.log("UPLOAD")
+        setLoading(true)
         const data = new FormData()
-        data.append('image',{
-            uri: image.uri,
-            name: image.name,
-            type: image.type
-        })
+        data.append('image',{uri: image.uri,name: image.name,type: image.type})
         data.append('text',text)
         data.append('description',description)
         console.log(data)
@@ -74,7 +75,27 @@ function Add(){
                 Authorization:`Bearer ${user.token}`
             }
         })
+        setLoading(false)
+        setImage([])
+        setDescription("")
         router.push("/home")
+    }
+    
+    async function uploadReel(){
+        setLoading(true)
+        const data = new FormData()
+        data.append('image',{uri: image.uri,name: image.name,type: image.type})
+        data.append('text',text) 
+        const response = await axios.post(`http://${ipAddress}:3001/posts/create-reel`,data,{
+            headers:{
+                'Content-Type': 'multipart/form-data',
+                Authorization:`Bearer ${user.token}`
+            }
+        })
+        setLoading(false)
+        setImage([])
+        setDescription("")
+        console.log(response.data)
     }
 
     const leftVal = useAnimatedStyle(()=>{
@@ -97,6 +118,13 @@ function Add(){
             left: withTiming(itemWidth/categiores.length  * selectedTab +25)
         }
     })
+
+    function TabClick(index:number){
+        setSelectedTab(index)
+        scrollRef.current.scrollTo({
+            x:SCREEN_WIDTH * index
+        })
+    }
 
 
     return(
@@ -123,7 +151,7 @@ function Add(){
                     <Animated.View style={[{backgroundColor:Colors.light.text,width:200/7,justifyContent:"center",height:3,borderRadius:50,position:"absolute",bottom:-5},lineStyle]}/>
                     {categiores && categiores.map((item,index) =>{
                         return(
-                            <TouchableOpacity style={{width:itemWidth/categiores.length , alignItems:"center",justifyContent:"center"}} onPress={() =>setSelectedTab(index)}>
+                            <TouchableOpacity style={{width:itemWidth/categiores.length , alignItems:"center",justifyContent:"center"}} onPress={() =>TabClick(index)}>
                                 <Text style={{fontFamily:"Poppins-Light"}}>{item}</Text>
                             </TouchableOpacity>
                         )
@@ -131,19 +159,56 @@ function Add(){
                 </View>
 
                 <CreatePostHeader user={user.data}/>
+                <ScrollView 
+                ref={scrollRef} 
+                horizontal 
+                onMomentumScrollEnd={(event) =>{
+                    const index = Math.round(event.nativeEvent.contentOffset.x)
+                    setSelectedTab(index/SCREEN_WIDTH)
+                }}
+                pagingEnabled>
+                    <View style={{width:Dimensions.get('window').width}}>
+                        <View style={{justifyContent:"space-between",height:Dimensions.get('window').height-350}}>
+                                    <View>
+                                        <DescriptionBox onChange={setText} text={text}/>
+                        
+                                    </View>
+                                    <View style={{paddingHorizontal:27}}>
+                                        <Text style={{fontFamily:"Poppins-Bold"}}>Preview</Text>
+                                    </View>
+                                    <PostPreview user={user.data} image={image} text={text} setImage={setImage}/>
+                                    <UploadAcc uploadPost={uploadPost} selectImage={selectImage} placeholder="Upload Post" loading={loading}/>
+                         </View>
+                    </View>
+                    <View style={{width:Dimensions.get('window').width}}>
+                        <View style={{justifyContent:"space-between",height:Dimensions.get('window').height-350}}>
+                                    <View>
+                                        <DescriptionBox onChange={setText} text={text}/>
+                        
+                                    </View>
+                                    <View style={{paddingHorizontal:27}}>
+                                        <Text style={{fontFamily:"Poppins-Bold"}}>Preview</Text>
+                                    </View>
+                                    {/* <PostPreview user={user.data} image={image} text={text} setImage={setImage}/> */}
+                                    <UploadReel user={user.data} image={image} text={text} setImage={setImage}/>
+                                    <UploadAcc uploadPost={uploadReel} selectImage={selectImage} placeholder="Upload Reel"  loading={loading}/>
+                         </View>
+                    </View>
+                    <View style={{width:Dimensions.get('window').width}}>
+                        <View style={{justifyContent:"space-between",height:Dimensions.get('window').height-350}}>
+                                    <View>
+                                        <DescriptionBox onChange={setText} text={text}/>
+                        
+                                    </View>
+                                    <View style={{paddingHorizontal:27}}>
+                                        <Text style={{fontFamily:"Poppins-Bold"}}>Preview</Text>
+                                    </View>
+                                    <PostPreview user={user.data} image={image} text={text} setImage={setImage}/>
+                                    <UploadAcc uploadPost={uploadPost} selectImage={selectImage} placeholder="Upload Snap" loading={loading} />
+                         </View>
+                    </View>
+                </ScrollView>
 
-
-                <View style={{justifyContent:"space-between",height:Dimensions.get('window').height-350}}>
-                            <View>
-                                <DescriptionBox onChange={setText} text={text}/>
-                
-                            </View>
-                            <View style={{paddingHorizontal:27}}>
-                                <Text style={{fontFamily:"Poppins-Bold"}}>Preview</Text>
-                            </View>
-                            <PostPreview user={user.data} image={image} text={text} setImage={setImage}/>
-                            <UploadAcc uploadPost={uploadPost} selectImage={selectImage} placeholder="Upload Post"/>
-            </View>
                 </View>
                         :
                 <CameraView facing={facing} style={{width:Dimensions.get('window').width,height:Dimensions.get('window').height}}>

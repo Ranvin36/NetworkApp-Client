@@ -5,7 +5,7 @@ function FollowerLayout({data}){
     return(
         <View style={{flexDirection:"row",alignItems:'center',marginVertical:10}}>
                   <View>
-                    {data[0].profilePicture ?
+                    {data && data.length > 0 && data[0].profilePicture.length>0 && data[0].profilePicture ?
                     <Image source={{uri:data[0].profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
                               :
                     <Image source={require("../assets/images/model.jpg")} style={{width:50,height:50,borderRadius:50}}/>

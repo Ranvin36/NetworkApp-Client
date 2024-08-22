@@ -35,14 +35,21 @@ export default function Page() {
                 <FlatList
                     data={followerData}
                     renderItem={({ item }) => {
-                            return <FollowerLayout data={item.followers} />;
+                        if(item.followers && item.followers.length>0){
+                            return(
+                              <FollowerLayout data={item.followers}/>
+                            )
+                          }
+                          else{
+                            return(
+                                <View style={{ alignItems: "center", justifyContent: "center", height: "90%" }}>
+                                    <Text style={{ fontFamily: "Poppins-Regular", fontSize: 18 }}>No Followers</Text>
+                                </View>
+                            )
+                          }
                     }}
                 />
-             : (
-                <View style={{ alignItems: "center", justifyContent: "center", height: "90%" }}>
-                    <Text style={{ fontFamily: "Poppins-Regular", fontSize: 18 }}>No Following</Text>
-                </View>
-            )}
+             : null}
         </View>
     );
 }

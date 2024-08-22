@@ -40,6 +40,8 @@ function Chats(){
         setChatData(response.data.findChats)
     }
 
+    console.log(chatData)
+
 
     async function selectChat(id:number){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
@@ -100,7 +102,7 @@ function Chats(){
                                             const receiverId  = item.receiverData[0].userId
                                             return(
                                                 <TouchableOpacity style={[isSeleceted.length>0 ? styles.chatContainer : null,{marginVertical:5,marginHorizontal:10,paddingHorizontal:10}]} onLongPress={() =>selectChat(item._id)} onPress={() => router.push({pathname:`chatRoom/${receiverId}` , params:{id:receiverId}})}>
-                                                    <ChatLayoutComponent item={item.receiverData}/>
+                                                    <ChatLayoutComponent item={item.receiverData} lastMessage={item.lastMessage}/>
                                                 </TouchableOpacity>
                                             )
                                         }                                        
@@ -108,7 +110,7 @@ function Chats(){
                                             const creatorId  = item.creatorData[0].userId
                                             return(
                                                 <TouchableOpacity onLongPress={() => selectChat(item._id)} onPress={() => router.push({pathname:`chatRoom/${creatorId}` , params:{id:creatorId}})}>
-                                                    <ChatLayoutComponent item={item.creatorData}/>
+                                                    <ChatLayoutComponent item={item.creatorData} lastMessage={item.lastMessage}/>
                                                 </TouchableOpacity>
                                             )
                                         }

@@ -1,15 +1,22 @@
 import axios from "axios"
 import * as Haptics from "expo-haptics"
 import { ipAddress } from "@/constants/ipAddress"
+import RefreshToken from "../RefreshToken"
 
 export async function LikePost(uid,user,dummyData,setDummyData){
-    const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
-        headers:{
-            Authorization:`Bearer ${user.user.token}`
-        }
-    })
-    console.log(response.data)
-    setDummyData((prevData:any) => [...prevData, `Item ${dummyData.length+1}`]) 
+    try{
+        const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
+            headers:{
+                Authorization:`Bearer ${user.user.token}`
+            }
+        })
+        console.log(response.data)
+        setDummyData((prevData:any) => [...prevData, `Item ${dummyData.length+1}`]) 
+    }
+    catch(error){
+        console.log(user.user.data.refreshToken , "REFRESH")
+        // RefreshToken(user.user.data.refreshToken)
+    }
 }
 
 
@@ -50,6 +57,7 @@ export async function FollowUser(uid:number,user,setFollowCount){
 
 export async function CreateComment(activePost:number,comment,user){
     const data = {"message":comment}
+    console.log(user.user.token)
     const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
         headers:{
             Authorization: `Bearer ${user.user.token}`

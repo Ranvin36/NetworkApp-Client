@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, Dimensions, Image, Pressable, TouchableOpacity 
 import { Video, ResizeMode } from "expo-av";
 import React, { useEffect, useRef, useState } from "react";
 import { AntDesign, MaterialCommunityIcons, Feather, Entypo } from '@expo/vector-icons';
+import ReelUploader from "./ReelUploader";
 
 const VideoScroll = React.memo(({ item, shouldPlay }) => {
   const video = useRef<Video | null>(null);
@@ -34,11 +35,7 @@ const VideoScroll = React.memo(({ item, shouldPlay }) => {
           </TouchableOpacity>
         </View>
       )}
-      <View style={styles.infoContainer}>
-        <Image source={require("../assets/images/model.jpg")} style={styles.image} />
-        <Text style={styles.title}>Motion Rades</Text>
-        <Text style={styles.subtitle}>4 Years Ago!!</Text>
-      </View>
+      <ReelUploader/>
       <View style={styles.iconContainer}>
         <TouchableOpacity style={styles.iconActions}>
           <AntDesign name="hearto" size={31} color="#fff" />
@@ -59,7 +56,7 @@ const VideoScroll = React.memo(({ item, shouldPlay }) => {
       </View>
       <Video
         ref={video}
-        source={{uri : item}}
+        source={{uri : item.media}}
         style={styles.videos}
         resizeMode={ResizeMode.COVER}
         isLooping

@@ -13,8 +13,7 @@ import moment from "moment"
 import Modal from "@/components/Modal";
 import {Entypo,MaterialCommunityIcons,AntDesign} from '@expo/vector-icons';
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated,{ useAnimatedStyle, useSharedValue, withDelay, withSpring } from "react-native-reanimated";
-import { openBrowserAsync } from "expo-web-browser";
+import Animated,{ useAnimatedStyle, useSharedValue, withDelay, withSpring,useDerivedValue,runOnJS } from "react-native-reanimated";
 
 
 function ChatRoom(){
@@ -43,8 +42,7 @@ function ChatRoom(){
             translateY.value = withSpring(0, {damping:50})
         }
         else{
-            console.log("INSIDE")
-            translateY.value = withSpring(SCREEN_HEIGHT, {damping:50})
+            runOnJS(CloseBottomSheet)()
         }
     })
 
@@ -229,11 +227,11 @@ function ChatRoom(){
                                     <AntDesign name="closecircleo" size={20} color="black" />
                                 </TouchableOpacity>
                             </View>
-                            <View style={styles.sheetOption}>
+                            <TouchableOpacity style={styles.sheetOption} onPress={() => router.push({pathname:`/viewProfile/${id}`,params:{id}})}>
                                 <Text style={styles.bottomSheetText}>View Profile</Text>
                                 <MaterialCommunityIcons name="face-man-outline" size={20} color="black" style={{marginBottom:3}}  />
 
-                            </View>
+                            </TouchableOpacity>
                             <View style={styles.sheetOption}>
                                 <Text style={styles.bottomSheetText}>Block</Text>
                                 <Entypo name="block" size={18} color="black" />
