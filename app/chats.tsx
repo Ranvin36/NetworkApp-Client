@@ -13,6 +13,7 @@ import * as Haptics from "expo-haptics"
 import { router } from "expo-router";
 import {AntDesign,Entypo,Feather} from '@expo/vector-icons';
 import SelectedOptions from "@/components/SelectedOptions";
+import { Colors } from "@/constants/Colors";
 
 function Chats(){
     const socket = io(`http://${ipAddress}:3001`)
@@ -82,14 +83,14 @@ function Chats(){
             </>
                 :
             <View style={{marginHorizontal:20}}>
-                <Text style={{fontFamily:"Poppins-Bold",fontSize:25}}>Chats</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:25}]}>Chats</Text>
             </View>
             }
             <View style={styles.searchContainer}>
                 <View style={{marginRight:3,marginTop:7}}>
-                    <EvilIcons name="search" size={24} color="black" />
+                    <EvilIcons name="search" size={24} color={Colors.theme.fontColor} />
                 </View>
-                <TextInput placeholder="Search Friends" style={{fontFamily:"Poppins-Light",width:"90%"}} onChangeText={(e)=>setSearchText(e)}/>
+                <TextInput placeholder="Search Friends" placeholderTextColor={Colors.theme.fontColor} style={[styles.textColor,{fontFamily:"Poppins-Light",width:"90%"}]} onChangeText={(e)=>setSearchText(e)}/>
             </View>
             <View style={{marginTop:5}}>
                 {chatData.length>0 ?
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
     container:{
         // paddingHorizontal:20,
         paddingVertical:45,
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.backgroundColor,
         height:"100%",width:Dimensions.get('window').width
     },
     chatsLayout:{
@@ -151,7 +152,8 @@ const styles = StyleSheet.create({
         borderRadius:10,
         paddingVertical:10
     },
-    searchContainer:{backgroundColor:"#f2f2f2",
+    searchContainer:{
+        backgroundColor:Colors.theme.backgroundTransparent,
         paddingHorizontal:13,
         marginHorizontal:15,
         paddingVertical:8,
@@ -161,5 +163,8 @@ const styles = StyleSheet.create({
         flexDirection:"row"},
     selectedIcons:{
         marginLeft:10
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

@@ -7,9 +7,8 @@ import { rootStore } from '@/app/redux/store';
 
 export default function TabBar({ state, descriptors, navigation }) {
   const navbarOpened = useSelector((state:rootStore) => state.navbar.navbar)
-  console.log("Navbar Opened",navbarOpened)
   return (
-    <View style={{ flexDirection: 'row',borderTopLeftRadius:30,paddingVertical:20,borderTopRightRadius:30,display:navbarOpened?"none" :"flex",zIndex:1,backgroundColor:"#fff",elevation:10,position:"absolute",bottom:0}}>
+    <View style={{ flexDirection: 'row',borderTopLeftRadius:30,paddingVertical:20,borderTopRightRadius:30,display:navbarOpened?"none" :"flex",zIndex:1,backgroundColor:Colors.theme.backgroundTransparent,elevation:10,position:"absolute",bottom:0}}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =

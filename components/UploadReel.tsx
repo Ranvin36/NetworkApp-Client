@@ -4,7 +4,7 @@ import ReelUploader from "./ReelUploader"
 function UploadReel({user,image,text,setImage}){
     return(
         <View style={styles.container}>
-          {image ? 
+          {image.uri ? 
             <Image source={{uri : image.uri}} style={{width:"100%",height:250,borderRadius:10}}/>
               :
             <Image source={require("../assets/images/user.jpg")} style={{width:"100%",height:250,borderRadius:10}}/>

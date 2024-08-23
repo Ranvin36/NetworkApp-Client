@@ -29,7 +29,6 @@ export default function Page(){
     async function GetSearchResults(){
         setLoading(true)
         const data = {"name":searchText}
-        console.log(data)
         const response = await axios.post(`http://${ipAddress}:3001/users/search-user`,data,{
             headers:{
                 Authorization: `Bearer ${user.token}`
@@ -68,10 +67,10 @@ export default function Page(){
     return(
         <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
             <View style={styles.search}>
-                <TextInput placeholder="Search A Friend" value={searchText} style={{borderWidth:0,fontFamily:'Poppins-Light',paddingVertical:10,minWidth:150}} onChangeText={(e) => ChangeText(e)}/>
+                <TextInput placeholder="Search A Friend" placeholderTextColor={Colors.theme.fontColor} value={searchText} style={[styles.textColor,{borderWidth:0,fontFamily:'Poppins-Light',paddingVertical:10,minWidth:150}]} onChangeText={(e) => ChangeText(e)}/>
                 {searchText.length>0 && 
                 <TouchableOpacity onPress={() =>setSearchText('')}>
-                    <AntDesign name="closecircleo" size={22} color="black" />
+                    <AntDesign name="closecircleo" size={22} color={Colors.theme.fontColor} />
                 </TouchableOpacity>}
             </View>
 
@@ -83,7 +82,7 @@ export default function Page(){
                         {tabs && tabs.map((item,index) =>{
                             return(
                                 <TouchableOpacity key={index} style={{width:itemWidth/tabs.length,justifyContent:"center",alignItems:"center"}} onPress={() =>TabClick(index)}>
-                                    <Text style={{fontFamily:"Poppins-Light"}}>{item}</Text>
+                                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>{item}</Text>
                                 </TouchableOpacity>
                             )
                         })}
@@ -121,7 +120,7 @@ export default function Page(){
                                             <View style={{marginHorizontal:10}}>
                                                 <Skeleton colorMode="light" height={20} width={150}>
                                                     {loading ? null :
-                                                    <Text style={{fontFamily:"Poppins-Light"}}>{item.username}</Text>
+                                                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>{item.username}</Text>
                                                     }
                                                 </Skeleton>
                                             </View>
@@ -151,7 +150,7 @@ export default function Page(){
                                             <View style={{marginHorizontal:10}}>
                                                 <Skeleton colorMode="light"  height={20} width={150}>
                                                     {loading ? null :
-                                                    <Text style={{fontFamily:"Poppins-Light"}}>{item.username}</Text>
+                                                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>{item.username}</Text>
                                                     }
                                                 </Skeleton>
                                             </View>
@@ -173,23 +172,23 @@ export default function Page(){
 
                         <>                        
                         <View style={styles.popularSearch}>
-                                <Text style={{fontFamily:"Poppins-Bold",fontSize:17}}>Trending Search</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:17}]}>Trending Search</Text>
                             {search.map((item,index)=>{
                                 return(
                                     <View style={styles.searchText} key={index}>
-                                            <AntDesign name="search1" size={22} color="black" />           
-                                            <Text style={{fontFamily:"Poppins-Regular",marginLeft:13}}>{item.text}</Text>
+                                            <AntDesign name="search1" size={22} color={Colors.theme.fontColor} />           
+                                            <Text style={[styles.textColor,{fontFamily:"Poppins-Regular",marginLeft:13}]}>{item.text}</Text>
                                     </View>
                                 )
                             })}
                             </View>
                         <View style={styles.popularSearch}>
-                                <Text style={{fontFamily:"Poppins-Bold",fontSize:17}}>People You May Know</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:17}]}>People You May Know</Text>
                             {search.slice(0,4).map((item,index)=>{
                                 return(
                                     <View style={[{alignItems:"center"},styles.searchText]} key={index}>
                                             <Image source={require("../../assets/images/model.jpg")} style={{width:50,height:50,borderRadius:5}}/>   
-                                            <Text style={{fontFamily:"Poppins-Regular",marginLeft:13}}>Ranvin Wickramasinghe</Text>
+                                            <Text style={[styles.textColor,{fontFamily:"Poppins-Regular",marginLeft:13}]}>Ranvin Wickramasinghe</Text>
                                     </View>
                                 )
                             })}
@@ -206,7 +205,7 @@ const styles = StyleSheet.create({
     container:{
         paddingVertical:55,
         width:Dimensions.get('window').width,
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.backgroundColor,
         height:"100%"
     },
     tabLayout:{
@@ -221,6 +220,7 @@ const styles = StyleSheet.create({
         paddingHorizontal:20,
         marginHorizontal:20,
         justifyContent:"space-between",
+        backgroundColor:Colors.theme.backgroundTransparent,
         flexDirection:"row",
         alignItems:"center"
     },
@@ -234,7 +234,9 @@ const styles = StyleSheet.create({
     },
     tabContent:{
     },
-
+    textColor:{
+        color:Colors.theme.fontColor
+    },
     contentLayout:{
         width:Dimensions.get('window').width,
         height:Dimensions.get('window').height,

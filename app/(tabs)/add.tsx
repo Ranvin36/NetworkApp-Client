@@ -146,13 +146,13 @@ function Add(){
                         </View> */}
             {selected==0 ?
                 <View style={styles.container}>
-                <Text style={{fontFamily:"Poppins-Bold",fontSize:23,paddingHorizontal:25}}>Create {categiores[selectedTab]}</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:23,paddingHorizontal:25}]}>Create {categiores[selectedTab]}</Text>
                 <View style={styles.tabs}>
                     <Animated.View style={[{backgroundColor:Colors.light.text,width:200/7,justifyContent:"center",height:3,borderRadius:50,position:"absolute",bottom:-5},lineStyle]}/>
                     {categiores && categiores.map((item,index) =>{
                         return(
                             <TouchableOpacity style={{width:itemWidth/categiores.length , alignItems:"center",justifyContent:"center"}} onPress={() =>TabClick(index)}>
-                                <Text style={{fontFamily:"Poppins-Light"}}>{item}</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>{item}</Text>
                             </TouchableOpacity>
                         )
                     })}
@@ -174,7 +174,7 @@ function Add(){
                         
                                     </View>
                                     <View style={{paddingHorizontal:27}}>
-                                        <Text style={{fontFamily:"Poppins-Bold"}}>Preview</Text>
+                                        <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>Preview</Text>
                                     </View>
                                     <PostPreview user={user.data} image={image} text={text} setImage={setImage}/>
                                     <UploadAcc uploadPost={uploadPost} selectImage={selectImage} placeholder="Upload Post" loading={loading}/>
@@ -187,7 +187,7 @@ function Add(){
                         
                                     </View>
                                     <View style={{paddingHorizontal:27}}>
-                                        <Text style={{fontFamily:"Poppins-Bold"}}>Preview</Text>
+                                        <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>Preview</Text>
                                     </View>
                                     {/* <PostPreview user={user.data} image={image} text={text} setImage={setImage}/> */}
                                     <UploadReel user={user.data} image={image} text={text} setImage={setImage}/>
@@ -201,7 +201,7 @@ function Add(){
                         
                                     </View>
                                     <View style={{paddingHorizontal:27}}>
-                                        <Text style={{fontFamily:"Poppins-Bold"}}>Preview</Text>
+                                        <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>Preview</Text>
                                     </View>
                                     <PostPreview user={user.data} image={image} text={text} setImage={setImage}/>
                                     <UploadAcc uploadPost={uploadPost} selectImage={selectImage} placeholder="Upload Snap" loading={loading} />
@@ -239,7 +239,8 @@ export default Add
 const styles = StyleSheet.create({
     container:{
         paddingVertical:40,
-        height:Dimensions.get('window').height
+        height:Dimensions.get('window').height,
+        backgroundColor:Colors.theme.backgroundColor
     },
     userAccount:{
         marginTop:20,
@@ -308,6 +309,9 @@ const styles = StyleSheet.create({
         position:"relative",  
         marginVertical:10,
         paddingHorizontal:10,
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     },
     iconProps:{borderRadius:50,backgroundColor:Colors.light.text,padding:10,width:55,height:55,justifyContent:"center",alignItems:"center"}
 })

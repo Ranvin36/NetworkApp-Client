@@ -159,7 +159,7 @@ function ChatRoom(){
             <View style={styles.header}>
                 <View style={{flexDirection:"row",alignItems:"center"}}>
                     <TouchableOpacity style={{marginRight:5}} onPress={() => router.back()}>
-                        <MaterialIcons name="keyboard-arrow-left" size={27} color="black" />        
+                        <MaterialIcons name="keyboard-arrow-left" size={27} color={Colors.theme.fontColor} />        
                     </TouchableOpacity>
                     <View style={styles.details}>
                         {!chatUser.profilePicture ?                
@@ -172,12 +172,12 @@ function ChatRoom(){
                             </View>
                     }
                             <View style={{marginLeft:10}}>
-                                <Text style={{fontFamily:"Poppins-Bold",fontSize:14}}>{chatUser.username}</Text>
-                                <Text style={{fontFamily:"Poppins-Light", fontSize:12,marginTop:-5}}>Online</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:14}]}>{chatUser.username}</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Light", fontSize:12,marginTop:-5}]}>Online</Text>
                             </View>
                     </View>
                 </View>
-                <TouchableOpacity style={styles.selectOption} onPress={OpenBottomSheet}>
+                <TouchableOpacity style={[styles.selectOption]} onPress={OpenBottomSheet}>
                     <Entypo name="dots-two-vertical" size={24} color="black" />
                 </TouchableOpacity>
             </View>
@@ -197,7 +197,7 @@ function ChatRoom(){
                             <Text style={[styles.messageText , {color:item.senderId ==   user.data._id ? "#fff" :"#000"}]}>{item.message}</Text>
                         </View>
                         <View>
-                            <Text style={styles.messageText}>{`${formattedUpdatedAt}`}</Text>
+                            <Text style={[styles.textColor,styles.messageText]}>{`${formattedUpdatedAt}`}</Text>
                             
                         </View> 
                     </View>
@@ -205,9 +205,9 @@ function ChatRoom(){
                 )
             }}/>
            </View>
-                <View style={{backgroundColor:"#fff",width:"90%",height:55,padding:10,borderRadius:10,position:"absolute",bottom:30,flexDirection:"row",justifyContent:"space-between",alignItems:"center",alignSelf:"center"}}>
-                    <View style={{backgroundColor:"#fff",padding:5,borderRadius:5,width:"90%"}}>
-                        <TextInput value={textInput} placeholder="Message Here" style={{fontFamily:"Poppins-Light"}} onChangeText={(e) => setTextInput(e)} />
+                <View style={{backgroundColor:Colors.theme.backgroundTransparent,width:"90%",height:55,padding:10,borderRadius:10,position:"absolute",bottom:30,flexDirection:"row",justifyContent:"space-between",alignItems:"center",alignSelf:"center"}}>
+                    <View style={{padding:5,borderRadius:5,width:"90%"}}>
+                        <TextInput value={textInput} placeholder="Message Here" placeholderTextColor={Colors.theme.fontColor} style={{fontFamily:"Poppins-Light",color:Colors.theme.fontColor}} onChangeText={(e) => setTextInput(e)} />
                     </View>
                     <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:35,height:35,justifyContent:"center",alignItems:"center"}} onPress={SendMessage}>
                         {!sendingMessage ?
@@ -258,12 +258,13 @@ function ChatRoom(){
 const styles = StyleSheet.create({
     container:{
         height:"100%",
+        backgroundColor:Colors.theme.backgroundColor
     },
     header:{
         paddingHorizontal:15,
         paddingTop:45,
         paddingVertical:20,
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.backgroundTransparent,
         flexDirection:"row",
         alignItems:"center",
         justifyContent:"space-between"
@@ -292,7 +293,6 @@ const styles = StyleSheet.create({
     },
     messageText:{
         fontFamily:"Poppins-Light",
-        color:"#000",
         fontSize:13
     },
     messageBackground:{
@@ -311,6 +311,9 @@ const styles = StyleSheet.create({
         marginVertical:2,
         flexDirection:"row",
         justifyContent:"space-between"
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })
 

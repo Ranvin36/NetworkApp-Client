@@ -3,13 +3,14 @@ import { ipAddress } from "@/constants/ipAddress"
 import axios from "axios"
 import { useEffect, useRef, useState } from "react"
 import { View  , Dimensions, FlatList,Text, StyleSheet,TouchableOpacity} from "react-native"
-import { useSelector, UseSelector } from "react-redux"
+import { useDispatch, useSelector, UseSelector } from "react-redux"
 import PostComponent from "./postComponent"
 import * as Haptics from "expo-haptics"
 import Animated,{ useSharedValue,withSpring,useDerivedValue,useAnimatedStyle,useAnimatedReaction,runOnJS} from "react-native-reanimated"
 import { Gesture,GestureDetector} from "react-native-gesture-handler"
 import { router } from "expo-router"
 import { AntDesign,Entypo,MaterialIcons,MaterialCommunityIcons } from "@expo/vector-icons"
+import { setOpened } from "@/app/redux/navbarSlice"
 
 function SearchPosts({searchParam}){
     const user = useSelector((state:rootStore)=>state.user.user)
@@ -29,6 +30,7 @@ function SearchPosts({searchParam}){
     const context = useSharedValue(0)
     const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 3)
     const isBottomSheetOpened = useDerivedValue(() => offSet.value == 0 )
+    const dispatch = useDispatch()
 
     const SheetGesture = Gesture.Pan().onStart((event) =>{
         context.value = event.translationY
@@ -157,10 +159,12 @@ function SearchPosts({searchParam}){
 
         function CloseBottomSheet(){
             setSheetOpened(false)
+            dispatch(setOpened(false))
             translateY.value = withSpring(SCREEN_HEIGHT, {damping:50})
         }
     
         function OpenBottomSheet(){
+            dispatch(setOpened(true))
             setSheetOpened(true)
             translateY.value = withSpring(-200, {damping:50})
         }

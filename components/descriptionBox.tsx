@@ -1,9 +1,10 @@
+import { Colors } from "@/constants/Colors"
 import { View,TextInput, StyleSheet } from "react-native"
 function DescriptionBox({onChange,text}){
     return(
         <View style={styles.InputContainer}>
             <View style={styles.textInput}>
-                <TextInput style={[styles.input,{paddingBottom:40}]} placeholder="Description" value={text} multiline={true} onChangeText={(e)=>onChange(e)}/>
+                <TextInput style={[styles.input,{paddingBottom:40}]} placeholderTextColor={Colors.theme.fontColor} placeholder="Description" value={text} multiline={true} onChangeText={(e)=>onChange(e)}/>
             </View>
     </View>
     )
@@ -14,7 +15,7 @@ export default DescriptionBox
 
 const styles = StyleSheet.create({
     textInput:{
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.commentsBg,
         padding:13,
         borderRadius:10
     },
@@ -25,5 +26,6 @@ const styles = StyleSheet.create({
     input:{
         borderWidth:0,
         fontFamily:"Poppins-Light",
+        color:Colors.theme.fontColor
     },
 })

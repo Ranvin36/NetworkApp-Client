@@ -3,8 +3,9 @@ import { Feather } from '@expo/vector-icons';
 import SettingOptions from "@/components/settingsOption";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from "expo-router";
-function Settings(){
+import { Colors } from "@/constants/Colors";
 
+function Settings(){
     async function LogOut(){
         try{
             console.log("INSIe")
@@ -18,7 +19,7 @@ function Settings(){
 
     return(
         <View style={styles.container}>
-            <Text style={{fontFamily:"Poppins-Regular",fontSize:20}}>Settings & Privacy</Text>
+            <Text style={[styles.textColor,{fontFamily:"Poppins-Regular",fontSize:20}]}>Settings & Privacy</Text>
             <View style={styles.settingLayout}>
                     <Text style={{fontFamily:"Poppins-Bold",color:"#ccc"}}>Account Settings</Text>
                     <View style={styles.settingOptions}>
@@ -51,15 +52,20 @@ export default Settings
 const styles = StyleSheet.create({
     container:{
         paddingHorizontal:25,
-        paddingVertical:55
+        paddingVertical:55,
+        height:"100%",
+        backgroundColor: Colors.theme.backgroundColor
     },
     settingLayout:{
         marginVertical:10
     },
     settingOptions:{
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.commentsBg,
         padding:15,
         borderRadius:10,
         marginVertical:5
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

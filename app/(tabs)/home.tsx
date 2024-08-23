@@ -145,11 +145,11 @@ export default function Home(){
     }
     
     async function HandleUnLikePost(uid:number){
-        await UnlikePost(uid,user,dummyData,setDummyData)
+        const data = {"postId":uid , "userId":user.user.data._id}
+        socket.emit("unlikePost",data)
     }
 
     async function AddBookmark(uid:number){
-        console.log(uid)
         const response = await axios.post(`http://${ipAddress}:3001/posts/bookmark/create/${uid}`,null,{
             headers:{
                 Authorization : `Bearer ${user.user.token}`
@@ -275,7 +275,9 @@ export default function Home(){
         useEffect(()=>{
             getPosts()
         },[dummyData])
-        useEffect(() =>{
+
+
+ useEffect(() =>{
             socket.on("receivePost" , (data) =>{
                 setPosts((prev) => prev.map((item) => item._id == data.postId ?{ 
                 ...item ,
@@ -284,6 +286,24 @@ export default function Home(){
             return () =>{
                 socket.off("receivePost")
             }
+        },[])
+
+
+        useEffect(() => {
+            socket.on("receiveUnlikedPost" , (data) =>{
+                setPosts((prev) => prev.map((post) => post._id == data.postId?{
+                    ...post,
+                    likes:post.likes ? post.likes.filter((likes) => likes.toString() != data.userId) : null  
+
+                }:post))
+            })
+            return() =>{
+                socket.off("receiveUnlikedPost")
+            }
+        },[])
+
+        useEffect(() =>{
+
         },[])
 
     return(
@@ -306,10 +326,10 @@ export default function Home(){
             </TouchableOpacity>
             <View style={{flexDirection:"row"}}>
                 <TouchableOpacity style={styles.headerIcon} onPress={() => router.push("/liked")}> 
-                    <AntDesign name="hearto" size={20} color="black" />
+                    <AntDesign name="hearto" size={20} color={Colors.theme.fontColor} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.headerIcon} onPress={()=> router.push('/chats')}>
-                    <AntDesign name="message1" size={20} color="black" />   
+                    <AntDesign name="message1" size={20} color={Colors.theme.fontColor} />   
                 </TouchableOpacity>
             </View>
         </View>
@@ -384,7 +404,7 @@ export default function Home(){
                             <View style={styles.sheetLayout}>
                                 <View style={{flexDirection:"row",justifyContent:"center",alignItems:"center"}}>
                                     <View>
-                                        <Text style={{fontFamily:"Poppins-Light",fontSize:18}}>Comments</Text>
+                                        <Text style={{fontFamily:"Poppins-Light",fontSize:18,color:Colors.theme.fontColor}}>Comments</Text>
                                     </View>
                                 </View>
                                 <View style={{justifyContent:"space-between",flexDirection:"column"}}>
@@ -403,8 +423,8 @@ export default function Home(){
                                                         <Image source={require('../../assets/images/model.jpg')} style={{width:50,height:50, borderRadius:50}}/>
                                                     }
                                                         <View style={{marginHorizontal:5,height:20,justifyContent:"center"}}>
-                                                            <Text style={{fontFamily:"Poppins-Bold"}}>Motion Rades</Text>
-                                                            <Text style={{ fontFamily: "Poppins-Light" }}>{item.message}</Text>
+                                                            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>Motion Rades</Text>
+                                                            <Text style={[styles.textColor,{fontFamily: "Poppins-Light"}]}>{item.message}</Text>
                                                         </View>
                                                     </View>
                                                 </View>
@@ -422,9 +442,9 @@ export default function Home(){
                     </GestureDetector>
                                     {isSheetOpened &&
                     
-                                        <View style={{position:"absolute",bottom:70,zIndex:1,backgroundColor:"#fff",width:SCREEN_WIDTH,padding:10,paddingHorizontal:20,flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
-                                            <View style={{backgroundColor:"#f2f2f2",paddingVertical:10,borderRadius:5}}>
-                                                <TextInput placeholder="Type Your Comment." style={{paddingHorizontal:5,fontFamily:"Poppins-Light",width:SCREEN_WIDTH/1.3}} onChangeText={(e) => setComment(e)}/>
+                                        <View style={{position:"absolute",bottom:70,zIndex:1,backgroundColor:Colors.theme.backgroundColor,width:SCREEN_WIDTH,padding:10,paddingHorizontal:20,flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
+                                            <View style={{backgroundColor:Colors.theme.backgroundTransparent,paddingVertical:10,borderRadius:5}}>
+                                                <TextInput placeholder="Type Your Comment." placeholderTextColor={Colors.theme.fontColor} style={{paddingHorizontal:5,color:Colors.theme.fontColor,fontFamily:"Poppins-Light",width:SCREEN_WIDTH/1.3}} onChangeText={(e) => setComment(e)}/>
                                             </View>
                                             <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:35,height:35,justifyContent:"center",alignItems:"center"}} onPress={HandleCreateComment}>
                                                 <Ionicons name="send-outline" size={20} color="#fff" />
@@ -439,11 +459,9 @@ export default function Home(){
 
 const styles = StyleSheet.create({
         container:{
-            backgroundColor:"#fff",
+            backgroundColor:Colors.theme.backgroundColor,
             height:"100%",
-           paddingTop:40,
-           
-
+            paddingTop:40,
         },
         contentScroller:{
             flexDirection:"row",
@@ -488,7 +506,7 @@ const styles = StyleSheet.create({
         },
         headerIcon:{
             margin:5,
-            backgroundColor:"#ebe6e6",
+            backgroundColor:Colors.theme.backgroundTransparent,
             width:35,
             height:35,
             alignItems:"center",
@@ -502,7 +520,7 @@ const styles = StyleSheet.create({
         bottomSheet:{
             position:"absolute",
             width:SCREEN_WIDTH,
-            backgroundColor:"#ffffffff",
+            backgroundColor:Colors.theme.backgroundTransparent,
             height:SCREEN_HEIGHT,
             top:SCREEN_HEIGHT,
             borderRadius:25,
@@ -534,5 +552,8 @@ const styles = StyleSheet.create({
             left:0,
             backgroundColor:"#000000ec",
             height:SCREEN_HEIGHT
+        },
+        textColor:{
+            color:Colors.theme.fontColor
         }
 })

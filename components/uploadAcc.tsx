@@ -1,5 +1,6 @@
 import { View,Text,TouchableOpacity, StyleSheet,Dimensions, ActivityIndicator } from "react-native"
 import { Ionicons,AntDesign } from "@expo/vector-icons"
+import { Colors } from "@/constants/Colors"
 
 function UploadAcc({uploadPost,selectImage,placeholder,loading}){
     return(
@@ -8,10 +9,10 @@ function UploadAcc({uploadPost,selectImage,placeholder,loading}){
                     {loading ?  <ActivityIndicator color="#fff"/> : <Text style={{fontFamily:"Poppins-Bold",color:"#fff"}}>{placeholder}</Text>}
             </TouchableOpacity>
             <TouchableOpacity style={styles.uploadIcons} onPress={selectImage}>
-                <Ionicons name="image-outline" size={24} color="black" />            
+                <Ionicons name="image-outline" size={24} color={Colors.theme.fontColor} />            
             </TouchableOpacity>
             <TouchableOpacity style={styles.uploadIcons}  onPress={selectImage}>
-                <AntDesign name="videocamera" size={24} color="black" />                      
+                <AntDesign name="videocamera" size={24} color={Colors.theme.fontColor} />                      
             </TouchableOpacity>
         </View>
     )
@@ -21,7 +22,7 @@ export default UploadAcc
 
 const styles = StyleSheet.create({
     uploadIcons:{
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.commentsBg,
         width:40,
         height:40,
         borderRadius:50,

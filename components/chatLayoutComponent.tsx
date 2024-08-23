@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/Colors"
 import { router } from "expo-router"
 import { View,Image,Text, StyleSheet , TouchableOpacity} from "react-native"
 
@@ -17,12 +18,12 @@ function ChatLayoutComponent({item,lastMessage}){
                     </View>
                 }
                 <View style={{marginHorizontal:10}}>
-                    <Text style={{fontFamily:"Poppins-Bold"}}>{item[0].username}</Text>
-                    <Text style={{fontFamily:"Poppins-Light",marginTop:-5}}>{lastMessage}</Text>
+                    <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>{item[0].username}</Text>
+                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light",marginTop:-5}]}>{lastMessage}</Text>
                 </View>
             </View>
             <View>
-                <Text style={{fontFamily:"Poppins-Bold",fontSize:11}}>Tue 15:30</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:11}]}>Tue 15:30</Text>
             </View>
         </TouchableOpacity>
     )
@@ -40,5 +41,8 @@ const styles = StyleSheet.create({
         justifyContent:"space-between",
         alignItems:"center",
         width:"100%",
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

@@ -215,7 +215,7 @@ function Profile() {
 
 
     return (
-        <ScrollView showsVerticalScrollIndicator={false} refreshControl={
+        <ScrollView style={styles.container}  showsVerticalScrollIndicator={false} refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={refreshProfile}/>
         }>
             {selected.length>0 && 
@@ -227,13 +227,13 @@ function Profile() {
                             </View>
                             <View style={{flexDirection:"row",width:55,marginRight:18,justifyContent:"space-between"}}>
                                 <TouchableOpacity onPress={DeletePosts} style={styles.icons}>
-                                    <MaterialIcons name="delete-outline" size={24} color="black" />
+                                    <MaterialIcons name="delete-outline" size={24} color={Colors.theme.fontColor} />
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.icons} onPress={() => router.push({pathname:`/editPost/${selected[0]}` ,params:{id:selected[0]}})}>
-                                    <Feather name="edit-2" size={22} color="black" />
+                                    <Feather name="edit-2" size={22} color={Colors.theme.fontColor} />
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => setSelected([])} style={styles.icons}>
-                                    <MaterialCommunityIcons name="close-circle-outline" size={24} color="black" />
+                                    <MaterialCommunityIcons name="close-circle-outline" size={24} color={Colors.theme.fontColor} />
                                 </TouchableOpacity>
                             </View>
                     </View>
@@ -242,14 +242,14 @@ function Profile() {
             <View style={[styles.header]}>
                 <BackArrow />
                 <View>
-                    <Text style={{ fontFamily: "Poppins-Bold", fontSize: 19 }}>@{user && user.data.username}</Text>
+                    <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold", fontSize: 19 }]}>@{user && user.data.username}</Text>
                 </View>
                 <TouchableOpacity style={{
-                    backgroundColor: "#ccc",
+                    backgroundColor: Colors.theme.backgroundTransparent,
                     padding: 5,
                     borderRadius: 5
                 }} onPress={Navigate}>
-                    <AntDesign name="setting" size={24} color="black" />
+                    <AntDesign name="setting" size={24} color={Colors.theme.fontColor} />
                 </TouchableOpacity>
             </View>
             <View style={styles.details}>
@@ -260,46 +260,46 @@ function Profile() {
                             :
                             <Image source={require("../../assets/images/model.jpg")} style={{ width: 100, height: 100, borderRadius: 20 }} />
                         }
-                        <TouchableOpacity style={{ position: 'absolute', bottom: -10, right: -10, backgroundColor: "#fff", padding: 5, borderRadius: 50, height: 40, width: 40, justifyContent: "center", alignItems: "center" }} onPress={UpdateProfilePic}>
-                            <Feather name="edit-2" size={20} color="black" />
+                        <TouchableOpacity style={{ position: 'absolute', bottom: -10, right: -10, backgroundColor:Colors.theme.commentsBg, padding: 5, borderRadius: 50, height: 40, width: 40, justifyContent: "center", alignItems: "center" }} onPress={UpdateProfilePic}>
+                            <Feather name="edit-2" size={20} color={Colors.theme.fontColor} />
                         </TouchableOpacity>
                     </View>
                 </View>
                 <View style={{ marginVertical: 10 }}>
                     <View style={{flexDirection:"row",justifyContent:"center",alignItems:"center"}}>
-                        <TextInput onChangeText={setUsername} value={username} style={{ fontFamily: "Poppins-Bold", textAlign: "center", fontSize: 15,color:"#000"}} editable={editUsername}/>
+                        <TextInput onChangeText={setUsername} value={username} style={[styles.textColor,{ fontFamily: "Poppins-Bold", textAlign: "center", fontSize: 15}]} editable={editUsername}/>
                         {/* <Text style={{ fontFamily: "Poppins-Bold", textAlign: "center", fontSize: 15 }}>{user && user.data.username}</Text> */}
                         {!editUsername ?                    
                             <TouchableOpacity style={{marginLeft:10}} onPress={() => setEditUsername((prev) => !prev)}>
-                                <Feather name="edit-2" size={10} color="black" />
+                                <Feather name="edit-2" size={10} color={Colors.theme.fontColor} />
                             </TouchableOpacity>
                             :
                             <>                            
                             <TouchableOpacity style={{marginLeft:10}} onPress={ChangeUsername}>
-                                <AntDesign name="checkcircleo" size={15} color="black" />                 
+                                <AntDesign name="checkcircleo" size={15} color={Colors.theme.fontColor} />                 
                             </TouchableOpacity>
                             <TouchableOpacity style={{marginLeft:10}} onPress={ResetUsername}>
-                                <AntDesign name="closecircleo" size={15} color="black" />          
+                                <AntDesign name="closecircleo" size={15} color={Colors.theme.fontColor} />          
                             </TouchableOpacity>
                             </>
                         }
                     </View>
-                    <Text style={{ textAlign: "center", fontFamily: "Poppins-Light" }}>Machine Learning Engineer & Data Scientist</Text>
+                    <Text style={[styles.textColor,{ textAlign: "center", fontFamily: "Poppins-Light"}]}>Machine Learning Engineer & Data Scientist</Text>
                 </View>
                 <View style={styles.boxLayout}>
                     <TouchableOpacity style={styles.box} onPress={NavigateFollowing}>
-                        <Text style={{ fontFamily: "Poppins-Bold" }}>120</Text>
-                        <Text style={{ fontFamily: "Poppins-Regular" }}>Following</Text>
+                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>120</Text>
+                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Regular"}]}>Following</Text>
                         <View style={styles.line}></View>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.box} onPress={NavigateFollowers}>
-                        <Text style={{ fontFamily: "Poppins-Bold" }}>120</Text>
-                        <Text style={{ fontFamily: "Poppins-Regular" }}>Followers</Text>
+                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>120</Text>
+                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Regular"}]}>Followers</Text>
                         <View style={styles.line}></View>
                     </TouchableOpacity>
                     <View style={styles.box}>
-                        <Text style={{ fontFamily: "Poppins-Bold" }}>120</Text>
-                        <Text style={{ fontFamily: "Poppins-Regular" }}>Posts</Text>
+                    <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>120</Text>
+                    <Text style={[styles.textColor,{ fontFamily: "Poppins-Regular"}]}>Posts</Text>
                     </View>
                 </View>
             </View>
@@ -381,8 +381,7 @@ export default Profile
 
 const styles = StyleSheet.create({
     container: {
-        paddingVertical: 15,
-        paddingHorizontal: 25
+        backgroundColor:Colors.theme.backgroundColor
     },
     header: {
         paddingVertical: 7,
@@ -419,7 +418,7 @@ const styles = StyleSheet.create({
     line: {
         position: "absolute",
         right: -10,
-        backgroundColor: "#000",
+        backgroundColor: Colors.theme.fontColor,
         width: 1,
         height: 20
     },
@@ -434,5 +433,8 @@ const styles = StyleSheet.create({
     },
     icons:{
         marginRight:5
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

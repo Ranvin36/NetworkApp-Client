@@ -42,22 +42,22 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
                     </View>
                 }
                     <TouchableOpacity style={{marginLeft:5}} onPress={()=>ViewProfile(item.creator[0].creator_id)}>
-                        <Text style={{fontFamily:"Poppins-Bold"}}>{item.creator[0].username}</Text>
+                        <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>{item.creator[0].username}</Text>
                     </TouchableOpacity>
             </View>
             <View style={{flexDirection:'row', alignItems:"center"}} >
                 {ifFollowing.length>0 ?
                     <TouchableOpacity style={{backgroundColor:"#fff",padding:10,borderRadius:20}} onPress={()=>UnFollowUser(item.creator[0].creator_id)} >
-                        <Text style={{fontFamily:"Poppins-Bold",fontSize:12}}>Following</Text>
+                        <Text style={[{fontFamily:"Poppins-Bold",fontSize:12}]}>Following</Text>
                     </TouchableOpacity>
                                         :
                     <TouchableOpacity style={{backgroundColor:"#fff",padding:10,borderRadius:20}} onPress={()=>FollowUser(item.creator[0].creator_id)} >
-                        <Text style={{fontFamily:"Poppins-Bold",fontSize:12}}>Follow</Text>
+                        <Text style={[{fontFamily:"Poppins-Bold",fontSize:12}]}>Follow</Text>
                     </TouchableOpacity>
                     
                 }
                 <TouchableOpacity onPress={BottomSheetAction}>
-                    <Entypo name="dots-three-vertical" size={20} color="black" />
+                    <Entypo name="dots-three-vertical" size={20} color="black" style={styles.textColor} />
                 </TouchableOpacity>
             </View>
         </View>
@@ -76,7 +76,7 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
             }
         <View style={styles.imageCont}>
             <View style={{marginVertical:2}}>
-                <Text style={{fontFamily:'Poppins-Light'}}>{item.text}</Text>
+                <Text style={[styles.textColor,{fontFamily:'Poppins-Light'}]}>{item.text}</Text>
             </View>
 
 
@@ -85,25 +85,25 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
             <View style={{flexDirection:"row"}}>
                 <TouchableOpacity style={styles.icons} onPress={() => ifLiked.length>0 ? unlikePost(item._id) : LikePost(item._id)}>
                     {ifLiked.length>0 ?
-                    <AntDesign name="heart" size={24} color={Colors.light.text}/>
+                    <AntDesign name="heart" size={24} color={Colors.theme.primary}/>
                              :
-                    <AntDesign name="hearto" size={24} color="black" />
+                    <AntDesign name="hearto" size={24} color="black" style={styles.textColor} />
                     }
-                    <Text style={styles.iconsText}>{like.length > 0 ? like.length +  " Likes" : null}</Text>
+                    <Text style={[styles.iconsText,styles.textColor]}>{like.length > 0 ? like.length +  " Likes" : null}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.icons} onPress={()=>toggleBottomSheet(item._id)}>
-                    <Ionicons name="chatbubble-outline" size={24} color="black" />
-                    <Text style={styles.iconsText}>{comments.length > 0 ? comments.length : null}</Text>
+                    <Ionicons name="chatbubble-outline" size={24} color="black" style={styles.textColor} />
+                    <Text style={[styles.iconsText,styles.textColor]}>{comments.length > 0 ? comments.length : null}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.icons}>
-                    <Feather name="send" size={24} color="black" />
+                    <Feather name="send" size={24} color="black"  style={styles.textColor}/>
                 </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={()=>ifBookmarked.length>0 ? null : AddBookmark(item._id)}>
                 {ifBookmarked.length>0 ?
-                <FontAwesome name="bookmark" size={24} color={Colors.light.text} />    
+                <FontAwesome name="bookmark" size={24} color={Colors.theme.primary} />    
                 :
-                <Feather name="bookmark" size={24} color="#000" />
+                <Feather name="bookmark" size={24} color="#000" style={styles.textColor} />
             }
             </TouchableOpacity>
         </View>
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     posts:{
         marginVertical:10,
         marginBottom:25,
-        backgroundColor:"#f2f2f2f2",
+        backgroundColor:Colors.theme.backgroundTransparent,
         padding:10,
         borderRadius:20
     },
@@ -162,5 +162,8 @@ const styles = StyleSheet.create({
     video:{
         width:100,
         height:100
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

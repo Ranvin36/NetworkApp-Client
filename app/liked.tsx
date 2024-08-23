@@ -7,6 +7,7 @@ import { useSelector } from "react-redux"
 import { rootStore } from "./redux/store"
 import { router } from "expo-router"
 import { Skeleton } from "moti/skeleton"
+import { Colors } from "@/constants/Colors"
 
 function Liked() {
     const SkeletonCommonProps = {
@@ -41,10 +42,8 @@ function Liked() {
                 Authorization:`Bearer ${user.token}`
             }
         })
-
         setLikePosts(posts.data.data)
         setLoading(false)
-
     }
     
 
@@ -54,27 +53,25 @@ function Liked() {
 
     return(
         <View style={styles.container}>
-            <Text style={{fontFamily:"Poppins-Bold",fontSize:25}}>Favourites</Text>
+            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:25}]}>Favourites</Text>
             <View style={styles.containerLayout}>
                 <FlatList data={likedPosts}  renderItem={({item}) =>{
                         return(
                         <TouchableOpacity style={styles.favouritesLayout} onPress={() => router.push("/profileLike")}>
                                 <View style={styles.flexElements}>
                                     <Skeleton radius="round" colorMode="light" width={50} height={50}>
-                                        {loading ? null : <Image source={{uri:item?.creator?.[0]?.profilePicture}} style={{width:55,height:55,borderRadius:50}}/>
-                                    }
-                                        
+                                        {loading ? null : <Image source={{uri:item?.creator?.[0]?.profilePicture}} style={{width:55,height:55,borderRadius:50}}/>}                                        
                                     </Skeleton>
                                     <View style={{marginHorizontal:5}}>
                                         <View style={{marginBottom:5}}>
                                         <Skeleton height={25} colorMode="light" width={"80%"}>
-                                            {loading ? null : <Text style={{fontFamily:"Poppins-Bold"}}>{item?.creator?.[0]?.username || 'Loading'}</Text>}
+                                            {loading ? null : <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>{item?.creator?.[0]?.username || 'Loading'}</Text>}
                                             
                                         </Skeleton>
                                         </View>
 
                                         <Skeleton height={25} colorMode="light" width={'70%'}>
-                                            {loading ? null : <Text style={{fontFamily:"Poppins-Regular",marginTop:-5}}>{item?.text|| 'Loading'}</Text>    }
+                                            {loading ? null : <Text style={[styles.textColor,{fontFamily:"Poppins-Regular",marginTop:-5}]}>{item?.text|| 'Loading'}</Text>    }
                                         
                                         </Skeleton>
                                     </View>
@@ -98,7 +95,8 @@ const styles = StyleSheet.create({
     container:{
         paddingVertical:40,
         paddingHorizontal:30,
-        marginTop:10
+        height:"100%",
+        backgroundColor:Colors.theme.backgroundColor
     },
     containerLayout:{
         marginVertical:20
@@ -113,5 +111,8 @@ const styles = StyleSheet.create({
         flexDirection:"row",
         justifyContent:"space-between",
         alignItems:"center"
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

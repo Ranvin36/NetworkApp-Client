@@ -1,8 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const initialState = {
+    navbar: false,
+  };
+
 const navbarSlice = createSlice({
     name:'navbar',
-    initialState:{navbar:false},
+    initialState,
     reducers:{
         setOpened : (state,action) =>{
             state.navbar = action.payload

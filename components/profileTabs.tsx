@@ -17,19 +17,19 @@ function ProfileTabs({selectedIndex,TabClick,position}){
         <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", width: screenWidth }}>
         {/* <Animated.View style={[{ position: "absolute", backgroundColor: "#000", width: 70, height: 2, borderRadius: 10, bottom: 5 }, lineAnimate]} /> */}
         <TouchableOpacity style={[styles.tabs]} onPress={() => TabClick(0)}>
-            <MaterialCommunityIcons name="post-outline" size={24} color="black" />
+            <MaterialCommunityIcons name="post-outline" size={24} color={Colors.theme.fontColor} />
             {selectedIndex == 0 &&
             <Animated.View style={[lineAnimate,{width:0,backgroundColor:Colors.light.text,height:4,borderRadius:20,marginVertical:5}]}/>
             }
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabs} onPress={() => TabClick(1)}>
-            <MaterialCommunityIcons name="heart-outline" size={24} color="black" />
+            <MaterialCommunityIcons name="heart-outline" size={24} color={Colors.theme.fontColor} />
             {selectedIndex == 1 &&
             <Animated.View style={[lineAnimate,{width:0,backgroundColor:Colors.light.text,height:4,borderRadius:20,marginVertical:5}]}/>
             }
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabs} onPress={() => TabClick(2)}>
-            <MaterialCommunityIcons name="bookmark-outline" size={24} color="black" />
+            <MaterialCommunityIcons name="bookmark-outline" size={24} color={Colors.theme.fontColor} />
             {selectedIndex == 2 &&
             <Animated.View style={[lineAnimate,{width:0,backgroundColor:Colors.light.text,height:4,borderRadius:20,marginVertical:5}]}/>
             }

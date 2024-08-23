@@ -1,17 +1,18 @@
 import { View,Text,TouchableOpacity,Dimensions,StyleSheet,Image} from "react-native"
 import { Entypo,AntDesign,Feather,Ionicons } from "@expo/vector-icons"
 import * as Haptics from 'expo-haptics' 
+import { Colors } from "@/constants/Colors"
 
 function PostPreview({user,image,text,setImage}){
     return(
-        <View style={{backgroundColor:"#fff",borderRadius:15,padding:10,width:Dimensions.get('window').width-50 ,alignSelf:"center"}}>
+        <View style={{backgroundColor:Colors.theme.commentsBg,borderRadius:15,padding:10,width:Dimensions.get('window').width-50 ,alignSelf:"center"}}>
         <View style={{flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
             <View style={[styles.userAccount,{marginTop:0,paddingHorizontal:0}]}>
                 <View>
                     <Image source={{uri : user.profilePicture}} style={{width:30,height:30,borderRadius:50}} />
                 </View>
                 <View  style={{marginLeft:6}}>
-                    <Text style={{fontFamily:"Poppins-Light",fontSize:10}}>{user.username}</Text>
+                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light",fontSize:10}]}>{user.username}</Text>
                 </View>
             </View>
             <View style={{flexDirection:"row",alignItems:"center"}}>
@@ -23,7 +24,7 @@ function PostPreview({user,image,text,setImage}){
                         Haptics.NotificationFeedbackType.Success
                     )
                 }}>
-                    <Entypo name="dots-three-vertical" size={15} color="black" />
+                    <Entypo name="dots-three-vertical" size={15} color={Colors.theme.fontColor} />
                 </TouchableOpacity>
             </View>
         </View>
@@ -43,22 +44,22 @@ function PostPreview({user,image,text,setImage}){
             }
         </View>
         <View style={{marginHorizontal:2}}>
-            <Text style={{fontFamily:'Poppins-Light',fontSize:12}}>{text ? text : "Post Heading"}</Text>
+            <Text style={[styles.textColor,{fontFamily:'Poppins-Light',fontSize:12}]}>{text ? text : "Post Heading"}</Text>
         </View>
         <View style={styles.interactions}>
             <View style={{flexDirection:"row"}}>
                 <TouchableOpacity style={styles.iconCont}>
-                    <AntDesign name="hearto" size={20} color="black"/>
+                    <AntDesign name="hearto" size={20} color={Colors.theme.fontColor}/>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.iconCont}>
-                    <Ionicons name="chatbubble-outline" size={20} color="black" />
+                    <Ionicons name="chatbubble-outline" size={20} color={Colors.theme.fontColor} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.iconCont}>
-                    <Feather name="send" size={20} color="black" />
+                    <Feather name="send" size={20} color={Colors.theme.fontColor} />
                 </TouchableOpacity>
             </View>
             <View>
-                <Feather name="bookmark" size={20} color="black" />
+                <Feather name="bookmark" size={20} color={Colors.theme.fontColor} />
             </View>
         </View>
 
@@ -88,5 +89,8 @@ const styles = StyleSheet.create({
         alignItems:"center",
         paddingHorizontal:25,
     },
+    textColor:{
+        color:Colors.theme.fontColor
+    }
 
 })
