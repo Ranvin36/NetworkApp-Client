@@ -1,5 +1,4 @@
 import { View , Text, StyleSheet, TextInput , Image, FlatList,TouchableOpacity, Dimensions, KeyboardAvoidingView , Platform , ScrollView} from "react-native";
-import { Colors } from "@/constants/Colors";
 import { AntDesign } from '@expo/vector-icons';
 import search from "../../dummyData/search"
 import { useEffect, useState,useRef} from "react";
@@ -11,6 +10,8 @@ import { router } from "expo-router";
 import Animated,{ useAnimatedStyle,withTiming,scrollTo} from "react-native-reanimated";
 import SearchPosts from "@/components/searchPosts";
 import  {Skeleton} from "moti/skeleton"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 export default function Page(){
     const {width:SCREEN_WIDTH,height:SCREEN_HEIGHT} = Dimensions.get('window')
@@ -21,8 +22,8 @@ export default function Page(){
     const [searchUsers,setSearchUsers] =  useState([])
     const [selectedOption,setSelectedOption] = useState(0)
     const tabs = ['All','People','Posts','Snaps','Reels']
-    const scrollRef = useRef()
-    function ChangeText(text){ 
+    const scrollRef = useRef<ScrollView>(null)
+    function ChangeText(text:string){ 
         setSearchText(text)
     }
 
@@ -31,19 +32,19 @@ export default function Page(){
         const data = {"name":searchText}
         const response = await axios.post(`http://${ipAddress}:3001/users/search-user`,data,{
             headers:{
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
         setSearchUsers(response.data.data)
         setLoading(false)
     }
 
-    async function ViewProfile(id){
+    async function ViewProfile(id:number){
         console.log(id)
         router.push({pathname:`viewProfile/${id}` , params:{id}})
     }
 
-    function TabClick(index){
+    function TabClick(index:number){
         setSelectedOption(index)
         scrollRef?.current?.scrollTo({
             x:SCREEN_WIDTH* index

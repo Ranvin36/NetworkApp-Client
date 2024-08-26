@@ -17,7 +17,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ipAddress } from "@/constants/ipAddress";
 import { rootStore } from "../redux/store";
-import { Colors } from "@/constants/Colors";
 import PostComponent from "@/components/postComponent";
 import { CreateComment, FollowUser, LikePost, UnFollowUser, UnlikePost } from "@/components/CallBacks/CallBackFunctions";
 import { setOpened } from "../redux/navbarSlice";
@@ -26,9 +25,36 @@ import { setOpened } from "../redux/navbarSlice";
 import { Feather } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
-import { Ionicons,EvilIcons } from '@expo/vector-icons';
+import { Ionicons,EvilIcons,MaterialCommunityIcons} from '@expo/vector-icons';
 import StoriesComp from "@/components/storiesComp";
-import { ConnectionState } from "realm";
+import { ColorPalatte } from "@/constants/Colors";
+import { duration } from "moment";
+const Colors = ColorPalatte()
+
+
+type PostTypes={
+    _id: number,
+    user_id: number,
+    title: string,
+    image: string | null,
+    video: string | null,
+    likes: any[],
+    comments: any[],
+    created_at: string,
+    updated_at: string,
+    creator: [{
+        id: number,
+        userId: string,
+        username: string,
+        profile_pic: string | null,
+        created_at: string,
+        updated_at: string,
+    }]
+}
+
+type StoriesTypes ={
+
+}
 
 const {height : SCREEN_HEIGHT , width : SCREEN_WIDTH} = Dimensions.get('window')
 export default function Home(){
@@ -37,9 +63,9 @@ export default function Home(){
     const user = useSelector((state:rootStore)=>state.user)
     const translateY = useSharedValue(0)
     const context = useSharedValue({y:0})
-    const [posts,setPosts] = useState([])
+    const [posts,setPosts] = useState<PostTypes[]>([])
     const [comment,setComment] = useState('')
-    const [activePost,setActivePost] = useState(0)
+    let [activePost,setActivePost] = useState(0)
     const [isSheetOpened,setIsSheetOpened] = useState(true)
     const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 3)
     const [follows,setFollows] = useState([])
@@ -55,6 +81,8 @@ export default function Home(){
     const [page,setPage]=  useState(1)
     const [contentLoading,setContentLoading] = useState(false)
     const scaleAnim = useSharedValue(0)
+    const lineWidth = useSharedValue(10)
+
     useAnimatedReaction(
         () => isSheetOpenedDerived.value,
         (isOpen)=>{
@@ -74,6 +102,10 @@ export default function Home(){
             translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
         }
     })
+
+    function ViewProfile(id:number){
+        router.push({ pathname: `viewProfile/${id}`, params: { id } });
+    }
 
     const Refresh = useCallback(()=>{
         setRefresh(true)
@@ -95,13 +127,13 @@ export default function Home(){
         setContentLoading(true)
         const response = await axios.get(`http://${ipAddress}:3001/posts/get-posts?page=${page}`,{
             headers:{
-                Authorization:`Bearer ${user.user.token}`
+                Authorization:`Bearer ${user?.user?.token}`
             }
         }) 
         const newData = response.data.data
         setContentLoading(false)
         setPosts((prev) =>  [...prev,...newData])
-    },[page,user.user.token])
+    },[page,user?.user?.token])
     
 
 
@@ -110,7 +142,7 @@ export default function Home(){
         await sound.playAsync();
     }
 
-    const toggleBottomSheet = async(id) =>{
+    const toggleBottomSheet = async(id:number) =>{
         dispatch(setOpened(false))
         setActivePost(id)
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
@@ -138,21 +170,29 @@ export default function Home(){
     }
 
     async function HandleLikePost(uid:number){
-        console.log("INSIDE")
-        const data = {"postId":uid , "userId":user.user.data._id}
+        const data = {"postId":uid , "userId":user?.user?.data._id}
         socket.emit("likePost",data)
         // await LikePost(uid,user,dummyData,setDummyData)
     }
     
     async function HandleUnLikePost(uid:number){
-        const data = {"postId":uid , "userId":user.user.data._id}
+        const data = {"postId":uid , "userId":user?.user?.data._id}
         socket.emit("unlikePost",data)
     }
 
     async function AddBookmark(uid:number){
         const response = await axios.post(`http://${ipAddress}:3001/posts/bookmark/create/${uid}`,null,{
             headers:{
-                Authorization : `Bearer ${user.user.token}`
+                Authorization : `Bearer ${user?.user?.token}`
+            }
+        })
+        console.log(response.data)
+    }
+
+    async function RemoveBookmark(uid:number){
+        const response = await axios.post(`http://${ipAddress}:3001/posts/bookmark/delete/${uid}`,null,{
+            headers:{
+                Authorization: `Bearer ${user?.user?.token}`
             }
         })
         console.log(response.data)
@@ -160,32 +200,34 @@ export default function Home(){
     
     async function HandleCreateComment(){
         const data = {"message":comment}
-        const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
-            headers:{
-                Authorization: `Bearer ${user.user.token}`
-            }
-        })
+        // const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
+        //     headers:{
+        //         Authorization: `Bearer ${user?.user?.token}`
+        //     }
+        // })
+        console.log("DD")
+        socket.emit("createComment",{"message":comment, "userId":user?.user?.data._id,"postId":activePost})
     }
 
     const GetFollowers = useCallback(async () =>{
-         const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user.user.data._id}`,{
+         const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user?.user?.data._id}`,{
              headers:{
-                 Authorization:`Bearer ${user.user.token}`
+                 Authorization:`Bearer ${user?.user?.token}`
              }
          })
          setFollows(response.data)
-     },[user.user.data._id, user.user.token])
+     },[user?.user?.data._id, user?.user?.token])
 
     async function GetStories(){
         const response = await axios.get(`http://${ipAddress}:3001/snapshot/`,{
             headers:{
-                Authorization: `Bearer ${user.user.token}`
+                Authorization: `Bearer ${user?.user?.token}`
             }
         })
         setStories(response.data.getSnapShots)
     }
 
-    async function uploadSnapShot(uri,name,type){
+    async function uploadSnapShot(uri:string,name:string,type:string){
         const formData = new FormData()
         formData.append('image',{
             uri,
@@ -195,7 +237,7 @@ export default function Home(){
         const response = await axios.post(`http://${ipAddress}:3001/snapshot/create`,formData,{
             headers:{
                 'Content-Type': 'multipart/form-data',
-                Authorization:`Bearer ${user.user.token}`
+                Authorization:`Bearer ${user?.user?.token}`
             }
         })
         console.log(response.data)
@@ -223,16 +265,16 @@ export default function Home(){
 
    const scaleDown = () =>{
         scaleAnim.value = withTiming(0,{duration:200})
+        dispatch(setOpened(false))
         setTimeout(()=>{
-
             setStoryVisisble(false)
         },500)
     }
     const scaleUp = (index:number) =>{
-        socket.emit("chatMessage","HEYS")
         setActiveStory(index)
         setStoryVisisble(true)
         scaleAnim.value = withTiming(1,{duration:200})
+        dispatch(setOpened(true))
    }
 
     const interpolateScale = useAnimatedStyle(()=>{
@@ -263,21 +305,45 @@ export default function Home(){
             return getUser != null ? JSON.parse(getUser) : null;
         }
 
+        const completionLineAnimation = useAnimatedStyle(() =>{
+            return{
+                width: lineWidth.value
+            }
+        },[activeStory])
+
+        function handleNextStory(){
+            if(activeStory < stories.length-1){
+                console.log("NEXT")
+                setActiveStory((prev) => prev+1)
+            }
+            else{
+                scaleDown()
+            }
+        }
+
     
         useEffect(() =>{
             GetStories()
         },[dummyData])
-    
+        
         useEffect(()=>{
             GetFollowers()
         },[followCount,GetFollowers])
-    
+        
         useEffect(()=>{
             getPosts()
         },[dummyData])
+        useEffect(() =>{
+            lineWidth.value=0
+            lineWidth.value = withTiming(140,{duration:7000},(isFinished) =>{
+                if(isFinished){
+                    runOnJS(handleNextStory)()
+                }
+            })
 
+        },[storyVisible,activeStory])
 
- useEffect(() =>{
+        useEffect(() =>{
             socket.on("receivePost" , (data) =>{
                 setPosts((prev) => prev.map((item) => item._id == data.postId ?{ 
                 ...item ,
@@ -303,8 +369,18 @@ export default function Home(){
         },[])
 
         useEffect(() =>{
-
+            socket.on("receiveComment", (data) =>{
+                setPosts((prev) => prev.map((item) => item._id == data.postId ?{ 
+                    ...item ,
+                    comments:item.comments ? [...item.comments,data] :[data]} : item) )
+                setActiveComments((prev) => [...prev,data])
+                console.log(data , "data")
+            })
+            return()=>{
+                socket.off("receiveComment")
+            }
         },[])
+
 
     return(
         <View>
@@ -363,7 +439,7 @@ export default function Home(){
             <View style={styles.postsContainer}>
                 <FlatList data={posts} showsVerticalScrollIndicator={false} renderItem={({item}) =>{
                         return(
-                         <PostComponent  item={item} follows={follows} UnFollowUser={HandleUnfollowUser} FollowUser={HandleFollowUser} unlikePost={HandleUnLikePost} LikePost={HandleLikePost} toggleBottomSheet={toggleBottomSheet} AddBookmark={AddBookmark}/>
+                         <PostComponent  item={item} follows={follows} UnFollowUser={HandleUnfollowUser} FollowUser={HandleFollowUser} unlikePost={HandleUnLikePost} LikePost={HandleLikePost} toggleBottomSheet={toggleBottomSheet} AddBookmark={AddBookmark} RemoveBookmark={RemoveBookmark}/>
                         )
                 }}/>
                 {contentLoading 
@@ -380,21 +456,40 @@ export default function Home(){
         {storyVisible && 
             
                 <Animated.View style={[styles.snapShotLayout,interpolateScale]}>
-                    <View style={{position:"relative"}}>
-                        <ImageBackground source={{ uri : stories[activeStory].image}} style={{backgroundColor:"#ccc",width:SCREEN_WIDTH,justifyContent:"center",top:Dimensions.get('window').height/10,left:0,height:SCREEN_HEIGHT-150,zIndex:1,position:"relative"}}>                    
-                            <View style={{position:"absolute",top:10,zIndex:1,flexDirection:"row", alignItems:"center",paddingHorizontal:10,justifyContent:"space-between",width:"100%"}}>
-                                <View style={{flexDirection:"row",alignItems:"center"}}>
-                                 {stories[activeStory].creator[0].profilePicture ? 
-                                    <Image source={{uri:stories[activeStory].creator[0].profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
-                                                    :
-                                    <Image source={require("../../assets/images/model.jpg")} style={{width:50,height:50,borderRadius:50}}/>
-                                 }
-                                    <Text style={{fontFamily:"Poppins-Bold",marginLeft:5,color:"#fff"}}>{stories[activeStory].creator[0].username}</Text>
+                    <View style={styles.snapheader}>
+                        <TouchableOpacity style={[styles.storySection,styles.closeBtn]} onPress={scaleDown}> 
+                            <Ionicons name="close-outline" size={24} color="#fff"  />
+                        </TouchableOpacity>
+                        <View style={[styles.storySection,{flexDirection:"row"}]}>
+                            <View>
+                                <View style={styles.storyLine}>
+                                    <Animated.View style={[styles.completionLine,completionLineAnimation]}></Animated.View>
                                 </View>
-                                <AntDesign name="closecircleo" size={24} color="#fff" onPress={scaleDown} />
                             </View>
-                        </ImageBackground>
+                        </View>
+                        <View style={[styles.storySection,styles.storyClock]}>
+                            <View style={{marginRight:5}}>
+                                <MaterialCommunityIcons name="clock-time-eight-outline" size={20} color="#fff" />
+                            </View>
+                            <View>
+                                <Text style={{color:"#fff",fontFamily:"Poppins-Light",fontSize:13}}>7s</Text>
+                            </View>
+                        </View>
+                        <TouchableOpacity style={{borderWidth:2,borderColor:Colors.theme.primary,borderRadius:50}} onPress={() =>ViewProfile(stories[activeStory].creator[0]._id)}>
+                            {stories[activeStory].creator[0].profilePicture ? 
+                            <Image source={{uri:stories[activeStory].creator[0].profilePicture}} style={{width:40,height:40,margin:2,borderRadius:50}}/>
+                                            :
+                            <Image source={require("../../assets/images/model.jpg")} style={{width:40,height:40,margin:2,borderRadius:50}}/>
+                            }
+                        </TouchableOpacity>
                     </View>
+                    <View style={styles.storyContent}>
+                        <Image source={{uri: stories[activeStory].image}} style={{width:"100%",height:500,borderRadius:30}} />
+                        <View style={{marginVertical:10}}>
+                            <Text style={{fontFamily:"Poppins-Light",color:"#fff"}}>Introducing Our New Beveraging Partner "Eluphant Housy"</Text>
+                        </View>
+                    </View>
+
                 </Animated.View>
         }
                 
@@ -408,7 +503,7 @@ export default function Home(){
                                     </View>
                                 </View>
                                 <View style={{justifyContent:"space-between",flexDirection:"column"}}>
-                                    <View>
+                                    <ScrollView>
 
                                         {activeComments && activeComments.length>0?
                                         activeComments.map((item,index)=>{
@@ -435,7 +530,7 @@ export default function Home(){
                                             <Text style={{fontFamily:"Poppins-Bold",fontSize:17}}>No Comments Were Found!</Text>
                                         </View>
                                         }
-                                    </View>
+                                    </ScrollView>
                                 </View>
                                 </View>
                         </Animated.View>
@@ -520,7 +615,7 @@ const styles = StyleSheet.create({
         bottomSheet:{
             position:"absolute",
             width:SCREEN_WIDTH,
-            backgroundColor:Colors.theme.backgroundTransparent,
+            backgroundColor:Colors.theme.commentsBg,
             height:SCREEN_HEIGHT,
             top:SCREEN_HEIGHT,
             borderRadius:25,
@@ -550,10 +645,49 @@ const styles = StyleSheet.create({
             borderRadius:20,
             top:0,
             left:0,
-            backgroundColor:"#000000ec",
-            height:SCREEN_HEIGHT
+            backgroundColor:"#000",
+            height:SCREEN_HEIGHT,
         },
         textColor:{
             color:Colors.theme.fontColor
+        },
+        snapheader:{
+            paddingHorizontal:10,
+            paddingVertical:40,
+            flexDirection:"row",
+            alignItems:"center",
+            width:SCREEN_WIDTH
+        },
+        storyLine:{
+            width:140,
+            height:2,
+            backgroundColor: "#1d1d1d",
+            borderRadius:20,
+            marginRight:5
+        },
+        storySection:{
+            marginHorizontal:7
+        },
+        closeBtn:{
+            backgroundColor:Colors.theme.backgroundTransparent,
+            padding:5,borderRadius:50
+        },
+        storyClock:{
+            backgroundColor:Colors.theme.backgroundTransparent,
+            flexDirection:"row",
+            borderRadius:20,
+            paddingVertical:8,
+            paddingHorizontal:10,
+            alignItems:"center"
+        },
+        storyContent:{
+            marginTop:-10,
+            marginHorizontal:10
+        },
+        completionLine:{
+            position:"absolute",
+            height:2,
+            borderRadius:20,
+            backgroundColor:"#fff"
         }
 })

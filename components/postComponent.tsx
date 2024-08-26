@@ -1,14 +1,15 @@
 import { View,StyleSheet,Text,Image,TouchableOpacity, Dimensions } from "react-native"
 import { Ionicons,AntDesign,Feather,Entypo,FontAwesome} from "@expo/vector-icons"
-import { Colors } from "@/constants/Colors"
 import { Video,ResizeMode } from "expo-av"
 import * as Haptics from "expo-haptics"
 import { router } from "expo-router"
 import { useSelector } from "react-redux"
 import { rootStore } from "@/app/redux/store"
-
 const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
-function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActiveBottomPost,AddBookmark}){
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
+
+function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActiveBottomPost,AddBookmark,RemoveBookmark}){
     const user = useSelector((state:rootStore) => state.user.user)
     const creatorImage = item.creator[0].profilePicture
     const imgUrl = item.image
@@ -99,7 +100,7 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
                     <Feather name="send" size={24} color="black"  style={styles.textColor}/>
                 </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={()=>ifBookmarked.length>0 ? null : AddBookmark(item._id)}>
+            <TouchableOpacity onPress={()=>ifBookmarked.length>0 ? RemoveBookmark(item._id) : AddBookmark(item._id)}>
                 {ifBookmarked.length>0 ?
                 <FontAwesome name="bookmark" size={24} color={Colors.theme.primary} />    
                 :

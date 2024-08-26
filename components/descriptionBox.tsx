@@ -1,5 +1,6 @@
-import { Colors } from "@/constants/Colors"
 import { View,TextInput, StyleSheet } from "react-native"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 function DescriptionBox({onChange,text}){
     return(
         <View style={styles.InputContainer}>
@@ -15,7 +16,7 @@ export default DescriptionBox
 
 const styles = StyleSheet.create({
     textInput:{
-        backgroundColor:Colors.theme.commentsBg,
+        backgroundColor:Colors.theme.backgroundTransparent,
         padding:13,
         borderRadius:10
     },

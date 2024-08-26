@@ -1,11 +1,12 @@
 import { View,Text,Image, StyleSheet } from "react-native"
 
-function ReelUploader(){
+function ReelUploader({user}){
     return(
         <View style={styles.infoContainer}>
             <View style={{flexDirection:"row",alignItems:"center"}}>
-            <Image source={require("../assets/images/model.jpg")} style={styles.image} />
-            <Text style={styles.title}>Motion Rades</Text>
+
+            <Image source={{uri:user.profilePicture}} style={styles.image} />
+            <Text style={styles.title}>{user.username}</Text>
             </View>
             <Text style={styles.subtitle}>4 Years Ago!!</Text>
       </View>

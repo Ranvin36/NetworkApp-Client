@@ -1,6 +1,7 @@
 import { View,Text,TouchableOpacity, StyleSheet,Dimensions, ActivityIndicator } from "react-native"
 import { Ionicons,AntDesign } from "@expo/vector-icons"
-import { Colors } from "@/constants/Colors"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 function UploadAcc({uploadPost,selectImage,placeholder,loading}){
     return(
@@ -22,7 +23,7 @@ export default UploadAcc
 
 const styles = StyleSheet.create({
     uploadIcons:{
-        backgroundColor:Colors.theme.commentsBg,
+        backgroundColor:Colors.theme.backgroundTransparent,
         width:40,
         height:40,
         borderRadius:50,

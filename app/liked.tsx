@@ -7,7 +7,9 @@ import { useSelector } from "react-redux"
 import { rootStore } from "./redux/store"
 import { router } from "expo-router"
 import { Skeleton } from "moti/skeleton"
-import { Colors } from "@/constants/Colors"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
+
 
 function Liked() {
     const SkeletonCommonProps = {
@@ -29,9 +31,9 @@ function Liked() {
     const [loading,setLoading] = useState(true)
     async function GetLikedPosts(){
         setLoading(true)
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user.data._id}`,{
+        const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user?.data._id}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
@@ -39,7 +41,7 @@ function Liked() {
         const data = {IDS : likedPost}
         const posts = await axios.post(`http://${ipAddress}:3001/posts/liked`,data,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
         setLikePosts(posts.data.data)

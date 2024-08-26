@@ -1,4 +1,6 @@
 import { View,Text,Image, StyleSheet } from "react-native"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 function CreatePostHeader({user}){
     return(
@@ -25,6 +27,6 @@ const styles = StyleSheet.create({
         paddingHorizontal:25,
     },
     textColor:{
-        color:"#fff"
+        color:Colors.theme.fontColor
     }
 })

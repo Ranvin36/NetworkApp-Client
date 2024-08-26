@@ -9,6 +9,9 @@ import { useDispatch } from "react-redux"
 import { setOtp } from "./redux/otpSlice"
 import { router } from "expo-router"
 import { setUser } from "./redux/userSlice"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
+
 function ForgotPassword(){
     const [email,setEmail] = useState("")
     const dispatch = useDispatch()
@@ -23,11 +26,11 @@ function ForgotPassword(){
         <View style={styles.container}>
             <BackArrow/>
                <View style={styles.texts}>
-                <Text style={{fontFamily:"Poppins-Bold" , fontSize:35}}>Forgot,</Text>
-                <Text style={{fontFamily:"Poppins-Bold" , fontSize:33}}>Your Password?</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold" , fontSize:35}]}>Forgot,</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold" , fontSize:33}]}>Your Password?</Text>
             </View>
             <View style={{marginVertical:10}}>
-                <Text style={{fontFamily:"Poppins-Light"}}>An Otp Will Be Sent To The Below Email</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>An Otp Will Be Sent To The Below Email</Text>
             </View>
             <View>
                 <TextInputLayout placeholder="Enter Your Email" onChange={setEmail} icon="email-outline"/>
@@ -44,11 +47,13 @@ const styles = StyleSheet.create({
     container:{
         paddingVertical:70,
         paddingHorizontal:30,
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.backgroundColor,
         height:"100%"
     },
     texts:{
         marginTop:30,
-
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

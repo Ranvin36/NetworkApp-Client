@@ -1,10 +1,12 @@
 import { StyleSheet, TextInput } from "react-native"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 function OtpDigits({index,digits,validOtp,handleOtpChange}){
     return(
         <TextInput 
         key={index}
         value={digits}
-        style={[styles.box,{borderColor:validOtp?"#000":"#fc5364"}]}
+        style={[styles.box,{borderColor:validOtp?Colors.theme.fontColor:"#fc5364"}]}
         maxLength={1}
         keyboardType="numeric"
         onChangeText={(e)=>handleOtpChange(e,index)}
@@ -22,6 +24,7 @@ const styles = StyleSheet.create({
         marginHorizontal:5,
         borderRadius:5,
         textAlign:"center",
-        fontFamily:"Poppins-Light"
+        fontFamily:"Poppins-Light",
+        color:Colors.theme.fontColor
        }
 })

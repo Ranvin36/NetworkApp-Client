@@ -8,6 +8,8 @@ import { useEffect } from "react";
 import { setUser } from "./redux/userSlice";
 import axios from "axios";
 import { ipAddress } from "@/constants/ipAddress";
+import { StatusBar } from "react-native";
+import { setColor } from "./redux/colorsSlice";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -23,6 +25,11 @@ export default function RootLayout() {
     async function GetLocalStorageUser() {
       const getUser = await AsyncStorage.getItem('user');
       return getUser != null ? JSON.parse(getUser) : null;
+    }
+
+    async function GetColorMode(){
+       const getColors = await AsyncStorage.getItem('themeMode');
+       return getColors!= null? JSON.parse(getColors) : null;
     }
 
     useEffect(() => {
@@ -51,6 +58,13 @@ export default function RootLayout() {
       });
     }, [dispatch]);
 
+    useEffect(() =>{
+        GetColorMode().then((colorMode) => {
+          console.log("COLOR MODE FROM INDEX.JS",colorMode)
+          dispatch(setColor(colorMode))
+        })
+    },[])
+
     if (!fontsLoaded) {
       return null;
     }
@@ -65,6 +79,7 @@ export default function RootLayout() {
           <Stack.Screen name="liked" />
           <Stack.Screen name="posts" />
           <Stack.Screen name="newPassword" />
+          <Stack.Screen name="block" />
           <Stack.Screen name="chats" />
           <Stack.Screen name="forgotPassword" />
           <Stack.Screen name="viewProfile/[id]" />

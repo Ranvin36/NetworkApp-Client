@@ -8,6 +8,10 @@ import { ipAddress } from "@/constants/ipAddress";
 import { useSelector } from "react-redux";
 import { rootStore } from "./redux/store";
 import { router } from "expo-router";
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
+
+
 function NewPassword(){
     const [secretField, setSecretField] = useState(true)
     const user = useSelector((state:rootStore) => state.user.user)
@@ -37,35 +41,35 @@ function NewPassword(){
         <View style={styles.container}>
             <BackArrow/>
             <View style={{marginTop:30}}>
-                <Text style={{fontFamily:"Poppins-Bold" , fontSize:35}}>Reset,</Text>
-                <Text style={{fontFamily:"Poppins-Bold" , fontSize:33}}>Your Password</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold" , fontSize:35}]}>Reset,</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold" , fontSize:33}]}>Your Password</Text>
             </View>
             <View style={{marginVertical:5}}>
-                <Text style={{fontFamily:"Poppins-Light"}}>Get Your Password Changed</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>Get Your Password Changed</Text>
             </View>
             <View style={[styles.fieldContainer,{position:'relative'}]}>
-                        <AntDesign name="lock" size={22} color="black"  style={{marginBottom:3}}/>
-                        <TextInput  placeholder="New Password"  style={{fontFamily:"Poppins-Light",width:"100%",marginLeft:5}} secureTextEntry={secretField} onChangeText={(e) => setPassword(e)}/>
+                        <AntDesign name="lock" size={22} color={Colors.theme.fontColor}  style={{marginBottom:3}}/>
+                        <TextInput  placeholder="New Password" placeholderTextColor={Colors.theme.fontColor} style={[styles.textColor,{fontFamily:"Poppins-Light",width:"100%",marginLeft:5}]} secureTextEntry={secretField} onChangeText={(e) => setPassword(e)}/>
                         {secretField ? 
                             <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
-                                <Ionicons name="eye-off" size={24} color="black" />
+                                <Ionicons name="eye-off" size={24} color={Colors.theme.fontColor} />
                             </TouchableOpacity>
                                                             :
                             <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
-                                <Ionicons name="eye" size={24} color="black" />
+                                <Ionicons name="eye" size={24} color={Colors.theme.fontColor} />
                             </TouchableOpacity>
                     }
             </View>
             <View style={[styles.fieldContainer,{position:'relative'}]}>
-                        <AntDesign name="lock" size={22} color="black"  style={{marginBottom:3}}/>
-                        <TextInput  placeholder="Confirm New Password"  style={{fontFamily:"Poppins-Light",width:"100%",marginLeft:5}} secureTextEntry={secretField} onChangeText={(e) => setConfirmPassword(e)}/>
+                        <AntDesign name="lock" size={22} color={Colors.theme.fontColor}  style={{marginBottom:3}}/>
+                        <TextInput  placeholder="Confirm New Password" placeholderTextColor={Colors.theme.fontColor} style={[styles.textColor,{fontFamily:"Poppins-Light",width:"100%",marginLeft:5}]} secureTextEntry={secretField} onChangeText={(e) => setConfirmPassword(e)}/>
                         {secretField ? 
                             <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
-                                <Ionicons name="eye-off" size={24} color="black" />
+                                <Ionicons name="eye-off" size={24} color={Colors.theme.fontColor} />
                             </TouchableOpacity>
                                                             :
                             <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
-                                <Ionicons name="eye" size={24} color="black" />
+                                <Ionicons name="eye" size={24} color={Colors.theme.fontColor} />
                             </TouchableOpacity>
                     }
             </View>
@@ -82,6 +86,8 @@ const styles = StyleSheet.create({
     container:{
         paddingVertical:70,
         paddingHorizontal:30,
+        height:"100%",
+        backgroundColor:Colors.theme.backgroundColor
     },
     eyeContainer:{
         position:'absolute',
@@ -94,6 +100,10 @@ const styles = StyleSheet.create({
         flexDirection:"row",
         alignItems:"center",
         borderRadius:10,
-        marginVertical:5
+        marginVertical:5,
+        borderColor:Colors.theme.fontColor
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

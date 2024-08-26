@@ -1,6 +1,5 @@
 import { StyleSheet, View ,Text, Image, TextInput, Dimensions, FlatList, TouchableOpacity,ActivityIndicator } from "react-native"
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Colors } from "@/constants/Colors";
 import { router, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -14,7 +13,8 @@ import Modal from "@/components/Modal";
 import {Entypo,MaterialCommunityIcons,AntDesign} from '@expo/vector-icons';
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated,{ useAnimatedStyle, useSharedValue, withDelay, withSpring,useDerivedValue,runOnJS } from "react-native-reanimated";
-
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 function ChatRoom(){
     const socket = io(`http://${ipAddress}:3001`)
@@ -191,9 +191,9 @@ function ChatRoom(){
                 const formattedUpdatedAt = moment(item.updatedAt).format('h:mm a');
                 const isSelected = selectedChats.filter((selected) => selected == item._id)     
                 return(
-                <TouchableOpacity style={{backgroundColor:isSelected.length>0?"#ccc":null}} onLongPress={() => setSelectedChat((prev) => [...prev,item._id])} onPress={selectedChats.length>0 ? isSelected.length>0? ()=> setSelectedChat((prev) => prev.filter((chatId) => chatId.toString() != item._id.toString())) : () => setSelectedChat((prev) => [...prev,item._id]) : null}>
+                <TouchableOpacity style={{backgroundColor:isSelected.length>0?Colors.theme.backgroundTransparent:null}} onLongPress={() => setSelectedChat((prev) => [...prev,item._id])} onPress={selectedChats.length>0 ? isSelected.length>0? ()=> setSelectedChat((prev) => prev.filter((chatId) => chatId.toString() != item._id.toString())) : () => setSelectedChat((prev) => [...prev,item._id]) : null}>
                     <View style={[styles.messageBackground,{alignItems: item.senderId == user.data._id ? "flex-end" : "flex-start"}]}>
-                        <View style={[styles.message , {backgroundColor:item.senderId  == user.data._id ?  Colors.light.text  : "#fff"}]}>
+                        <View style={[styles.message , {backgroundColor:item.senderId  == user.data._id ?  Colors.light.text  : Colors.theme.primaryMix}]}>
                             <Text style={[styles.messageText , {color:item.senderId ==   user.data._id ? "#fff" :"#000"}]}>{item.message}</Text>
                         </View>
                         <View>
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     selected:{
         paddingTop:45,
         paddingVertical:20,
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.backgroundTransparent,
 
     },
     details:{
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     },
     message:{
         backgroundColor:Colors.light.text,
-        borderRadius:10,
+        borderRadius:30,
         paddingHorizontal:20,
         paddingVertical:10,
         maxWidth:250

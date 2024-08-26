@@ -1,7 +1,20 @@
-import { Colors } from "@/constants/Colors"
 import React,{ useMemo } from "react"
 import { TouchableOpacity,View,Image,Text, StyleSheet } from "react-native"
-const StoriesComp = React.memo(({item,onPress}) =>{
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
+
+interface StoryProps{
+    creator:any[],
+    username:string,
+    profilePicture?:string
+}
+
+interface StoriesCompProps{
+    item :StoryProps,
+    onPress:()=>void
+}
+
+const StoriesComp:React.FC<StoriesCompProps>= React.memo(({item,onPress}) =>{
     return(
         <TouchableOpacity style={{marginHorizontal:3,alignItems:"center"}}  onPress={onPress}>
         <View style={styles.storyContainer}>

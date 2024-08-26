@@ -9,7 +9,8 @@ import {ipAddress} from "../constants/ipAddress"
 import OtpDigits from "@/components/otpDigits"
 import TouchButton from "@/components/touchButton"
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 function OtpAuth(){
     const [otp,setOtp] = useState(['','','',''])
@@ -53,7 +54,7 @@ function OtpAuth(){
             <BackArrow/>
             <View style={{marginTop:5,alignItems:"center"}}>
                 <Image source={require("../assets/images/MobileBro.png")} style={{width:250,height:240}}/>
-                <Text style={{textAlign:"center",fontFamily:"Poppins-Bold",fontSize:17,marginVertical:10}}>Enter Verification Code</Text>
+                <Text style={[styles.textColor,{textAlign:"center",fontFamily:"Poppins-Bold",fontSize:17,marginVertical:10}]}>Enter Verification Code</Text>
             </View>
             <View style={{
                 flexDirection:'row',
@@ -70,7 +71,7 @@ function OtpAuth(){
                 })}
             </View>
             <View style={{alignItems:"center",marginVertical:10}}>
-                <Text style={{fontFamily:"Poppins-Light"}}>Resend Otp In 01:30</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>Resend Otp In 01:30</Text>
             </View>
             <View style={{alignItems:"center"}}>
                 {!validOtp && <Text style={{fontFamily:"Poppins-Bold",color:"red"}}>Invalid Otp</Text>}
@@ -85,7 +86,9 @@ export default OtpAuth
 const styles = StyleSheet.create({
     container:{
         paddingVertical:55,
-        paddingHorizontal:25
+        paddingHorizontal:25,
+        height:"100%",
+        backgroundColor:Colors.theme.backgroundColor
     },
     box:{
         borderWidth:1,
@@ -95,5 +98,8 @@ const styles = StyleSheet.create({
         borderRadius:5,
         textAlign:"center",
         fontFamily:"Poppins-Light"
+       },
+       textColor:{
+            color:Colors.theme.fontColor
        }
 })

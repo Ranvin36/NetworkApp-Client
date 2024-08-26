@@ -1,4 +1,4 @@
-import { StyleSheet, View ,Text, TouchableOpacity,Image, Dimensions, ScrollView, FlatList, RefreshControl, ToastAndroid, TextInput } from "react-native"
+import { StyleSheet, View ,Text, TouchableOpacity,Image, Dimensions, ScrollView, FlatList, RefreshControl, ToastAndroid, TextInput, ActivityIndicator } from "react-native"
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { MaterialCommunityIcons , MaterialIcons } from '@expo/vector-icons';
 import { router } from "expo-router";
@@ -12,29 +12,59 @@ import axios from "axios";
 import { ipAddress } from "@/constants/ipAddress";
 import Animated, { useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { ResizeMode, Video } from "expo-av";
-import { Colors } from "@/constants/Colors";
 import ProfileActivity from "@/components/profileActivity";
 import ProfileTabs from "@/components/profileTabs";
 import { Skeleton } from "moti/skeleton";
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
+
+type ProfilePicture={
+    uri: string,
+    name: string,
+    type: string,
+}
+
+type PostTypes={
+    _id: number,
+    user_id: number,
+    title: string,
+    image: string | null,
+    video: string | null,
+    likes: any,
+    comments: any,
+    created_at: string,
+    updated_at: string,
+    creator: [{
+        id: number,
+        userId: string,
+        username: string,
+        profile_pic: string | null,
+        created_at: string,
+        updated_at: string,
+    }]
+}
 
 function Profile() {
     const user = useSelector((state: rootStore) => state.user.user)
-    const [profilePic, setProfilePic] = useState([])
+    const [profilePic, setProfilePic] = useState<ProfilePicture[] | null>(null)
     const [followerData, setFollowerData] = useState([])
-    const [selectedIndex, setSelectedIndex] = useState(0)
-    const [refreshing, setRefreshing] = useState(false)
     const [likedPosts, setLikePosts] = useState([])
-    const [editUsername, setEditUsername] = useState(false)
-    const [username,setUsername] = useState(user.data.username)
+    const [bookmarkedPosts, setBookmarkedPosts] = useState([])
     const [selected,setSelected] =  useState([])
-    const [posts, setPosts] = useState([])
-    const screenWidth = Dimensions.get('window').width
-    const tabWidth = screenWidth / 3
+    const [posts, setPosts] = useState<PostTypes[]>([])
+    const [refreshing, setRefreshing] = useState(false)
+    const [editUsername, setEditUsername] = useState(false)
+    const [loading,setLoading]  = useState(false)
+    const [selectedIndex, setSelectedIndex] = useState(0)
+    const [username, setUsername] = useState<string>(user?.data?.username ?? '');
     const dispatch = useDispatch()
     const position = useSharedValue(70)
     const scrollViewRef = useRef()
     const postLayout = Dimensions.get('window').width / 3
-    const [loading,setLoading]  = useState(false)
+    const screenWidth = Dimensions.get('window').width
+    const tabWidth = screenWidth / 3
+    const videos = posts.filter((item) => item.video)
+    const post = posts.filter((item) => item.image) 
 
     async function UpdateProfilePic() {
         const selectImage = await ImagePicker.launchImageLibraryAsync({
@@ -59,21 +89,23 @@ function Profile() {
         }
     }
 
-    async function CloudUpload(image) {
+    async function CloudUpload(image:ProfilePicType) {
+        setLoading(true)
         const formData = new FormData()
-        formData.append('image', {
+        formData?.append('image', {
             uri: image.uri,
             name: image.name,
             type: image.type,
         })
-
+        
         const response = await axios.post(`http://${ipAddress}:3001/posts/upload-profile-pic/`, formData, {
             headers: {
                 "Content-Type": 'multipart/form-data',
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
-
+        
+        setLoading(false)
         console.log(response.data.file)
         dispatch(updateProfilePic(response.data.file))
     }
@@ -105,9 +137,9 @@ function Profile() {
     }
 
     async function GetFollowers() {
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user.data._id}`, {
+        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user?.data._id}`, {
             headers: {
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
 
@@ -115,26 +147,26 @@ function Profile() {
     }
 
     async function getPosts() {
-        const response = await axios.get(`http://${ipAddress}:3001/posts/${user.data._id}`, {
+        const response = await axios.get(`http://${ipAddress}:3001/posts/${user?.data._id}`, {
             headers: {
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
         setPosts(response.data.data)
     }
 
     function NavigateFollowing() {
-        router.push({ pathname: `${user.data._id}/following` })
+        router.push({ pathname: `${user?.data?._id}/following` })
     }
     function NavigateFollowers() {
-        router.push({ pathname: `${user.data._id}/followers` })
+        router.push({ pathname: `${user?.data._id}/followers` })
     }
 
     async function GetLikedPosts(){
         setLoading(true)
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user.data._id}`,{
+        const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user?.data._id}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
         
@@ -142,18 +174,39 @@ function Profile() {
         const data = {IDS : likedPost}
         const posts = await axios.post(`http://${ipAddress}:3001/posts/liked`,data,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
         setLikePosts(posts.data.data)
         setLoading(false)
     }
 
+    async function GetBookmarkedPosts(){
+        const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user?.data._id}`,{
+            headers:{
+                Authorization:`Bearer ${user?.token}`
+            }
+        })
+        const bookmarkedPosts = response.data.data.bookmarks
+        const data={IDS:bookmarkedPosts}
+        const bookmarks = await axios.post(`http://${ipAddress}:3001/posts/bookmarks`,data,{
+            headers:{
+                Authorization: `Bearer ${user?.token}`
+            }
+        })
+
+        setBookmarkedPosts(bookmarks.data.data)
+    }
+
+    useEffect(() => {
+        GetBookmarkedPosts()
+    },[])
+
     async function DeletePosts(){
         const data = {"ids" : selected}
         const response = await axios.post(`http://${ipAddress}:3001/posts/delete-post/`,data,{
             headers:{
-                Authorization : `Bearer ${user.token}`
+                Authorization : `Bearer ${user?.token}`
             }
         })
         
@@ -167,7 +220,7 @@ function Profile() {
                 const data = {"username":username}
                 const response = await axios.post(`http://${ipAddress}:3001/users/change-username/`,data,{
                     headers:{
-                        Authorization: `Bearer ${user.token}`
+                        Authorization: `Bearer ${user?.token}`
                     }
                 }) 
                 console.log(response.data)
@@ -207,11 +260,11 @@ function Profile() {
 
     function ResetUsername(){
         setEditUsername(false)
-        setUsername(user.data.username)
-
+        if(user && user.data && user.data.username){
+            setUsername(user.data.username)
+        }
     }
 
-    console.log(selected)
 
 
     return (
@@ -255,13 +308,13 @@ function Profile() {
             <View style={styles.details}>
                 <View style={styles.profilePic}>
                     <View>
-                        {user.data.profilePicture.length > 5 ?
-                            <Image source={{ uri: user.data.profilePicture }} style={{ width: 100, height: 100, borderRadius: 20 }} />
+                        {user?.data.profilePicture.length > 5 ?
+                            <Image source={{ uri: user?.data.profilePicture }} style={{ width: 100, height: 100, borderRadius: 20 }} />
                             :
                             <Image source={require("../../assets/images/model.jpg")} style={{ width: 100, height: 100, borderRadius: 20 }} />
                         }
                         <TouchableOpacity style={{ position: 'absolute', bottom: -10, right: -10, backgroundColor:Colors.theme.commentsBg, padding: 5, borderRadius: 50, height: 40, width: 40, justifyContent: "center", alignItems: "center" }} onPress={UpdateProfilePic}>
-                            <Feather name="edit-2" size={20} color={Colors.theme.fontColor} />
+                            {loading? <ActivityIndicator/>  : <Feather name="edit-2" size={20} color={Colors.theme.fontColor} /> }
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -288,24 +341,24 @@ function Profile() {
                 </View>
                 <View style={styles.boxLayout}>
                     <TouchableOpacity style={styles.box} onPress={NavigateFollowing}>
-                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>120</Text>
+                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>{followerData && followerData.length>0 &&  followerData[0].following.length}</Text>
                         <Text style={[styles.textColor,{ fontFamily: "Poppins-Regular"}]}>Following</Text>
                         <View style={styles.line}></View>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.box} onPress={NavigateFollowers}>
-                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>120</Text>
+                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>{followerData && followerData.length>0 &&  followerData[0].followers.length}</Text>
                         <Text style={[styles.textColor,{ fontFamily: "Poppins-Regular"}]}>Followers</Text>
                         <View style={styles.line}></View>
                     </TouchableOpacity>
                     <View style={styles.box}>
-                    <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>120</Text>
+                    <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>{post && post.length}</Text>
                     <Text style={[styles.textColor,{ fontFamily: "Poppins-Regular"}]}>Posts</Text>
                     </View>
                 </View>
             </View>
             <View>
 
-                <ProfileTabs selectedIndex={selectedIndex} TabClick={TabClick} position={position}/>
+                <ProfileTabs selectedIndex={selectedIndex} TabClick={TabClick} position={position} profileView={true}/>
                 {/* Tab 1 */}
                 <Animated.ScrollView
                     ref={scrollViewRef}
@@ -323,13 +376,28 @@ function Profile() {
                     }}
                 >
                     <View style={{width:Dimensions.get('window').width}}>
-                        <FlatList data={posts} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
+                        <FlatList data={post} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
                             const isImage = item.image
                             return(
                                 <View  >
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                         {loading ? null :
-                                            <ProfileActivity item={item} isImage={isImage} userId={user.data._id} setSelected={setSelected} selected={selected}/> 
+                                            <ProfileActivity item={item} isImage={isImage} userId={user?.data._id} setSelected={setSelected} selected={selected}/> 
+                                        }
+                                    </Skeleton>
+                                </View>
+                                    
+                            )
+                        }}/>
+                    </View>
+                    <View style={{width:Dimensions.get('window').width}}>
+                        <FlatList data={videos} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
+                            const isImage = item.image
+                            return(
+                                <View  >
+                                    <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
+                                        {loading ? null :
+                                            <ProfileActivity item={item} isImage={isImage} userId={user?.data._id} setSelected={setSelected} selected={selected}/> 
                                         }
                                     </Skeleton>
                                 </View>
@@ -345,32 +413,30 @@ function Profile() {
                                 {loading ? null :  
                                 <TouchableOpacity onPress={() => router.push("/profileLike")}>
 
-                                    <Image source={{uri:item.image}} style={styles.postLayout} />
+                                    <Image source={{uri:item?.image}} style={styles.postLayout} />
                                 </TouchableOpacity>
                                 }
                             </Skeleton>
                         )
                     }} />
-                </View>
+                    </View>
 
                     {/* Tab 3 */}
-                    <View style={{ flexDirection: "row", width: screenWidth, flexWrap: "wrap"}}>
-                        <View>
-                            <Image source={require("../../assets/images/valorant.jpeg")} style={styles.postLayout} />
-                        </View>
-                        <View>
-                            <Image source={require("../../assets/images/model.jpg")} style={styles.postLayout} />
-                        </View>
-                        <View>
-                            <Image source={require("../../assets/images/valorant.jpeg")} style={styles.postLayout} />
-                        </View>
-                        <View>
-                            <Image source={require("../../assets/images/valorant.jpeg")} style={styles.postLayout} />
-                        </View>
-                        <View>
-                            <Image source={require("../../assets/images/valorant.jpeg")} style={styles.postLayout} />
-                        </View>
+                <View style={{width:Dimensions.get('window').width}}>
+                    <FlatList data={bookmarkedPosts}  numColumns={3} keyExtractor={(item) => item}  renderItem={({item}) => {
+                        return(
+                            <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
+                                {loading ? null :  
+                                <TouchableOpacity onPress={() => router.push("/profileLike")}>
+
+                                    <Image source={{uri:item?.image}} style={styles.postLayout} />
+                                </TouchableOpacity>
+                                }
+                            </Skeleton>
+                        )
+                    }} />
                     </View>
+                   
                 </Animated.ScrollView>
             </View>
         </ScrollView>

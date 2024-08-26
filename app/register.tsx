@@ -6,7 +6,8 @@ import { useState } from "react"
 import axios from "axios"
 import { ipAddress } from "@/constants/ipAddress"
 import { MaterialCommunityIcons,AntDesign,Ionicons } from '@expo/vector-icons';
-import { Colors } from "@/constants/Colors"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 function Register(){
     const [username,setUsername] = useState('')
@@ -56,27 +57,27 @@ function Register(){
         // </View>
         <View style={styles.loginContainer}>
         <View>
-            <Text style={{fontFamily:"Poppins-Bold" , fontSize:35}}>Let's,</Text>
-            <Text style={{fontFamily:"Poppins-Bold" , fontSize:33}}>Get Started</Text>
+            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold" , fontSize:35}]}>Let's,</Text>
+            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold" , fontSize:33}]}>Get Started</Text>
         </View>
         <View style={{marginTop:20}}>
             <View>
-                <Text style={{fontFamily:"Poppins-Light"}}>Create Your Account</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>Create Your Account</Text>
             </View>
             <View style={styles.textInputs}>
                 <TextInputLayout placeholder="Enter Your Username" onChange={setUsername} icon="face-man-outline"/>
                 <TextInputLayout placeholder="Enter Your Email" onChange={setEmail} icon="email-outline"/>
                 
                 <View style={[styles.fieldContainer,{position:"relative"}]}>
-                    <AntDesign name="lock" size={22} color="black"  style={{marginBottom:3}}/>
-                    <TextInput  placeholder="Enter Your Password"  style={{fontFamily:"Poppins-Light",width:"100%",marginLeft:5}} onChangeText={(e) => setPassword(e)} secureTextEntry={secretField}/>
+                    <AntDesign name="lock" size={22} color={Colors.theme.fontColor}  style={{marginBottom:3}}/>
+                    <TextInput  placeholder="Enter Your Password" placeholderTextColor={Colors.theme.fontColor} style={{fontFamily:"Poppins-Light",width:"100%",marginLeft:5}} onChangeText={(e) => setPassword(e)} secureTextEntry={secretField}/>
                     {secretField ?
                         <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
-                            <Ionicons name="eye-off" size={24} color="black" />
+                            <Ionicons name="eye-off" size={24} color={Colors.theme.fontColor} />
                         </TouchableOpacity>
                                                 :
                     <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
-                        <Ionicons name="eye" size={24} color="black" />
+                        <Ionicons name="eye" size={24} color={Colors.theme.fontColor} />
                     </TouchableOpacity>
                     }
                 </View>
@@ -88,7 +89,7 @@ function Register(){
                 <Text style={{fontFamily:"Poppins-Bold",color:"#fff",fontSize:15}}>Sign Up</Text>
             </TouchableOpacity>
             <View style={{marginVertical:20}}>
-                <Text style={{fontFamily:"Poppins-Light",textAlign:'center'}}>Already Have An Account? <Text style={{color:Colors.light.text,fontFamily:"Poppins-Bold"}}>Sign In</Text></Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Light",textAlign:'center'}]}>Already Have An Account? <Text style={{color:Colors.light.text,fontFamily:"Poppins-Bold"}}>Sign In</Text></Text>
             </View>
         </View>
     </View>
@@ -99,9 +100,10 @@ export default Register
 
 const styles = StyleSheet.create({
     loginContainer:{
-        paddingVertical:70,
+        paddingVertical:100,
         paddingHorizontal:30,
-        marginTop:30
+        height:"100%",
+        backgroundColor:Colors.theme.backgroundColor
     },
     textInputs:{marginVertical:15},
     inputFields:{
@@ -114,7 +116,8 @@ const styles = StyleSheet.create({
         flexDirection:"row",
         alignItems:"center",
         borderRadius:10,
-        marginVertical:5
+        marginVertical:5,
+        borderColor:Colors.theme.fontColor
     },
     loginBtn:{
         backgroundColor:Colors.light.text,
@@ -126,6 +129,9 @@ const styles = StyleSheet.create({
         position:'absolute',
         top:"50%",
         right:20
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
     
 })

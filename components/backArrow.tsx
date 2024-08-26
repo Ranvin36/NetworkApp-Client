@@ -1,8 +1,8 @@
 import { TouchableOpacity } from "react-native"
 import { router } from "expo-router"
 import { MaterialIcons } from '@expo/vector-icons';
-import { Colors } from "@/constants/Colors";
-
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 function BackArrow(){
     return(
         <TouchableOpacity onPress={()=>router.back()} style={{

@@ -6,13 +6,15 @@ import { useSelector } from "react-redux"
 import { rootStore } from "../redux/store"
 import { ipAddress } from "@/constants/ipAddress"
 import { AntDesign,Entypo,Ionicons,Feather} from "@expo/vector-icons"
-import { Colors } from "@/constants/Colors"
 import { router, useLocalSearchParams } from "expo-router"
 import Animated,{useSharedValue,withTiming,withSpring, useAnimatedStyle,useAnimatedReaction, useDerivedValue,runOnJS} from "react-native-reanimated"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import * as Haptics from 'expo-haptics'
 import PostComponent from "@/components/postComponent"
 const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
+
 
 function Page(){
     const user = useSelector((state:rootStore)=>state.user.user)
@@ -52,7 +54,7 @@ function Page(){
     async function GetPosts(){
         const response = await axios.get(`http://${ipAddress}:3001/posts/${id}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
@@ -61,9 +63,9 @@ function Page(){
     
     
     async function GetFollowers(){
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user.data._id}`,{
+        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user?.data._id}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
         setFollows(response.data)
@@ -71,7 +73,7 @@ function Page(){
     async function LikePost(uid){
         const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
@@ -79,7 +81,7 @@ function Page(){
     async function unlikePost(uid){
         const response = await axios.post(`http://${ipAddress}:3001/posts/unlike-posts/${uid}`,null,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
     }
@@ -118,7 +120,7 @@ function Page(){
         const data = {"message":comment}
         const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
             headers:{
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
     }
@@ -126,7 +128,7 @@ function Page(){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         const response = await axios.delete(`http://${ipAddress}:3001/users/remove-follower/${uid}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
@@ -137,7 +139,7 @@ function Page(){
         try{
             const response = await axios.post(`http://${ipAddress}:3001/users/add-follower/${uid}`,null,{
                 headers:{
-                    Authorization:`Bearer ${user.token}`
+                    Authorization:`Bearer ${user?.token}`
                 }
             })
             setFollowCount((prev) => [...prev, 1])
@@ -158,7 +160,7 @@ function Page(){
 
     return(
         <View style={styles.container}>
-            <Text style={{fontFamily:"Poppins-Bold",fontSize:25}}>Posts</Text>
+            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:25}]}>Posts</Text>
             <FlatList showsVerticalScrollIndicator={false} data={posts} renderItem={({item}) =>{
                     const creatorImage = item.creator[0].profilePicture
                     const imgUrl = item.image
@@ -239,7 +241,7 @@ const styles = StyleSheet.create({
         paddingHorizontal:20,
         paddingVertical:45,
         flex:1,
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.backgroundColor,
         height:"100%"
     },   
     contentScroller:{
@@ -328,5 +330,8 @@ const styles = StyleSheet.create({
     video:{
         width:100,
         height:100
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

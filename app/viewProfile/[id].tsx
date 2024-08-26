@@ -12,9 +12,10 @@ import ProfileActivity from "@/components/profileActivity"
 import BackArrow from "@/components/backArrow"
 import { Entypo } from "@expo/vector-icons"
 import { Video,ResizeMode } from "expo-av"
-import { Colors } from "@/constants/Colors"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import  {FollowUser,UnFollowUser} from "../../components/CallBacks/CallBackFunctions"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 function Page(){
   const {width:SCREEN_WIDTH , height:SCREEN_HEIGHT} = Dimensions.get('window')
@@ -84,7 +85,7 @@ function Page(){
     router.push({pathname:`${id}/following`})
   }
 
-  function TabClick(index: number) {
+  function TabClick(index: number){
     setSelectedIndex(index)
     setTimeout(()=>{
         position.value=40
@@ -93,7 +94,7 @@ function Page(){
         x: index * SCREEN_WIDTH,
         animated: true
     })
-}
+  }
 
   function openBottomSheet(){
     if(bottomSheetOpened){
@@ -161,10 +162,10 @@ const GetFollowers = useCallback(async () =>{
             <BackArrow/>
           </View>
           <View>
-            <Text style={{fontFamily:"Poppins-Bold",fontSize:16}}>@Himaz Rox</Text>
+            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:16}]}>@Himaz Rox</Text>
           </View>
-          <TouchableOpacity onPress={openBottomSheet}>
-            <Entypo name="dots-three-vertical" size={20} color="black" />
+          <TouchableOpacity onPress={openBottomSheet} style={styles.backgroundColor}>
+            <Entypo name="dots-three-vertical" size={20} color={Colors.theme.fontColor} />
           </TouchableOpacity>
         </View>
         <View style={styles.pageHeader}>
@@ -173,25 +174,25 @@ const GetFollowers = useCallback(async () =>{
                   <Image source={{uri:profileUser.profilePicture}} style={{width:100,height:100,borderRadius:20}}/>
                 </View>
                 <View style={{marginVertical:10}}>
-                  <Text style={{fontFamily:"Poppins-Bold",marginLeft:10,fontSize:19,textAlign:"center"}}>{profileUser.username}</Text>
+                  <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",marginLeft:10,fontSize:19,textAlign:"center"}]}>{profileUser.username}</Text>
                 </View>
             </View>
         </View>
         <View style={{alignItems:"center"}}>
           <View style={styles.boxLayout}>
                             <TouchableOpacity style={styles.box} onPress={ViewFollowing}>
-                                <Text style={{fontFamily:"Poppins-Bold"}}>{profileUser.following && profileUser.following.length  ? profileUser.following.length : 0}</Text>
-                                <Text style={{fontFamily:"Poppins-Regular"}}>Following</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>{profileUser.following && profileUser.following.length  ? profileUser.following.length : 0}</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Regular"}]}>Following</Text>
                                 <View style={styles.line}></View>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.box} onPress={ViewFollowers}>
-                                <Text style={{fontFamily:"Poppins-Bold"}}>{profileUser.followers && profileUser.followers.length ? profileUser.followers.length : 0}</Text>
-                                <Text style={{fontFamily:"Poppins-Regular"}}>Followers</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>{profileUser.followers && profileUser.followers.length ? profileUser.followers.length : 0}</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Regular"}]}>Followers</Text>
                                 <View style={styles.line}></View>
                             </TouchableOpacity>
                             <View style={styles.box}>
-                                <Text style={{fontFamily:"Poppins-Bold"}}>2</Text>
-                                <Text style={{fontFamily:"Poppins-Regular"}}>Posts</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>2</Text>
+                                <Text style={[styles.textColor,{fontFamily:"Poppins-Regular"}]}>Posts</Text>
                             </View>
 
           </View>
@@ -206,12 +207,12 @@ const GetFollowers = useCallback(async () =>{
               <Text style={{fontFamily:"Poppins-Bold",color:"#fff",textAlign:"center",fontSize:14}}>Follow</Text>
             </TouchableOpacity>
           }
-          <TouchableOpacity style={[styles.button,{backgroundColor:"#f3f3f3f3"}]} onPress={() => router.push({pathname:`chatRoom/${id}`})}>
+          <TouchableOpacity style={[styles.button,{backgroundColor:Colors.theme.backgroundTransparent}]} onPress={() => router.push({pathname:`chatRoom/${id}`})}>
             <Text style={{fontFamily:"Poppins-Bold",color:Colors.light.text,textAlign:"center",fontSize:14}}>Message</Text>
           </TouchableOpacity>
 
         </View>
-        <ProfileTabs selectedIndex={selectedIndex} TabClick={TabClick} position={position}/>
+        <ProfileTabs selectedIndex={selectedIndex} TabClick={TabClick} position={position} profileView={false}/>
         <Animated.ScrollView
         ref={scrollViewRef}
         horizontal
@@ -321,7 +322,7 @@ const styles = StyleSheet.create({
   container : {
     paddingTop:30,
     // paddingHorizontal:30,
-    backgroundColor:"#fff",
+    backgroundColor:Colors.theme.backgroundColor,
     height:"100%",
     position:"relative"
   },
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
   line:{
     position:"absolute",
     right:-10,
-    backgroundColor:"#000",
+    backgroundColor:Colors.theme.fontColor,
     width:1,
     height:20
   }, 
@@ -390,5 +391,13 @@ const styles = StyleSheet.create({
   },
   textWrap:{
     marginVertical:6
+  },
+  textColor:{
+    color:Colors.theme.fontColor
+  },
+  backgroundColor:{
+    backgroundColor:Colors.theme.backgroundTransparent,
+    padding:5,
+    borderRadius:5
   }
 })

@@ -13,7 +13,8 @@ import * as Haptics from "expo-haptics"
 import { router } from "expo-router";
 import {AntDesign,Entypo,Feather} from '@expo/vector-icons';
 import SelectedOptions from "@/components/SelectedOptions";
-import { Colors } from "@/constants/Colors";
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 function Chats(){
     const socket = io(`http://${ipAddress}:3001`)
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
         alignItems:"center"
     },
     chatContainer:{
-        backgroundColor:"#f2f2f2",
+        backgroundColor:Colors.theme.backgroundTransparent,
         marginHorizontal:10,
         paddingHorizontal:10,
         borderRadius:10,

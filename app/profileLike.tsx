@@ -6,13 +6,16 @@ import { useSelector } from "react-redux"
 import { rootStore } from "./redux/store"
 import { ipAddress } from "@/constants/ipAddress"
 import { AntDesign,Entypo,Ionicons,Feather} from "@expo/vector-icons"
-import { Colors } from "@/constants/Colors"
 import { router, useLocalSearchParams } from "expo-router"
 import Animated,{useSharedValue,withTiming,withSpring, useAnimatedStyle,useAnimatedReaction, useDerivedValue,runOnJS} from "react-native-reanimated"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import * as Haptics from 'expo-haptics'
 import PostComponent from "@/components/postComponent"
 const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
+import { ColorPalatte } from "@/constants/Colors";
+
+    const Colors = ColorPalatte()
+
 
 function ProfileLiked(){
     const user = useSelector((state:rootStore)=>state.user.user)
@@ -164,7 +167,7 @@ function ProfileLiked(){
 
     return(
         <View style={styles.container}>
-            <Text style={{fontFamily:"Poppins-Bold",fontSize:25}}>Liked</Text>
+            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:25}]}>Liked</Text>
             <FlatList showsVerticalScrollIndicator={false} data={posts} renderItem={({item}) =>{
                     const creatorImage = item.creator[0].profilePicture
                     const imgUrl = item.image
@@ -245,7 +248,7 @@ const styles = StyleSheet.create({
         paddingHorizontal:20,
         paddingVertical:45,
         flex:1,
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.backgroundColor,
         height:"100%"
     },   
     contentScroller:{
@@ -334,5 +337,8 @@ const styles = StyleSheet.create({
     video:{
         width:100,
         height:100
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

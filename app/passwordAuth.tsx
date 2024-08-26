@@ -8,13 +8,15 @@ import {router} from "expo-router"
 import {ipAddress} from "../constants/ipAddress"
 import OtpDigits from "@/components/otpDigits"
 import TouchButton from "@/components/touchButton"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 function PasswordAuth(){
     const [otp,setOtp] = useState(['','','',''])
     const [validOtp,setValidOtp] = useState(true) 
     const user = useSelector((state:rootStore) => state.user.user)
     const receivedOtp = useSelector((state:rootStore) => state.otp.otp)
-    function handleOtpChange(value,index){
+    function handleOtpChange(value:number,index:number){
         console.log(value)
         const newOtp = [...otp]
         newOtp[index] = value
@@ -47,7 +49,7 @@ function PasswordAuth(){
             <BackArrow/>
             <View style={{marginTop:5,alignItems:"center"}}>
                 <Image source={require("../assets/images/MobileBro.png")} style={{width:250,height:240}}/>
-                <Text style={{textAlign:"center",fontFamily:"Poppins-Bold",fontSize:17,marginVertical:10}}>Enter Verification Code</Text>
+                <Text style={[styles.textColor,{textAlign:"center",fontFamily:"Poppins-Bold",fontSize:17,marginVertical:10}]}>Enter Verification Code</Text>
             </View>
             <View style={{
                 flexDirection:'row',
@@ -64,7 +66,7 @@ function PasswordAuth(){
                 })}
             </View>
             <View style={{alignItems:"center",marginVertical:10}}>
-                <Text style={{fontFamily:"Poppins-Light"}}>Resend Otp In 01:30</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>Resend Otp In 01:30</Text>
             </View>
             <View style={{alignItems:"center"}}>
                 {!validOtp && <Text style={{fontFamily:"Poppins-Bold",color:"red"}}>Invalid Otp</Text>}
@@ -79,7 +81,9 @@ export default PasswordAuth
 const styles = StyleSheet.create({
     container:{
         paddingVertical:55,
-        paddingHorizontal:25
+        paddingHorizontal:25,
+        backgroundColor:Colors.theme.backgroundColor,
+        height:"100%"
     },
     box:{
         borderWidth:1,
@@ -89,5 +93,8 @@ const styles = StyleSheet.create({
         borderRadius:5,
         textAlign:"center",
         fontFamily:"Poppins-Light"
+       },
+       textColor:{
+        color:Colors.theme.fontColor
        }
 })

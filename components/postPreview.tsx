@@ -1,11 +1,13 @@
 import { View,Text,TouchableOpacity,Dimensions,StyleSheet,Image} from "react-native"
 import { Entypo,AntDesign,Feather,Ionicons } from "@expo/vector-icons"
 import * as Haptics from 'expo-haptics' 
-import { Colors } from "@/constants/Colors"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
+
 
 function PostPreview({user,image,text,setImage}){
     return(
-        <View style={{backgroundColor:Colors.theme.commentsBg,borderRadius:15,padding:10,width:Dimensions.get('window').width-50 ,alignSelf:"center"}}>
+        <View style={{backgroundColor:Colors.theme.backgroundTransparent,borderRadius:15,padding:10,width:Dimensions.get('window').width-50 ,alignSelf:"center"}}>
         <View style={{flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
             <View style={[styles.userAccount,{marginTop:0,paddingHorizontal:0}]}>
                 <View>

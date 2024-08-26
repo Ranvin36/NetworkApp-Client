@@ -1,6 +1,7 @@
 import { Link, router } from "expo-router";
 import { StyleSheet, Text, View, Image,TouchableOpacity } from "react-native";
-
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 export default function Index() {
   return (
     <View
@@ -8,7 +9,7 @@ export default function Index() {
         alignItems: "center",
 
         paddingVertical:100,
-        backgroundColor:"#fff",
+        backgroundColor:Colors.theme.backgroundColor,
         height:"100%"
       }}
     >

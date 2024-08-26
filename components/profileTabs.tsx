@@ -1,9 +1,9 @@
 import { View,TouchableOpacity, StyleSheet, Dimensions } from "react-native"
 import Animated,{useAnimatedStyle,withTiming} from "react-native-reanimated"
-import { MaterialCommunityIcons } from "@expo/vector-icons"
-import { Colors } from "@/constants/Colors"
-
-function ProfileTabs({selectedIndex,TabClick,position}){
+import { MaterialCommunityIcons,AntDesign} from "@expo/vector-icons"
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
+function ProfileTabs({selectedIndex,TabClick,position,profileView}){
     const screenWidth = Dimensions.get('window').width
         
     const lineAnimate = useAnimatedStyle(() => {
@@ -22,15 +22,23 @@ function ProfileTabs({selectedIndex,TabClick,position}){
             <Animated.View style={[lineAnimate,{width:0,backgroundColor:Colors.light.text,height:4,borderRadius:20,marginVertical:5}]}/>
             }
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabs} onPress={() => TabClick(1)}>
+            {profileView && 
+                <TouchableOpacity style={styles.tabs} onPress={() => TabClick(1)}>
+                    <AntDesign name="videocamera" size={24}  color={Colors.theme.fontColor}  />
+                    {selectedIndex == 1 &&
+                    <Animated.View style={[lineAnimate,{width:0,backgroundColor:Colors.light.text,height:4,borderRadius:20,marginVertical:5}]}/>
+                    }
+                </TouchableOpacity>
+            }
+        <TouchableOpacity style={styles.tabs} onPress={() => TabClick(2)}>
             <MaterialCommunityIcons name="heart-outline" size={24} color={Colors.theme.fontColor} />
-            {selectedIndex == 1 &&
+            {selectedIndex == 2 &&
             <Animated.View style={[lineAnimate,{width:0,backgroundColor:Colors.light.text,height:4,borderRadius:20,marginVertical:5}]}/>
             }
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabs} onPress={() => TabClick(2)}>
+        <TouchableOpacity style={styles.tabs} onPress={() => TabClick(3)}>
             <MaterialCommunityIcons name="bookmark-outline" size={24} color={Colors.theme.fontColor} />
-            {selectedIndex == 2 &&
+            {selectedIndex == 3 &&
             <Animated.View style={[lineAnimate,{width:0,backgroundColor:Colors.light.text,height:4,borderRadius:20,marginVertical:5}]}/>
             }
         </TouchableOpacity>

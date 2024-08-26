@@ -12,15 +12,16 @@ import { rootStore } from "./redux/store";
 import { ipAddress } from "@/constants/ipAddress";
 import * as SMS from 'expo-sms';
 import { MaterialCommunityIcons,AntDesign } from '@expo/vector-icons';
-import { Colors } from "@/constants/Colors";
 import TouchButton from "@/components/touchButton";
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 function Login(){
-
     const [email,setEmail] = useState('')
     const [password,setPassword] = useState('')
     const [receivedOtp,setReceivedOtp] = useState([])
     const [secretField, setSecretField] = useState(true)
+    const [loading, setLoading] = useState(false)
     const selector = useSelector((state:rootStore)=>state.user)
     const dispatch = useDispatch()
     const router = useRouter()
@@ -36,15 +37,18 @@ function Login(){
     }
     async function LoginBtn(){
         try{
+            setLoading(true)
             dispatch(setUser({}))
             const data={email,password}
             const response = await axios.post(`http://${ipAddress}:3001/users/login`,data)
             dispatch(setUser(response.data))
             SetOtp(response.data.token)
+            setLoading(false)
             console.log("DONE")
         }
         catch(error){
             console.log(error)
+            setLoading(false)
             ToastAndroid.show("Invalid Credentials",ToastAndroid.SHORT)
         }
     }
@@ -52,8 +56,6 @@ function Login(){
     function eyeToggle(){
         setSecretField((prev) => !prev)
     }
-
-
 
     return(
         // <View style={styles.loginContainer}>
@@ -93,25 +95,25 @@ function Login(){
         // </View>
         <View style={styles.loginContainer}>
             <View>
-                <Text style={{fontFamily:"Poppins-Bold" , fontSize:35}}>Hey,</Text>
-                <Text style={{fontFamily:"Poppins-Bold" , fontSize:33}}>Welcome Back</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold" , fontSize:35}]}>Hey,</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold" , fontSize:33}]}>Welcome Back</Text>
             </View>
             <View style={{marginTop:20}}>
                 <Link href='/home'>
-                    <Text style={{fontFamily:"Poppins-Light"}}>Please Login To Continue</Text>
+                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>Please Login To Continue</Text>
                 </Link>
                 <View style={styles.textInputs}>
                     <TextInputLayout placeholder="Enter Your Email" onChange={setEmail} icon="email-outline"/>
                     <View style={[styles.fieldContainer,{position:'relative'}]}>
-                        <AntDesign name="lock" size={22} color="black"  style={{marginBottom:3}}/>
-                        <TextInput  placeholder="Enter Your Password"  style={{fontFamily:"Poppins-Light",width:"100%",marginLeft:5}} secureTextEntry={secretField} onChangeText={(e) => setPassword(e)}/>
+                        <AntDesign name="lock" size={22} color={Colors.theme.fontColor}  style={{marginBottom:3}}/>
+                        <TextInput  placeholder="Enter Your Password"  style={[styles.textColor,{fontFamily:"Poppins-Light",width:"100%",marginLeft:5}]} placeholderTextColor={Colors.theme.fontColor} secureTextEntry={secretField} onChangeText={(e) => setPassword(e)}/>
                         {secretField ? 
                             <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
-                                <Ionicons name="eye-off" size={24} color="black" />
+                                <Ionicons name="eye-off" size={24} color={Colors.theme.fontColor} />
                             </TouchableOpacity>
                                                             :
                             <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
-                                <Ionicons name="eye" size={24} color="black" />
+                                <Ionicons name="eye" size={24} color={Colors.theme.fontColor} />
                             </TouchableOpacity>
                     }
                     </View>
@@ -119,16 +121,16 @@ function Login(){
                 </View>
             </View>
             <Link href="/forgotPassword" style={{marginHorizontal:5,marginVertical:2}}>
-                <Text style={{fontFamily:"Poppins-Regular"}}>Forgot Password?</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Regular"}]}>Forgot Password?</Text>
             </Link>
             <View>
                 {/* <TouchableOpacity style={styles.loginBtn} onPress={LoginBtn}>
                     <Text style={{fontFamily:"Poppins-Bold",color:"#fff",fontSize:15}}>Login</Text>
                 </TouchableOpacity> */}
 
-                    <TouchButton text="Login" onPress={LoginBtn}/>
+                <TouchButton text="Login" onPress={LoginBtn} loading={loading}/>
                 <View style={{marginVertical:20}}>
-                    <Text style={{fontFamily:"Poppins-Light",textAlign:'center'}}>Don't Have An Account? <Text style={{color:Colors.light.text,fontFamily:"Poppins-Bold"}}>Sign Up</Text></Text>
+                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light",textAlign:'center'}]}>Don't Have An Account? <Text style={{color:Colors.light.text,fontFamily:"Poppins-Bold"}}>Sign Up</Text></Text>
                 </View>
             </View>
         </View>
@@ -139,9 +141,10 @@ export default Login
 
 const styles = StyleSheet.create({
     loginContainer:{
-        paddingVertical:70,
+        paddingVertical:100,
         paddingHorizontal:30,
-        marginTop:30
+        backgroundColor:Colors.theme.backgroundColor,
+        height:"100%"
     },
     textInputs:{marginVertical:15},
     inputFields:{
@@ -154,7 +157,8 @@ const styles = StyleSheet.create({
         flexDirection:"row",
         alignItems:"center",
         borderRadius:10,
-        marginVertical:5
+        marginVertical:5,
+        borderColor:Colors.theme.fontColor
     },
     loginBtn:{
         backgroundColor:Colors.light.text,
@@ -167,5 +171,8 @@ const styles = StyleSheet.create({
         position:'absolute',
         top:"50%",
         right:20
+    },
+    textColor:{
+        color:Colors.theme.fontColor
     }
 })

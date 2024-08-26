@@ -8,7 +8,6 @@ import { useSelector } from "react-redux";
 import { rootStore } from "../redux/store";
 import { router } from "expo-router";
 import { AntDesign,Ionicons,Feather,Entypo } from '@expo/vector-icons';
-import { Colors } from "@/constants/Colors";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { CameraView } from "expo-camera";
 import {actions, RichEditor, RichToolbar} from "react-native-pell-rich-editor";
@@ -19,6 +18,8 @@ import DescriptionBox from "@/components/descriptionBox";
 import UploadAcc from "@/components/uploadAcc";
 import UploadReel from "@/components/UploadReel";
 import { categiores } from "@/components/createCategories";
+import { ColorPalatte } from "@/constants/Colors";
+const Colors = ColorPalatte()
 
 
 function Add(){
@@ -40,7 +41,8 @@ function Add(){
             mediaTypes:ImagePicker.MediaTypeOptions.All,
             allowsEditing:true,
             aspect:[4,3],
-            quality:1
+            quality:1,
+            // allowsMultipleSelection:true
         })
         if(!pickImage.canceled){
             if(pickImage.assets[0].type == "image"){
@@ -49,7 +51,7 @@ function Add(){
             else{
                 console.log("Video")
             }
-            // console.log(pickImage.assets[0])
+            console.log(pickImage.assets[0])
             const uri = pickImage.assets && pickImage.assets[0].uri
             if(!pickImage.canceled){
                 setImage({

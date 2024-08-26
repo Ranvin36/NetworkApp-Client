@@ -3,10 +3,19 @@ import { Video, ResizeMode } from "expo-av";
 import React, { useEffect, useRef, useState } from "react";
 import { AntDesign, MaterialCommunityIcons, Feather, Entypo } from '@expo/vector-icons';
 import ReelUploader from "./ReelUploader";
+import { useSelector } from "react-redux";
+import { rootStore } from "@/app/redux/store";
+import axios from "axios";
+import { ipAddress } from "@/constants/ipAddress";
+import { ColorPalatte } from "@/constants/Colors";
 
-const VideoScroll = React.memo(({ item, shouldPlay }) => {
+const Colors = ColorPalatte()
+
+const VideoScroll = React.memo(({ item, shouldPlay,setVideos,UnlikeClip,LikeClip}) => {
   const video = useRef<Video | null>(null);
+  const user = useSelector((state:rootStore) => state.user.user)
   const [status, setStatus] = useState({ isPlaying: true });
+  const isLiked = item.likes.filter((like:number) => like.toString() == user?.data._id)
 
   useEffect(() => {
     if (!video.current) return;
@@ -21,8 +30,6 @@ const VideoScroll = React.memo(({ item, shouldPlay }) => {
       video.current?.pauseAsync()
     })
   }, [shouldPlay]);
-
-
   return (
     <Pressable
       onPress={() => status.isPlaying && video.current?.pauseAsync()}
@@ -35,15 +42,23 @@ const VideoScroll = React.memo(({ item, shouldPlay }) => {
           </TouchableOpacity>
         </View>
       )}
-      <ReelUploader/>
+      <ReelUploader user={item.user[0]}/>
       <View style={styles.iconContainer}>
-        <TouchableOpacity style={styles.iconActions}>
-          <AntDesign name="hearto" size={31} color="#fff" />
-          <Text style={styles.iconText}>110</Text>
+        <TouchableOpacity style={styles.iconActions} >
+          {isLiked.length>0 ?
+          <TouchableOpacity onPress={()=>UnlikeClip(item._id)} >
+            <AntDesign name="heart" size={31} color={Colors.theme.primary} />
+          </TouchableOpacity>
+                            :
+          <TouchableOpacity onPress={()=>LikeClip(item._id)}>
+            <AntDesign name="hearto" size={31} color="#fff" />
+          </TouchableOpacity>
+          }
+          <Text style={styles.iconText}>{item.likes.length}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconActions}>
           <MaterialCommunityIcons name="comment-outline" size={31} color="#fff" />
-          <Text style={styles.iconText}>110</Text>
+          <Text style={styles.iconText}>{item.comments.length}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconActions}>
           <Feather name="bookmark" size={31} color="#fff" />
@@ -71,6 +86,7 @@ const VideoScroll = React.memo(({ item, shouldPlay }) => {
 const styles = StyleSheet.create({
   pressable: {
     position: "relative",
+    height:Dimensions.get('window').height
   },
   playOverlay: {
     position: "absolute",

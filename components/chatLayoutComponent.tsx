@@ -1,8 +1,15 @@
-import { Colors } from "@/constants/Colors"
 import { router } from "expo-router"
 import { View,Image,Text, StyleSheet , TouchableOpacity} from "react-native"
+import { ColorPalatte } from "@/constants/Colors";
+import React from "react";
+const Colors = ColorPalatte()
 
-function ChatLayoutComponent({item,lastMessage}){
+type ChatLayout = {
+    item:any[],
+    lastMessage: string
+}
+
+const ChatLayoutComponent:React.FC<ChatLayout> = ({item,lastMessage}) => {
     const userId = item[0].userId[0]
 
     return(
