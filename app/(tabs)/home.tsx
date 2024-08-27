@@ -458,7 +458,7 @@ export default function Home(){
                 <Animated.View style={[styles.snapShotLayout,interpolateScale]}>
                     <View style={styles.snapheader}>
                         <TouchableOpacity style={[styles.storySection,styles.closeBtn]} onPress={scaleDown}> 
-                            <Ionicons name="close-outline" size={24} color="#fff"  />
+                            <Ionicons name="close-outline" size={24} color={Colors.theme.fontColor}  />
                         </TouchableOpacity>
                         <View style={[styles.storySection,{flexDirection:"row"}]}>
                             <View>
@@ -469,10 +469,10 @@ export default function Home(){
                         </View>
                         <View style={[styles.storySection,styles.storyClock]}>
                             <View style={{marginRight:5}}>
-                                <MaterialCommunityIcons name="clock-time-eight-outline" size={20} color="#fff" />
+                                <MaterialCommunityIcons name="clock-time-eight-outline" size={20} color={Colors.theme.fontColor} />
                             </View>
                             <View>
-                                <Text style={{color:"#fff",fontFamily:"Poppins-Light",fontSize:13}}>7s</Text>
+                                <Text style={{color:Colors.theme.fontColor,fontFamily:"Poppins-Light",fontSize:13}}>7s</Text>
                             </View>
                         </View>
                         <TouchableOpacity style={{borderWidth:2,borderColor:Colors.theme.primary,borderRadius:50}} onPress={() =>ViewProfile(stories[activeStory].creator[0]._id)}>
