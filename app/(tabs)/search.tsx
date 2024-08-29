@@ -11,6 +11,7 @@ import Animated,{ useAnimatedStyle,withTiming,scrollTo} from "react-native-reani
 import SearchPosts from "@/components/searchPosts";
 import  {Skeleton} from "moti/skeleton"
 import { ColorPalatte } from "@/constants/Colors";
+import SearchClips from "@/components/searchClips";
 const Colors = ColorPalatte()
 
 export default function Page(){
@@ -194,8 +195,8 @@ export default function Page(){
                                     )
                                 }}/>
                             </View>
-                            <View style={styles.contentLayout}>
-
+                            <View style={[styles.contentLayout,{paddingHorizontal:20}]}>
+                                <SearchClips/>
                             </View>
 
                         </ScrollView>

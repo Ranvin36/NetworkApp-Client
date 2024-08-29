@@ -1,5 +1,8 @@
 import { View,StyleSheet,Text,Image, TouchableOpacity} from "react-native"
 import { Ionicons } from "@expo/vector-icons"
+import { ColorPalatte } from "@/constants/Colors"
+
+const Colors = ColorPalatte()
 
 const BlockedUser:React.FC = ({item,UnBlockUser}) =>{
     return(
@@ -13,7 +16,7 @@ const BlockedUser:React.FC = ({item,UnBlockUser}) =>{
             </View>
         </View>
         <TouchableOpacity onPress={() => UnBlockUser(item.userId)}>
-                <Ionicons name="person-remove-outline" size={24} color="black" />
+                <Ionicons name="person-remove-outline" size={24} color={Colors.theme.fontColor} />
         </TouchableOpacity>
     </View>
     )
@@ -32,7 +35,8 @@ const styles = StyleSheet.create({
         marginVertical:10
     },
     text:{
-        fontFamily:"Poppins-Light"
+        fontFamily:"Poppins-Light",
+        color:Colors.theme.fontColor
     },
     profilePicture:{
         width:50,

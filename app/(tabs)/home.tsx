@@ -96,7 +96,7 @@ export default function Home(){
         translateY.value = Math.max(translateY.value, -SCREEN_HEIGHT)
     }).onEnd(()=>{
         if(translateY.value > -SCREEN_HEIGHT/2){
-            translateY.value = withSpring(0,{damping:50})
+            translateY.value = withSpring(SCREEN_HEIGHT,{damping:50})
         }
         else if(translateY.value < -SCREEN_HEIGHT/1.7){
             translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
             top:0,
             left:0,
             backgroundColor:"#000",
-            height:SCREEN_HEIGHT,
+            height:"100%",
         },
         textColor:{
             color:Colors.theme.fontColor

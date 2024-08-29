@@ -77,27 +77,36 @@ function Add(){
                 Authorization:`Bearer ${user.token}`
             }
         })
+        console.log("HEHE")
         setLoading(false)
         setImage([])
-        setDescription("")
+        setText("")
         router.push("/home")
     }
     
     async function uploadReel(){
-        setLoading(true)
-        const data = new FormData()
-        data.append('image',{uri: image.uri,name: image.name,type: image.type})
-        data.append('text',text) 
-        const response = await axios.post(`http://${ipAddress}:3001/posts/create-reel`,data,{
-            headers:{
-                'Content-Type': 'multipart/form-data',
-                Authorization:`Bearer ${user.token}`
-            }
-        })
-        setLoading(false)
-        setImage([])
-        setDescription("")
-        console.log(response.data)
+        try{
+            setLoading(true)
+            const data = new FormData()
+            data.append('image',{uri: image.uri,name: image.name,type: image.type})
+            data.append('text',text) 
+            const response = await axios.post(`http://${ipAddress}:3001/posts/create-reel`,data,{
+                headers:{
+                    'Content-Type': 'multipart/form-data',
+                    Authorization:`Bearer ${user.token}`
+                }
+            })
+            setLoading(false)
+            setImage([])
+            setText("")
+            console.log(response.data)
+        }
+        
+        catch(error){
+            console.log(error)
+            setLoading(false)
+            
+        }
     }
 
     const leftVal = useAnimatedStyle(()=>{
@@ -160,7 +169,7 @@ function Add(){
                     })}
                 </View>
 
-                <CreatePostHeader user={user.data}/>
+                <CreatePostHeader user={user?.data}/>
                 <ScrollView 
                 ref={scrollRef} 
                 horizontal 
@@ -178,7 +187,7 @@ function Add(){
                                     <View style={{paddingHorizontal:27}}>
                                         <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>Preview</Text>
                                     </View>
-                                    <PostPreview user={user.data} image={image} text={text} setImage={setImage}/>
+                                    <PostPreview user={user?.data} image={image} text={text} setImage={setImage}/>
                                     <UploadAcc uploadPost={uploadPost} selectImage={selectImage} placeholder="Upload Post" loading={loading}/>
                          </View>
                     </View>
@@ -192,7 +201,7 @@ function Add(){
                                         <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>Preview</Text>
                                     </View>
                                     {/* <PostPreview user={user.data} image={image} text={text} setImage={setImage}/> */}
-                                    <UploadReel user={user.data} image={image} text={text} setImage={setImage}/>
+                                    <UploadReel user={user?.data} image={image} text={text} setImage={setImage}/>
                                     <UploadAcc uploadPost={uploadReel} selectImage={selectImage} placeholder="Upload Reel"  loading={loading}/>
                          </View>
                     </View>
@@ -205,7 +214,7 @@ function Add(){
                                     <View style={{paddingHorizontal:27}}>
                                         <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>Preview</Text>
                                     </View>
-                                    <PostPreview user={user.data} image={image} text={text} setImage={setImage}/>
+                                    <PostPreview user={user?.data} image={image} text={text} setImage={setImage}/>
                                     <UploadAcc uploadPost={uploadPost} selectImage={selectImage} placeholder="Upload Snap" loading={loading} />
                          </View>
                     </View>
