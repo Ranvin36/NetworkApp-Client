@@ -2,14 +2,14 @@ import { View,TextInput, StyleSheet,Text} from "react-native"
 import { ColorPalatte } from "@/constants/Colors"
 const Colors = ColorPalatte()
 
-const ProfileTextInput:React.FC = ({user,placeholder,value}) =>{
+const ProfileTextInput:React.FC = ({user,placeholder,value,onChange}) =>{
     return(
         <View >
         <View style={styles.textLabel}>
-            <Text style={{fontFamily:"Poppins-Light"}}>{placeholder}</Text>
+            <Text style={{fontFamily:"Poppins-Light",color:Colors.theme.fontColor}}>{placeholder}</Text>
         </View>
         <View style={styles.textInput}>
-            <TextInput placeholderTextColor={Colors.theme.fontColor} value={value} style={{fontFamily:"Poppins-Light",fontSize:13}}/>
+            <TextInput placeholderTextColor={Colors.theme.fontColor} value={value} style={{fontFamily:"Poppins-Light",fontSize:13,color:Colors.theme.fontColor}} onChangeText={(e) => onChange(e)}/>
         </View>
     </View>
     )

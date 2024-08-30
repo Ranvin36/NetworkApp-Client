@@ -82,6 +82,7 @@ export default function RootLayout() {
           <Stack.Screen name="block" />
           <Stack.Screen name="chats" />
           <Stack.Screen name="editProfile" />
+          <Stack.Screen name="notifications" />
           <Stack.Screen name="forgotPassword" />
           <Stack.Screen name="viewProfile/[id]" />
         </Stack>

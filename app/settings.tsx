@@ -13,7 +13,6 @@ function Settings(){
     const offset =  useSharedValue(5)
     async function LogOut(){
         try{
-            console.log("INSIe")
             const clearData = await AsyncStorage.clear()
             router.replace("/login")
         }
@@ -57,7 +56,7 @@ function Settings(){
             <View style={styles.settingLayout}>
                     <Text style={{fontFamily:"Poppins-Bold",color:"#ccc"}}>Account Settings</Text>
                     <View style={styles.settingOptions}>
-                       <SettingOptions title="Notifications" icon="bell" to="block"/>
+                       <SettingOptions title="Notifications" icon="bell" to="notifications"/>
                        <SettingOptions title="Liked" icon="heart" to="block"/>
                        <SettingOptions title="Saved" icon="bookmark" to="block"/>
                        <SettingOptions title="Edit Profile" icon="edit" to="editProfile"/>
@@ -85,6 +84,14 @@ function Settings(){
                             <SettingOptions title="Log Out" icon="user-x"/>
                        </TouchableOpacity> */}
                     </View>
+            </View>
+            <View style={styles.endSection}>
+                <TouchableOpacity style={styles.logoutButton} onPress={LogOut}>
+                    <View style={{flexDirection:"row",alignItems:"center"}}>
+                        <MaterialIcons name="logout" size={24} color="#fff"/>
+                        <Text style={{color:"#fff",fontFamily:"Poppins-Bold",marginLeft:5}}>Logout</Text>
+                    </View>
+                </TouchableOpacity>
             </View>
         </View>
     )
@@ -128,5 +135,16 @@ const styles = StyleSheet.create({
         borderRadius:50,
         position:"absolute",
         // left:5
+    },
+    logoutButton:{
+        backgroundColor:Colors.theme.primary,
+        paddingVertical:15,
+        borderRadius:50,
+        alignItems:"center",
+        justifyContent:"center",
+        flexDirection:"row",
+    },
+    endSection:{
+        marginVertical:10
     }
 })
