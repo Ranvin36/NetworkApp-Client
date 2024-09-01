@@ -61,7 +61,7 @@ export default function Home(){
     const socket = io(`http://${ipAddress}:3001`)
     const dispatch = useDispatch()
     const user = useSelector((state:rootStore)=>state.user)
-    const translateY = useSharedValue(0)
+    const translateY = useSharedValue(SCREEN_HEIGHT)
     const context = useSharedValue({y:0})
     const [posts,setPosts] = useState<PostTypes[]>([])
     const [comment,setComment] = useState('')

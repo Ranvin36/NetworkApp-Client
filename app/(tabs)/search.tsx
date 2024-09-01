@@ -196,7 +196,7 @@ export default function Page(){
                                 }}/>
                             </View>
                             <View style={[styles.contentLayout,{paddingHorizontal:20}]}>
-                                <SearchClips/>
+                                <SearchClips searchText={searchText}/>
                             </View>
 
                         </ScrollView>

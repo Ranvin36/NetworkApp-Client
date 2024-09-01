@@ -7,11 +7,11 @@ import { rootStore } from "@/app/redux/store"
 import { Video,ResizeMode} from "expo-av"
 import {Feather,Ionicons} from '@expo/vector-icons';
 
-const SearchClips:React.FC = () =>{
+const SearchClips:React.FC = ({searchText}) =>{
     const user = useSelector((state:rootStore) => state.user.user)
     const [searchClips,setSearchClips] = useState([])
     async function GetSearchResults(){
-        const response =await axios.post(`http://${ipAddress}:3001/reels/search?title=a`,null,{
+        const response =await axios.post(`http://${ipAddress}:3001/reels/search?title=${searchText}`,null,{
             headers:{
                 Authorization:`Bearer ${user?.token}`
             }
@@ -22,7 +22,7 @@ const SearchClips:React.FC = () =>{
     
     useEffect(()=>{
         GetSearchResults()
-    },[])
+    },[searchText])
 
     return(
         <View style={styles.container}>

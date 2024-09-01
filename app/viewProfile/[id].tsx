@@ -43,6 +43,7 @@ function Page(){
   }).onEnd((event) =>{
       if(offSet.value > -SCREEN_HEIGHT/30){
           offSet.value=withSpring(SCREEN_HEIGHT , {damping:50})
+          runOnJS(openBottomSheet)()
       }
       else if(offSet.value > -SCREEN_HEIGHT/20){
           offSet.value=withSpring(0 , {damping:50})
@@ -51,12 +52,6 @@ function Page(){
           offSet.value=withSpring(0 , {damping:50})
       }
   })
-
-    useAnimatedReaction(() => isBottomSheetOpened.value,
-    (isOpen) =>{
-        runOnJS(setBottomSheetOpened)(isOpen)
-    }
-  )
 
   async function GetUser(){
     const response  = await axios.get(`http://${ipAddress}:3001/users/get-user/${id}`,{
@@ -98,10 +93,12 @@ function Page(){
 
   function openBottomSheet(){
     if(bottomSheetOpened){
+      setBottomSheetOpened(false)
         offSet.value=withSpring(SCREEN_HEIGHT , {damping:50})
-    }
-    else{
-      offSet.value=withSpring(0 , {damping:50})
+      }
+      else{
+        setBottomSheetOpened(true)
+        offSet.value=withSpring(0 , {damping:50})
 
     }    
   }
@@ -128,6 +125,16 @@ const GetFollowers = useCallback(async () =>{
   setFollows(response.data[0].following)
 },[user.user.data._id, user.user.token])
 
+
+  async function BlockUser(){
+    const response = await axios.post(`http://${ipAddress}:3001/users/block/${id}`,null,{
+      headers:{
+        Authorization:`Bearer ${user?.user?.token}`
+      }
+    })
+
+  }
+
   useEffect(()=>{
     GetUser()
   },[])
@@ -149,13 +156,12 @@ const GetFollowers = useCallback(async () =>{
     position.value=40
   },[])
 
-  const isFollowing = follows.filter((item) => item._id ===  id) 
-  console.log(isFollowing)
+  const isFollowing = follows.filter((item:any) => item._id ===  id) 
 
   return(
     <View>
       <View style={styles.container}>
-          <TouchableOpacity style={{position:"absolute" , backgroundColor:"#000",opacity:0.5, display:offSet.value == 0  ?"flex" :"none", width:Dimensions.get('window').width , left:0, top:0,height:SCREEN_HEIGHT,zIndex:1}} onPress={openBottomSheet}></TouchableOpacity>
+          <TouchableOpacity style={{position:"absolute" , backgroundColor:"#000",opacity:0.5, display:bottomSheetOpened  ?"flex" :"none", width:Dimensions.get('window').width , left:0, top:0,height:SCREEN_HEIGHT,zIndex:1}} onPress={openBottomSheet}></TouchableOpacity>
         
         <View style={{flexDirection:"row",justifyContent:"space-between",marginVertical:20,paddingHorizontal:20,alignItems:"center"}}>
           <View>
@@ -296,9 +302,9 @@ const GetFollowers = useCallback(async () =>{
                           <View style={styles.textWrap}>
                             <Text style={styles.bottomSheetText}>Report</Text>
                           </View>
-                          <View style={styles.textWrap}>
+                          <TouchableOpacity style={styles.textWrap} onPress={BlockUser}>
                             <Text style={styles.bottomSheetText}>Block</Text>
-                          </View>
+                          </TouchableOpacity>
                           <View style={styles.textWrap}>
                             <Text style={styles.bottomSheetText}>Profile Activity</Text>
                           </View>

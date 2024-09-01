@@ -58,7 +58,7 @@ function Settings(){
                     <View style={styles.settingOptions}>
                        <SettingOptions title="Notifications" icon="bell" to="notifications"/>
                        <SettingOptions title="Liked" icon="heart" to="block"/>
-                       <SettingOptions title="Saved" icon="bookmark" to="block"/>
+                       <SettingOptions title="Saved" icon="bookmark" to="saved"/>
                        <SettingOptions title="Edit Profile" icon="edit" to="editProfile"/>
                        <SettingOptions title="Blocked" icon="user-x" to="block"/>
                     </View>

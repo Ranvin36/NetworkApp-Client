@@ -24,7 +24,6 @@ function NewPassword(){
     async function ResetPassword(){
         if(confirmPassword == password){
             const data = {"newPassword":password, "userId":user[0]._id}
-            console.log(data)
             try{
                 const response = await axios.post(`http://${ipAddress}:3001/users/reset-password`,data)
                 router.push("/")

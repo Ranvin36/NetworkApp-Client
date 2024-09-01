@@ -42,7 +42,6 @@ function Chats(){
         setChatData(response.data.findChats)
     }
 
-    console.log(chatData)
 
 
     async function selectChat(id:number){
@@ -93,7 +92,7 @@ function Chats(){
                 </View>
                 <TextInput placeholder="Search Friends" placeholderTextColor={Colors.theme.fontColor} style={[styles.textColor,{fontFamily:"Poppins-Light",width:"90%"}]} onChangeText={(e)=>setSearchText(e)}/>
             </View>
-            <View style={{marginTop:5}}>
+            <View style={{marginTop:5,paddingHorizontal:20}}>
                 {chatData.length>0 ?
                         <FlatList data={chatData} renderItem={({item}) =>{
                                 if(item && item.creatorData && item.creatorData.length>0){

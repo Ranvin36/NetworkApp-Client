@@ -65,7 +65,6 @@ function Profile() {
     const tabWidth = screenWidth / 3
     const videos = posts.filter((item) => item.video)
     const post = posts.filter((item) => item.image) 
-
     async function UpdateProfilePic() {
         const selectImage = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -273,7 +272,7 @@ function Profile() {
         }>
             {selected.length>0 && 
                         
-                <View style={{backgroundColor:"#fff",justifyContent:"center",width:Dimensions.get("window").width,height:Dimensions.get('window').height/8,position:"absolute",left:0,top:0,elevation:10,shadowColor:"#000",zIndex:1}}>
+                <View style={styles.selectedActions}>
                     <View style={{flexDirection:"row",justifyContent:"space-between",paddingHorizontal:20,marginTop:20}}>
                             <View>
                                 <Text style={{fontFamily:"Poppins-Regular",fontSize:18}}>{selected && selected.length} Selected</Text>
@@ -337,7 +336,7 @@ function Profile() {
                             </>
                         }
                     </View>
-                    <Text style={[styles.textColor,{ textAlign: "center", fontFamily: "Poppins-Light"}]}>Machine Learning Engineer & Data Scientist</Text>
+                    <Text style={[styles.textColor,{ textAlign: "center", fontFamily: "Poppins-Light"}]}>{user?.data.bio && user?.data.bio}</Text>
                 </View>
                 <View style={styles.boxLayout}>
                     <TouchableOpacity style={styles.box} onPress={NavigateFollowing}>
@@ -502,5 +501,15 @@ const styles = StyleSheet.create({
     },
     textColor:{
         color:Colors.theme.fontColor
-    }
+    },
+    selectedActions:{backgroundColor:"#fff",
+    justifyContent:"center",
+    width:Dimensions.get("window").width,
+    height:Dimensions.get('window').height/8,
+    position:"absolute",
+    left:0,
+    top:0,
+    elevation:10,
+    shadowColor:"#000",
+    zIndex:1}
 })

@@ -27,7 +27,7 @@ const EditProfile: React.FC = () => {
   const [selected, setSelected] = useState(1);
   const [dropDownOpened, setDropDownOpened] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [profilePic, setProfilePic] = useState<any>(null); // Use any for the initial state
+  const [profilePic, setProfilePic] = useState<any>(null)
   const [username, setUsername] = useState(user?.data.username);
   const [bio, setBio] = useState("");
 
@@ -59,6 +59,9 @@ const EditProfile: React.FC = () => {
         type: profilePic.type,
       });
     }
+    if(bio){
+      formData.append("bio", bio);
+    }
     console.log(formData);
     const response = await axios.post(
       `http://${ipAddress}:3001/users/edit`,
@@ -78,7 +81,6 @@ const EditProfile: React.FC = () => {
     setDropDownOpened((prev) => !prev);
   }
 
-  console.log(username, profilePic, "PROF");
   return (
     <View style={styles.container}>
       <View style={styles.titleHeader}>
@@ -88,7 +90,7 @@ const EditProfile: React.FC = () => {
       <View style={styles.editContent}>
         <View style={{ alignItems: "center" }}>
           <View>
-            {profilePic && profilePic.uri ? ( // Check if profilePic is not null and has a uri
+            {profilePic && profilePic.uri ? ( 
               <Image source={{ uri: profilePic.uri }} style={styles.profilePicture} />
             ) : (
               <Image

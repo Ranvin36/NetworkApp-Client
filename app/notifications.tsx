@@ -48,7 +48,6 @@ export default Notifications
 const styles = StyleSheet.create({
     container:{
         paddingHorizontal:20,
-        paddingVertical:20,
         backgroundColor:Colors.theme.backgroundColor,
         height:"100%"
     },
