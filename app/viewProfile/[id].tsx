@@ -2,7 +2,7 @@ import { ipAddress } from "@/constants/ipAddress"
 import axios from "axios"
 import { useLocalSearchParams } from "expo-router"
 import { useEffect,useState,useRef,useCallback} from "react"
-import { StyleSheet, Text, View,Image, TouchableOpacity, Dimensions, FlatList} from "react-native"
+import { StyleSheet, Text, View,Image, TouchableOpacity, Dimensions, FlatList, ToastAndroid} from "react-native"
 import { useSelector } from "react-redux"
 import { rootStore } from "../redux/store"
 import { router } from "expo-router"
@@ -10,7 +10,7 @@ import ProfileTabs from "@/components/profileTabs"
 import Animated, { useSharedValue,scrollTo, useAnimatedStyle, withSpring, useDerivedValue, runOnJS, useAnimatedReaction } from "react-native-reanimated"
 import ProfileActivity from "@/components/profileActivity"
 import BackArrow from "@/components/backArrow"
-import { Entypo } from "@expo/vector-icons"
+import { Entypo,AntDesign,Feather } from "@expo/vector-icons"
 import { Video,ResizeMode } from "expo-av"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import  {FollowUser,UnFollowUser} from "../../components/CallBacks/CallBackFunctions"
@@ -56,16 +56,17 @@ function Page(){
   async function GetUser(){
     const response  = await axios.get(`http://${ipAddress}:3001/users/get-user/${id}`,{
         headers:{
-            Authorization:`Bearer ${user.user.token}`
+            Authorization:`Bearer ${user?.user.token}`
         }
     })
+    console.log(response.data , user.user?.token)
     setProfileUser(response.data.data)
   }
 
   async function GetPosts(){
     const response = await axios.get(`http://${ipAddress}:3001/posts/${id}`,{
       headers:{
-        Authorization:`Bearer ${user.user.token}`
+        Authorization:`Bearer ${user?.user.token}`
       }
     })
 
@@ -127,11 +128,19 @@ const GetFollowers = useCallback(async () =>{
 
 
   async function BlockUser(){
-    const response = await axios.post(`http://${ipAddress}:3001/users/block/${id}`,null,{
-      headers:{
-        Authorization:`Bearer ${user?.user?.token}`
-      }
-    })
+    try{
+        openBottomSheet()
+        const response = await axios.post(`http://${ipAddress}:3001/users/block/${id}`,null,{
+          headers:{
+            Authorization:`Bearer ${user?.user?.token}`
+          }
+        })
+        ToastAndroid.show("User Blocked Sucessfully", ToastAndroid.SHORT)
+    }
+    catch(error){
+      console.log(error)
+      ToastAndroid.show("Failed To Block User", ToastAndroid.SHORT)
+    }
 
   }
 
@@ -168,7 +177,7 @@ const GetFollowers = useCallback(async () =>{
             <BackArrow/>
           </View>
           <View>
-            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:16}]}>@Himaz Rox</Text>
+            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:16}]}>@{profileUser.username}</Text>
           </View>
           <TouchableOpacity onPress={openBottomSheet} style={styles.backgroundColor}>
             <Entypo name="dots-three-vertical" size={20} color={Colors.theme.fontColor} />
@@ -206,7 +215,7 @@ const GetFollowers = useCallback(async () =>{
         <View style={styles.buttons}>
           {isFollowing.length>0?
             <TouchableOpacity style={styles.button} onPress={HandleUnfollowUser}>
-              <Text style={{fontFamily:"Poppins-Bold",color:"#fff",textAlign:"center",fontSize:14}}>UnFollow</Text>
+              <Text style={{fontFamily:"Poppins-Bold",color:"#fff",textAlign:"center",fontSize:14}}>Unfollow</Text>
             </TouchableOpacity>
               :          
             <TouchableOpacity style={styles.button} onPress={HandleFollowUser}>
@@ -235,13 +244,13 @@ const GetFollowers = useCallback(async () =>{
                       <View style={{ width: SCREEN_WIDTH}}>
                         <FlatList data={postImages} numColumns={3} keyExtractor={(item) => item._id} renderItem={({item}) =>{
                             const userId = item.creator[0].creator_id
-                            const isImage = item.image
+                            const isImage = item.image[0]
                             return(
                               <View>
                               
                               {isImage ?
                                   <TouchableOpacity onPress={() => router.push({pathname:`/post/${userId}`,params:{userId}})}>
-                                      <Image source={{ uri: item.image }} style={styles.postLayout} />
+                                      <Image source={{ uri: isImage }} style={styles.postLayout} />
                                   </TouchableOpacity>
                                   :
                                   <TouchableOpacity>
@@ -255,13 +264,13 @@ const GetFollowers = useCallback(async () =>{
                       <View style={{ width:SCREEN_WIDTH}}>
                         <FlatList data={postVideo} numColumns={3} keyExtractor={(item) => item._id} renderItem={({item}) =>{
                             const userId = item.creator[0].creator_id
-                            const isImage = item.image
+                            const isImage = item.image[0]
                             return(
                               <View>
                               
                               {isImage ?
                                   <TouchableOpacity onPress={() => router.push({pathname:`/post/${userId}`,params:{userId}})}>
-                                      <Image source={{ uri: item.image }} style={styles.postLayout} />
+                                      <Image source={{ uri: isImage }} style={styles.postLayout} />
                                   </TouchableOpacity>
                                   :
                                   <TouchableOpacity>
@@ -300,18 +309,23 @@ const GetFollowers = useCallback(async () =>{
                         <View style={{width:30,borderRadius:20,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:20}}></View>
                         <View style={styles.bottomSheetLayout}>
                           <View style={styles.textWrap}>
+                            <AntDesign name="warning" size={22} color="black" />
                             <Text style={styles.bottomSheetText}>Report</Text>
                           </View>
                           <TouchableOpacity style={styles.textWrap} onPress={BlockUser}>
+                            <AntDesign name="deleteuser" size={22} color="black" />
                             <Text style={styles.bottomSheetText}>Block</Text>
                           </TouchableOpacity>
                           <View style={styles.textWrap}>
+                            <Feather name="activity" size={24} color="black" />
                             <Text style={styles.bottomSheetText}>Profile Activity</Text>
                           </View>
                           <View style={styles.textWrap}>
+                            <AntDesign name="save" size={24} color="black" />
                             <Text style={styles.bottomSheetText}>Save Profile</Text>
                           </View>
                           <View style={styles.textWrap}>
+                            <AntDesign name="save" size={24} color="black" />
                             <Text style={styles.bottomSheetText}>Enable Notifications From This Account</Text>
                           </View>
                         </View>
@@ -393,10 +407,13 @@ const styles = StyleSheet.create({
   },
   bottomSheetText:{
     fontFamily:"Poppins-Light",
-    fontSize:15
+    fontSize:14,
+    marginHorizontal:5
   },
   textWrap:{
-    marginVertical:6
+    marginVertical:8,
+    flexDirection:"row",
+    alignItems:"center"
   },
   textColor:{
     color:Colors.theme.fontColor
@@ -405,5 +422,8 @@ const styles = StyleSheet.create({
     backgroundColor:Colors.theme.backgroundTransparent,
     padding:5,
     borderRadius:5
+  },
+  pageHeader:{
+    
   }
 })

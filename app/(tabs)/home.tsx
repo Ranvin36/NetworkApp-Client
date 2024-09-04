@@ -61,6 +61,7 @@ export default function Home(){
     const socket = io(`http://${ipAddress}:3001`)
     const dispatch = useDispatch()
     const user = useSelector((state:rootStore)=>state.user)
+    const navbarOpen = useSelector((state:rootStore) => state.navbar.navbar)
     const translateY = useSharedValue(SCREEN_HEIGHT)
     const context = useSharedValue({y:0})
     const [posts,setPosts] = useState<PostTypes[]>([])
@@ -104,6 +105,7 @@ export default function Home(){
     })
 
     function ViewProfile(id:number){
+        console.log(id)
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
 
@@ -130,6 +132,7 @@ export default function Home(){
                 Authorization:`Bearer ${user?.user?.token}`
             }
         }) 
+        console.log(response.data , "DATA")
         const newData = response.data.data
         setContentLoading(false)
         setPosts((prev) =>  [...prev,...newData])
@@ -143,7 +146,7 @@ export default function Home(){
     }
 
     const toggleBottomSheet = async(id:number) =>{
-        dispatch(setOpened(false))
+        // dispatch(setOpened(false))
         setActivePost(id)
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         if(isSheetOpened){
@@ -151,7 +154,7 @@ export default function Home(){
         }
         else{
             translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
-            const findPosts = posts && posts.find((item:any) => item._id === id)
+            const findPosts = posts[0]
             if(findPosts){
                 setActiveComments(findPosts.comments ? findPosts.comments : [])
             }
@@ -205,7 +208,6 @@ export default function Home(){
         //         Authorization: `Bearer ${user?.user?.token}`
         //     }
         // })
-        console.log("DD")
         socket.emit("createComment",{"message":comment, "userId":user?.user?.data._id,"postId":activePost})
     }
 
@@ -475,7 +477,7 @@ export default function Home(){
                                 <Text style={{color:Colors.theme.fontColor,fontFamily:"Poppins-Light",fontSize:13}}>7s</Text>
                             </View>
                         </View>
-                        <TouchableOpacity style={{borderWidth:2,borderColor:Colors.theme.primary,borderRadius:50}} onPress={() =>ViewProfile(stories[activeStory].creator[0]._id)}>
+                        <TouchableOpacity style={{borderWidth:2,borderColor:Colors.theme.primary,borderRadius:50}} onPress={() =>ViewProfile(stories[activeStory].creator[0].creator_id)}>
                             {stories[activeStory].creator[0].profilePicture ? 
                             <Image source={{uri:stories[activeStory].creator[0].profilePicture}} style={{width:40,height:40,margin:2,borderRadius:50}}/>
                                             :

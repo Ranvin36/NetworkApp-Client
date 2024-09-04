@@ -153,7 +153,9 @@ function ChatRoom(){
 
     return(
         <View style={styles.container}>
-            <Modal popupOpened={popupOpened} PopUpController={PopUpController} DeleteChat={DeleteChat} loading={loading}/>
+            <Modal popupOpened={popupOpened} PopUpController={PopUpController} DeleteChat={DeleteChat} loading={loading}>
+                Are You Sure You Want to Delete These Messages?
+            </Modal>
 
             {!selectedChats.length>0 ?
             <View style={styles.header}>

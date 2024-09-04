@@ -29,7 +29,7 @@ const EditProfile: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [profilePic, setProfilePic] = useState<any>(null)
   const [username, setUsername] = useState(user?.data.username);
-  const [bio, setBio] = useState("");
+  const [bio, setBio] = useState(user?.data.bio);
 
   async function UpdateProfilePic() {
     const selectImage = await ImagePicker.launchImageLibraryAsync({
@@ -50,6 +50,7 @@ const EditProfile: React.FC = () => {
   }
 
   async function SaveProfile() {
+    setLoading(true)
     const formData = new FormData();
     formData.append("username", username);
     if (profilePic) {
@@ -74,13 +75,14 @@ const EditProfile: React.FC = () => {
       }
     );
     console.log(response.data);
+    setLoading(false)
     router.push("/profile");
   }
-
+  
   function ToggleDropDown() {
     setDropDownOpened((prev) => !prev);
   }
-
+  
   return (
     <View style={styles.container}>
       <View style={styles.titleHeader}>
@@ -181,7 +183,11 @@ const EditProfile: React.FC = () => {
         </View>
       </View>
       <TouchableOpacity style={styles.saveButton} onPress={SaveProfile}>
-        <Text style={styles.saveBtnText}>Save</Text>
+        {loading ? 
+        <ActivityIndicator color="#fff"/>
+                :  
+        <Text style={styles.saveBtnText}>Update Profile</Text>
+        }
       </TouchableOpacity>
     </View>
   );

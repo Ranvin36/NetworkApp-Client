@@ -1,6 +1,6 @@
-import { StyleSheet, View,Text, Touchable, TouchableOpacity, ActivityIndicator} from "react-native";
+import { StyleSheet, View,Text, Touchable, TouchableOpacity, ActivityIndicator, Dimensions} from "react-native";
 
-function Modal({popupOpened,PopUpController,DeleteChat,loading}){
+function Modal({popupOpened,PopUpController,DeleteChat,loading,children}){
     return(
         <View style={[styles.container , {display:popupOpened ?"flex":"none"}]}>
             <View style={styles.popUp}>
@@ -8,7 +8,7 @@ function Modal({popupOpened,PopUpController,DeleteChat,loading}){
                     <Text style={{fontFamily:"Poppins-Bold",fontSize:17}}>Delete Message</Text>
                 </View>
                 <View style={{marginVertical:7}}>
-                    <Text style={{fontFamily:"Poppins-Light",fontSize:13}}>Are You Sure You Want To Delete This Message?</Text>
+                    <Text style={{fontFamily:"Poppins-Light",fontSize:13}}>{children}</Text>
                 </View>
                 <View style={{flexDirection:"row",alignSelf:"flex-end"}}>
                     <TouchableOpacity style={styles.options} onPress={DeleteChat}>
@@ -36,7 +36,7 @@ const styles= StyleSheet.create({
     container:{
         position:"absolute",
         backgroundColor:"#00000028",
-        height:"100%",
+        height:Dimensions.get('window').height,
         width:"100%",
         zIndex:1,
         justifyContent:"center",

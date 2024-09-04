@@ -21,6 +21,7 @@ export default function Page(){
     const [loading,setLoading] = useState(true)
     const [searchText,setSearchText] = useState("")
     const [searchUsers,setSearchUsers] =  useState([])
+    const [knownpeople,setKnownPeople] = useState([])
     const [selectedOption,setSelectedOption] = useState(0)
     const tabs = ['All','People','Posts','Snaps','Reels']
     const scrollRef = useRef<ScrollView>(null)
@@ -41,7 +42,6 @@ export default function Page(){
     }
 
     async function ViewProfile(id:number){
-        console.log(id)
         router.push({pathname:`viewProfile/${id}` , params:{id}})
     }
 
@@ -50,6 +50,17 @@ export default function Page(){
         scrollRef?.current?.scrollTo({
             x:SCREEN_WIDTH* index
         })
+    }
+
+    async function PeopleYouMayKnow(){
+        const data = {name:""}
+        const response = await axios.post(`http://${ipAddress}:3001/users/search-user`, data ,{
+            headers:{
+                Authorization: `Bearer ${user?.token}`
+            }
+        })
+
+        setKnownPeople(response.data.data.slice(0))
     }
 
     const lineStyles = useAnimatedStyle(() =>{
@@ -66,6 +77,11 @@ export default function Page(){
     useEffect(() =>{
         setSelectedOption(0)
     },[])
+
+    useEffect(() =>{
+        PeopleYouMayKnow()
+    },[])
+
     return(
         <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
             <View style={styles.search}>
@@ -210,21 +226,21 @@ export default function Page(){
                                 <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:17}]}>Trending Search</Text>
                             {search.map((item,index)=>{
                                 return(
-                                    <View style={styles.searchText} key={index}>
+                                    <TouchableOpacity style={styles.searchText} key={index} onPress={()  =>setSearchText(item.text)}>
                                             <AntDesign name="search1" size={22} color={Colors.theme.fontColor} />           
                                             <Text style={[styles.textColor,{fontFamily:"Poppins-Regular",marginLeft:13}]}>{item.text}</Text>
-                                    </View>
+                                    </TouchableOpacity>
                                 )
                             })}
                             </View>
                         <View style={styles.popularSearch}>
                                 <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:17}]}>People You May Know</Text>
-                            {search.slice(0,4).map((item,index)=>{
+                            {knownpeople.map((item,index)=>{
                                 return(
-                                    <View style={[{alignItems:"center"},styles.searchText]} key={index}>
-                                            <Image source={require("../../assets/images/model.jpg")} style={{width:50,height:50,borderRadius:5}}/>   
-                                            <Text style={[styles.textColor,{fontFamily:"Poppins-Regular",marginLeft:13}]}>Ranvin Wickramasinghe</Text>
-                                    </View>
+                                    <TouchableOpacity style={[{alignItems:"center"},styles.searchText]} key={index} onPress={()  => ViewProfile(item._id)}>
+                                            <Image source={{uri:item.profilePicture}} style={{width:50,height:50,borderRadius:50}}/>   
+                                            <Text style={[styles.textColor,{fontFamily:"Poppins-Regular",marginLeft:13}]}>{item.username}</Text>
+                                    </TouchableOpacity>
                                 )
                             })}
                             </View>
@@ -255,7 +271,7 @@ const styles = StyleSheet.create({
         paddingHorizontal:20,
         marginHorizontal:20,
         justifyContent:"space-between",
-        backgroundColor:Colors.theme.backgroundTransparent,
+        backgroundColor:Colors.theme.commentsBg,
         flexDirection:"row",
         alignItems:"center"
     },

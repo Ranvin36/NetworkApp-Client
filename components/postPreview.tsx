@@ -1,4 +1,4 @@
-import { View,Text,TouchableOpacity,Dimensions,StyleSheet,Image} from "react-native"
+import { View,Text,TouchableOpacity,Dimensions,StyleSheet,Image, FlatList} from "react-native"
 import { Entypo,AntDesign,Feather,Ionicons } from "@expo/vector-icons"
 import * as Haptics from 'expo-haptics' 
 import { ColorPalatte } from "@/constants/Colors";
@@ -6,6 +6,7 @@ const Colors = ColorPalatte()
 
 
 function PostPreview({user,image,text,setImage}){
+
     return(
         <View style={{backgroundColor:Colors.theme.backgroundTransparent,borderRadius:15,padding:10,width:Dimensions.get('window').width-50 ,alignSelf:"center"}}>
         <View style={{flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
@@ -18,7 +19,7 @@ function PostPreview({user,image,text,setImage}){
                 </View>
             </View>
             <View style={{flexDirection:"row",alignItems:"center"}}>
-                <View style={{backgroundColor:"#f2f2f2",borderRadius:30,paddingHorizontal:10,paddingVertical:5}}>
+                <View style={{backgroundColor:"#fff",borderRadius:30,paddingHorizontal:10,paddingVertical:5}}>
                     <Text style={{fontFamily:"Poppins-Bold",fontSize:10}}>Follow</Text>
                 </View>
                 <TouchableOpacity onPress={()=>{
@@ -31,19 +32,30 @@ function PostPreview({user,image,text,setImage}){
             </View>
         </View>
         <View style={{marginVertical:5}}>
-            {image.uri ?
-            <View style={{position:"relative"}}>
-                <Image source={{uri : image.uri}} style={{width:Dimensions.get('window').width-70,alignSelf:"center",height:200,borderRadius:15}} />
-                <TouchableOpacity style={{position:"absolute" ,right:10, top:10}} onPress={() => setImage([])}>
-                    <AntDesign name="closecircle" size={24} color="#fff" />
-                </TouchableOpacity>
-            </View>
+            {image.length>0 ?
+            <FlatList data={image} pagingEnabled  nestedScrollEnabled={true} keyExtractor={(item) => item.uri}  horizontal renderItem={({item})  =>{
+                return(
+                <View style={{position:"relative"}}>
+                    <Image source={{uri : item.uri}} style={{width:Dimensions.get('window').width-70,alignSelf:"center",height:200,borderRadius:15}} />
+                    <TouchableOpacity style={{position:"absolute" ,right:10, top:10}} onPress={() => setImage([])}>
+                        <AntDesign name="closecircle" size={24} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+                )
+            }}/>
             :
             <View style={{position:"relative"}}>
                 <Image source={require('../assets/images/user.jpg')} style={{width:Dimensions.get('window').width-70,alignSelf:"center",height:200,borderRadius:15}} />
             </View>
                     
             }
+            {/* <FlatList data={data} renderItem={({item}) => {
+                return(
+
+                    <Image source={require('../assets/images/user.jpg')} style={{width:Dimensions.get('window').width-70,alignSelf:"center",height:200,borderRadius:15}} />
+                )
+            }} /> */}
+
         </View>
         <View style={{marginHorizontal:2}}>
             <Text style={[styles.textColor,{fontFamily:'Poppins-Light',fontSize:12}]}>{text ? text : "Post Heading"}</Text>

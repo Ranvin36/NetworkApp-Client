@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 type UserData ={
     username: string,
     profilePicture: string,
+    bio:string,
     _id: string
 }
 

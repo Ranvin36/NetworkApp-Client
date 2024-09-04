@@ -58,41 +58,6 @@ function Login(){
     }
 
     return(
-        // <View style={styles.loginContainer}>
-        //     <StatusBar style="light"/>
-        //     <View style={styles.detailsContainer}>
-        //         <Link href="/home" style={{
-        //             color:"#d92b68",
-        //             fontFamily:"Poppins-Bold",
-        //             fontSize:30
-        //         }}>LOGIN</Link>
-
-        //         <TextInputLayout placeholder="Email Address" onChange={setEmail} />
-
-        //         <View style={styles.fieldContainer}>
-        //             <TextInput style={{fontFamily:'Poppins-Light',color:'#fff'}}  placeholder="Password" placeholderTextColor="#fff" onChangeText={(e)=>setPassword(e)} secureTextEntry={secretField}/>
-        //             {!secretField ?
-        //                 <TouchableOpacity style={styles.eyeContainer} onPress={eyeToggle}>
-        //                     <Ionicons name="eye" size={24} color="black" />
-        //                 </TouchableOpacity>
-        //                 :
-        //                 <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
-        //                     <Ionicons name="eye-off" size={24} color="black" />
-        //                 </TouchableOpacity>
-        //             }
-        //         </View>
-
-
-        //         <View style={{marginVertical:10}}>
-        //             <Link href='/register'  style={{fontFamily:'Poppins-Light',color:'#333'}}>Forgot Password ?</Link>
-        //         </View>
-
-
-        //         <TouchableOpacity style={styles.loginBtn} onPress={LoginBtn}>
-        //             <Text style={{fontFamily:'Poppins-Light',color:"#fff"}}>Login</Text>
-        //         </TouchableOpacity>
-        //     </View>
-        // </View>
         <View style={styles.loginContainer}>
             <View>
                 <Text style={[styles.textColor,{fontFamily:"Poppins-Bold" , fontSize:35}]}>Hey,</Text>

@@ -16,6 +16,7 @@ import ProfileActivity from "@/components/profileActivity";
 import ProfileTabs from "@/components/profileTabs";
 import { Skeleton } from "moti/skeleton";
 import { ColorPalatte } from "@/constants/Colors";
+import Modal from "@/components/Modal";
 const Colors = ColorPalatte()
 
 type ProfilePicture={
@@ -55,6 +56,7 @@ function Profile() {
     const [refreshing, setRefreshing] = useState(false)
     const [editUsername, setEditUsername] = useState(false)
     const [loading,setLoading]  = useState(false)
+    const [popupOpened,setPopUpOpened]  = useState(false)
     const [selectedIndex, setSelectedIndex] = useState(0)
     const [username, setUsername] = useState<string>(user?.data?.username ?? '');
     const dispatch = useDispatch()
@@ -202,16 +204,26 @@ function Profile() {
     },[])
 
     async function DeletePosts(){
-        const data = {"ids" : selected}
-        const response = await axios.post(`http://${ipAddress}:3001/posts/delete-post/`,data,{
-            headers:{
-                Authorization : `Bearer ${user?.token}`
-            }
-        })
+        setLoading(true)
+        try{
+            const data = {"ids" : selected}
+            const response = await axios.post(`http://${ipAddress}:3001/posts/delete-post/`,data,{
+                headers:{
+                    Authorization : `Bearer ${user?.token}`
+                }
+            })
+            
+            console.log(response.data)
+            setSelected([])
+            ToastAndroid.show("Posts Deleted Successfully",ToastAndroid.SHORT)
+        }
         
-        console.log(response.data)
-        setSelected([])
-        ToastAndroid.show("Posts Deleted Successfully",ToastAndroid.SHORT)
+        catch(error){
+            console.log(error)
+            ToastAndroid.show("Failed To Delete Post",ToastAndroid.SHORT)
+        }
+        setPopUpOpened(false)
+        setLoading(false)
     }
     
     async function ChangeUsername(){
@@ -231,6 +243,14 @@ function Profile() {
             setEditUsername(false)
             
         }
+    }
+
+    async function PopUpController(){
+        setPopUpOpened((prev) => !prev)
+    }
+
+    async function DeleteChat(){
+
     }
 
     const refreshProfile = useCallback(async() =>{
@@ -270,6 +290,9 @@ function Profile() {
         <ScrollView style={styles.container}  showsVerticalScrollIndicator={false} refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={refreshProfile}/>
         }>
+            <Modal popupOpened={popupOpened} PopUpController={PopUpController} DeleteChat={DeletePosts} loading={loading}>
+                Are You Sure You Want To Delete These Posts?
+            </Modal>
             {selected.length>0 && 
                         
                 <View style={styles.selectedActions}>
@@ -278,7 +301,7 @@ function Profile() {
                                 <Text style={{fontFamily:"Poppins-Regular",fontSize:18}}>{selected && selected.length} Selected</Text>
                             </View>
                             <View style={{flexDirection:"row",width:55,marginRight:18,justifyContent:"space-between"}}>
-                                <TouchableOpacity onPress={DeletePosts} style={styles.icons}>
+                                <TouchableOpacity onPress={PopUpController} style={styles.icons}>
                                     <MaterialIcons name="delete-outline" size={24} color={Colors.theme.fontColor} />
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.icons} onPress={() => router.push({pathname:`/editPost/${selected[0]}` ,params:{id:selected[0]}})}>
@@ -376,7 +399,7 @@ function Profile() {
                 >
                     <View style={{width:Dimensions.get('window').width}}>
                         <FlatList data={post} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
-                            const isImage = item.image
+                            const isImage = item.image[0]
                             return(
                                 <View  >
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
@@ -391,7 +414,7 @@ function Profile() {
                     </View>
                     <View style={{width:Dimensions.get('window').width}}>
                         <FlatList data={videos} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
-                            const isImage = item.image
+                            const isImage = item.image[0]
                             return(
                                 <View  >
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
@@ -400,19 +423,19 @@ function Profile() {
                                         }
                                     </Skeleton>
                                 </View>
-                                    
                             )
                         }}/>
                     </View>
                     {/* Tab 2 */}
                 <View style={{width:Dimensions.get('window').width}}>
                     <FlatList data={likedPosts}  numColumns={3} keyExtractor={(item) => item}  renderItem={({item}) => {
+                        const isImage = item.image[0]
                         return(
                             <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                 {loading ? null :  
                                 <TouchableOpacity onPress={() => router.push("/profileLike")}>
 
-                                    <Image source={{uri:item?.image}} style={styles.postLayout} />
+                                    <Image source={{uri:isImage}} style={styles.postLayout} />
                                 </TouchableOpacity>
                                 }
                             </Skeleton>
@@ -423,12 +446,13 @@ function Profile() {
                     {/* Tab 3 */}
                 <View style={{width:Dimensions.get('window').width}}>
                     <FlatList data={bookmarkedPosts}  numColumns={3} keyExtractor={(item) => item}  renderItem={({item}) => {
+                        const isImage = item.image[0]
                         return(
                             <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                 {loading ? null :  
                                 <TouchableOpacity onPress={() => router.push("/profileLike")}>
 
-                                    <Image source={{uri:item?.image}} style={styles.postLayout} />
+                                    <Image source={{uri:isImage}} style={styles.postLayout} />
                                 </TouchableOpacity>
                                 }
                             </Skeleton>
@@ -446,7 +470,7 @@ export default Profile
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor:Colors.theme.backgroundColor
+        backgroundColor:Colors.theme.backgroundColor,
     },
     header: {
         paddingVertical: 7,

@@ -49,6 +49,7 @@ export default function RootLayout() {
         catch(error){
           router.push("/login")
           console.log(error)
+          return
         }
       }
       GetLocalStorageUser().then(userData => {
@@ -60,7 +61,6 @@ export default function RootLayout() {
 
     useEffect(() =>{
         GetColorMode().then((colorMode) => {
-          console.log("COLOR MODE FROM INDEX.JS",colorMode)
           dispatch(setColor(colorMode))
         })
     },[])

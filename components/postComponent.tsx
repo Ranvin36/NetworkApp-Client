@@ -1,4 +1,4 @@
-import { View,StyleSheet,Text,Image,TouchableOpacity, Dimensions } from "react-native"
+import { View,StyleSheet,Text,Image,TouchableOpacity, Dimensions, FlatList } from "react-native"
 import { Ionicons,AntDesign,Feather,Entypo,FontAwesome} from "@expo/vector-icons"
 import { Video,ResizeMode } from "expo-av"
 import * as Haptics from "expo-haptics"
@@ -19,7 +19,7 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
     const ifBookmarked = item.bookmarks && item.bookmarks.filter((post) => post.toString() == user.data._id) 
     const ifFollowing = follows && follows.filter((followItem) => followItem?.following[0]?._id == item.creator[0]?.creator_id)
     const ifLiked = like && like.filter((liked) => liked == user.data._id)
-    function ViewProfile(id){
+    function ViewProfile(id:number){
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
     function BottomSheetAction(){
@@ -62,14 +62,21 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
                 </TouchableOpacity>
             </View>
         </View>
-        {imgUrl ?                             
-                <View>
-                    <Image source={{uri :imgUrl}} style={{height:300,width:"100%",borderRadius:20}}/>
-                </View>
+        {imgUrl ?         
+                <FlatList data={imgUrl} horizontal keyExtractor={(item)=>item}  pagingEnabled renderItem={({item,index}) =>{
+                    return(
+                        <View>
+                            <Image source={{uri :item}} style={{height:300,width:300,borderRadius:20}}/>
+                            <View style={styles.amountLabel}>
+                                <Text style={styles.labelColor}> {index+1} / {imgUrl.length}</Text>
+                            </View>
+                        </View>
+
+                    )
+                }}/>                 
                 :
                 <Video source={{uri:videoUrl}}  
-                // ref={videoref}
-                style={{height:300}}
+                style={{height:300,borderRadius:20}}
                 resizeMode={ResizeMode.COVER}
                 isLooping
                 shouldPlay
@@ -166,5 +173,20 @@ const styles = StyleSheet.create({
     },
     textColor:{
         color:Colors.theme.fontColor
+    },
+    amountLabel:{
+        position:"absolute",
+        top:10,
+        right:10,
+        borderRadius:20,
+        width:50,
+        backgroundColor:"#f1ecec57",
+    },
+    labelColor:{
+        color:"#fff",
+        fontFamily:"Poppins-Light",
+        paddingVertical:5,
+        textAlign:"center",
+        fontSize:12
     }
 })

@@ -39,10 +39,9 @@ function Add(){
     const selectImage = async () =>{
         const pickImage = await ImagePicker.launchImageLibraryAsync({
             mediaTypes:ImagePicker.MediaTypeOptions.All,
-            allowsEditing:true,
             aspect:[4,3],
             quality:1,
-            // allowsMultipleSelection:true
+            allowsMultipleSelection:true
         })
         if(!pickImage.canceled){
             if(pickImage.assets[0].type == "image"){
@@ -51,37 +50,41 @@ function Add(){
             else{
                 console.log("Video")
             }
-            console.log(pickImage.assets[0])
-            const uri = pickImage.assets && pickImage.assets[0].uri
-            if(!pickImage.canceled){
-                setImage({
-                    uri,
-                     name: pickImage.assets[0].fileName || 'photo.jpg',
-                     type: pickImage.assets[0].mimeType || 'image/jpeg'
-                })
-            }
+            const selectedImages = pickImage.assets.map((image) =>({
+                uri: image.uri,
+                name: image.fileName,
+                type: image.mimeType,
+            }))
+            setImage(selectedImages)
             console.log(pickImage.assets)
         }
     }
 
     async function uploadPost(){
-        setLoading(true)
-        const data = new FormData()
-        data.append('image',{uri: image.uri,name: image.name,type: image.type})
-        data.append('text',text)
-        data.append('description',description)
-        console.log(data)
-        const response = await axios.post(`http://${ipAddress}:3001/posts/create-post`,data,{
-            headers:{
-                'Content-Type': 'multipart/form-data',
-                Authorization:`Bearer ${user.token}`
-            }
-        })
-        console.log("HEHE")
-        setLoading(false)
-        setImage([])
-        setText("")
-        router.push("/home")
+        try{
+            setLoading(true)
+            const data = new FormData()
+            // data.append('image',{uri: image.uri,name: image.name,type: image.type})
+            image.forEach((image) =>{
+                data.append('image',{uri: image.uri,name: image.name,type: image.type})
+            })
+            data.append('text',text)
+            data.append('description',description)
+            const response = await axios.post(`http://${ipAddress}:3001/posts/create-post`,data,{
+                headers:{
+                    'Content-Type': 'multipart/form-data',
+                    Authorization:`Bearer ${user.token}`
+                }
+            })
+            setLoading(false)
+            setImage([])
+            setText("")
+            router.push("/home")
+        }
+        catch(error){
+            console.log(error)
+            setLoading(false)
+        }
     }
     
     async function uploadReel(){
@@ -137,24 +140,11 @@ function Add(){
         })
     }
 
+    console.log(image.uri , "IMAE")
+
 
     return(
         <ScrollView>
-            {/* <View style={{backgroundColor:Colors.light.text,paddingVertical:20,borderRadius:10,width:300,position:"absolute",zIndex:1,marginVertical:55,
-        marginHorizontal:25,alignItems:"center",left:Dimensions.get('window').width/20}}>
-                <Animated.View style={[{backgroundColor:"#fff",position:"absolute",left:15,top:8,width:100,height:45, borderRadius:10},leftVal]} />
-                
-                <View style={[{flexDirection:"row"}]}>
-                {buttons.map((item,index)=>{
-                    return(
-                        <Pressable style={{flex:1,marginHorizontal:300/8}} onPress={()=>setSelected(index)} key={index}>
-                        <Text style={{fontFamily:"Poppins-Bold",color:selected != index ? "#fff" : Colors.light.text,zIndex:1}}>{item.title}</Text>
-                        </Pressable>
-                        )
-                        })}
-                        
-                        </View>
-                        </View> */}
             {selected==0 ?
                 <View style={styles.container}>
                 <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:23,paddingHorizontal:25}]}>Create {categiores[selectedTab]}</Text>

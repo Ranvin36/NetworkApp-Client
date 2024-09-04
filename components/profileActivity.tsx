@@ -24,7 +24,7 @@ function ProfileActivity({item,isImage,userId,setSelected,selected}){
             }
         {isImage ?
             <TouchableOpacity onPress={() => router.push({pathname:`/post/${userId}`,params:{userId}})} onLongPress={AddToSelected}>
-                <Image source={{ uri: item.image }} style={styles.postLayout} />
+                <Image source={{ uri: isImage }} style={styles.postLayout} />
             </TouchableOpacity>
             :
             <TouchableOpacity>
