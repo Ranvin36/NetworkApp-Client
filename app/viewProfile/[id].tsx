@@ -35,6 +35,8 @@ function Page(){
   const isBottomSheetOpened = useDerivedValue(() => offSet.value == 0 )
   const postVideo = posts &&  posts.filter((item) => item.video)
   const postImages= posts &&  posts.filter((item) => item.image)
+  const isBlocked = user.user?.data.blocked.filter((item) => item == id)
+  console.log(isBlocked)
   const gesture = Gesture.Pan().onStart((event) =>{
       context.value = offSet.value
   }).onUpdate((event) =>{
@@ -59,7 +61,6 @@ function Page(){
             Authorization:`Bearer ${user?.user.token}`
         }
     })
-    console.log(response.data , user.user?.token)
     setProfileUser(response.data.data)
   }
 
@@ -309,23 +310,23 @@ const GetFollowers = useCallback(async () =>{
                         <View style={{width:30,borderRadius:20,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:20}}></View>
                         <View style={styles.bottomSheetLayout}>
                           <View style={styles.textWrap}>
-                            <AntDesign name="warning" size={22} color="black" />
+                            <AntDesign name="warning" size={22} color={Colors.theme.fontColor} />
                             <Text style={styles.bottomSheetText}>Report</Text>
                           </View>
                           <TouchableOpacity style={styles.textWrap} onPress={BlockUser}>
-                            <AntDesign name="deleteuser" size={22} color="black" />
-                            <Text style={styles.bottomSheetText}>Block</Text>
+                            <AntDesign name="deleteuser" size={22} color={Colors.theme.fontColor} />
+                            <Text style={styles.bottomSheetText}>{isBlocked.length>0 ? "Unblock" : "Block"}</Text>
                           </TouchableOpacity>
                           <View style={styles.textWrap}>
-                            <Feather name="activity" size={24} color="black" />
+                            <Feather name="activity" size={24} color={Colors.theme.fontColor} />
                             <Text style={styles.bottomSheetText}>Profile Activity</Text>
                           </View>
                           <View style={styles.textWrap}>
-                            <AntDesign name="save" size={24} color="black" />
+                            <AntDesign name="save" size={24} color={Colors.theme.fontColor} />
                             <Text style={styles.bottomSheetText}>Save Profile</Text>
                           </View>
                           <View style={styles.textWrap}>
-                            <AntDesign name="save" size={24} color="black" />
+                            <AntDesign name="save" size={24} color={Colors.theme.fontColor} />
                             <Text style={styles.bottomSheetText}>Enable Notifications From This Account</Text>
                           </View>
                         </View>
@@ -394,7 +395,7 @@ const styles = StyleSheet.create({
   },
   bottomSheet:{
     position:"absolute",
-    backgroundColor:"#fff",
+    backgroundColor:Colors.theme.commentsBg,
     bottom:-100,
     width:Dimensions.get('window').width,
     alignSelf:"center",
@@ -408,7 +409,8 @@ const styles = StyleSheet.create({
   bottomSheetText:{
     fontFamily:"Poppins-Light",
     fontSize:14,
-    marginHorizontal:5
+    marginHorizontal:5,
+    color:Colors.theme.fontColor
   },
   textWrap:{
     marginVertical:8,

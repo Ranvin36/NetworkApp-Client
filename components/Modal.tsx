@@ -1,14 +1,16 @@
 import { StyleSheet, View,Text, Touchable, TouchableOpacity, ActivityIndicator, Dimensions} from "react-native";
+import { ColorPalatte } from "@/constants/Colors";
 
+const Colors = ColorPalatte()
 function Modal({popupOpened,PopUpController,DeleteChat,loading,children}){
     return(
         <View style={[styles.container , {display:popupOpened ?"flex":"none"}]}>
             <View style={styles.popUp}>
                 <View>
-                    <Text style={{fontFamily:"Poppins-Bold",fontSize:17}}>Delete Message</Text>
+                    <Text style={{fontFamily:"Poppins-Bold",fontSize:17,color:Colors.theme.fontColor}}>Delete Message</Text>
                 </View>
                 <View style={{marginVertical:7}}>
-                    <Text style={{fontFamily:"Poppins-Light",fontSize:13}}>{children}</Text>
+                    <Text style={{fontFamily:"Poppins-Light",fontSize:13,color:Colors.theme.fontColor}}>{children}</Text>
                 </View>
                 <View style={{flexDirection:"row",alignSelf:"flex-end"}}>
                     <TouchableOpacity style={styles.options} onPress={DeleteChat}>
@@ -46,7 +48,7 @@ const styles= StyleSheet.create({
         paddingVertical:20,
         paddingHorizontal:15,
         borderRadius:10,
-        backgroundColor:"#fff"
+        backgroundColor:Colors.theme.commentsBg
     },
     options:{
         marginRight:5,

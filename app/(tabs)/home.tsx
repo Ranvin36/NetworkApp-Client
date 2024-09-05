@@ -83,7 +83,6 @@ export default function Home(){
     const [contentLoading,setContentLoading] = useState(false)
     const scaleAnim = useSharedValue(0)
     const lineWidth = useSharedValue(10)
-
     useAnimatedReaction(
         () => isSheetOpenedDerived.value,
         (isOpen)=>{
@@ -132,7 +131,6 @@ export default function Home(){
                 Authorization:`Bearer ${user?.user?.token}`
             }
         }) 
-        console.log(response.data , "DATA")
         const newData = response.data.data
         setContentLoading(false)
         setPosts((prev) =>  [...prev,...newData])
@@ -226,6 +224,7 @@ export default function Home(){
                 Authorization: `Bearer ${user?.user?.token}`
             }
         })
+        console.log(response.data.getSnapShots[0] , "SNAPSHOTS")
         setStories(response.data.getSnapShots)
     }
 
@@ -337,7 +336,7 @@ export default function Home(){
         },[dummyData])
         useEffect(() =>{
             lineWidth.value=0
-            lineWidth.value = withTiming(140,{duration:7000},(isFinished) =>{
+            lineWidth.value = withTiming(140/ 2,{duration:7000},(isFinished) =>{
                 if(isFinished){
                     runOnJS(handleNextStory)()
                 }
@@ -427,14 +426,14 @@ export default function Home(){
 
                 </TouchableOpacity>
 
-                    
-                    {stories && stories.map((item,index)=>{
+                    <FlatList data={stories} horizontal renderItem={({item,index}) =>{
                         return(
                             <View key={index}>
                                 <StoriesComp item={item} onPress={() => scaleUp(index)}/>
                             </View>
                         )
-                    })}
+                    }}/>                    
+                    
             </View>
             </ScrollView>
               
@@ -463,10 +462,17 @@ export default function Home(){
                             <Ionicons name="close-outline" size={24} color={Colors.theme.fontColor}  />
                         </TouchableOpacity>
                         <View style={[styles.storySection,{flexDirection:"row"}]}>
-                            <View>
-                                <View style={styles.storyLine}>
-                                    <Animated.View style={[styles.completionLine,completionLineAnimation]}></Animated.View>
-                                </View>
+                            <View style={styles.lineContainer}>
+                                  {stories.length>0 && stories[activeStory].snaps.map((story) =>{
+                                    let view = -1
+                                    view+=1
+                                    console.log(view)
+                                    return(                                        
+                                            <View style={[styles.storyLine,{width:140/stories[activeStory].snaps.length}]}>
+                                                <Animated.View style={[styles.completionLine,completionLineAnimation]}></Animated.View>
+                                            </View>
+                                    )
+                                    })} 
                             </View>
                         </View>
                         <View style={[styles.storySection,styles.storyClock]}>
@@ -486,10 +492,17 @@ export default function Home(){
                         </TouchableOpacity>
                     </View>
                     <View style={styles.storyContent}>
-                        <Image source={{uri: stories[activeStory].image}} style={{width:"100%",height:500,borderRadius:30}} />
-                        <View style={{marginVertical:10}}>
-                            <Text style={{fontFamily:"Poppins-Light",color:"#fff"}}>Introducing Our New Beveraging Partner "Eluphant Housy"</Text>
-                        </View>
+                        <FlatList data={stories[activeStory].snaps} horizontal renderItem={({item})  =>{
+                            return(
+                                    <View style={{width:Dimensions.get('window').width-20}}>
+                                            <Image source={{uri: item.image}} style={{width:"100%",height:500,borderRadius:30}} />
+                                            <View style={{marginVertical:10}}>
+                                                <Text style={{fontFamily:"Poppins-Light",color:"#fff"}}>Introducing Our New Beveraging Partner "Eluphant Housy"</Text>
+                                            </View>
+                                    </View>
+                            )
+                        }}/>
+                        
                     </View>
 
                 </Animated.View>
@@ -684,12 +697,19 @@ const styles = StyleSheet.create({
         },
         storyContent:{
             marginTop:-10,
-            marginHorizontal:10
+            marginHorizontal:10,
+            flexDirection:"row",
+            alignItems:"center",
+            justifyContent:"center",
+            alignSelf:"center"
         },
         completionLine:{
             position:"absolute",
             height:2,
             borderRadius:20,
             backgroundColor:"#fff"
+        },
+        lineContainer:{
+            flexDirection:"row"
         }
 })

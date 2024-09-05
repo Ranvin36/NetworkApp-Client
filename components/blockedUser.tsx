@@ -4,7 +4,18 @@ import { ColorPalatte } from "@/constants/Colors"
 
 const Colors = ColorPalatte()
 
-const BlockedUser:React.FC = ({item,UnBlockUser}) =>{
+type itemProps={
+    userId:string,
+    username:string,
+    profilePicture:string,
+}
+
+type UserProps = {
+    item:itemProps,
+    UnBlockUser: (userId:number) => void
+}
+
+const BlockedUser:React.FC<UserProps> = ({item,UnBlockUser}) =>{
     return(
         <View style={styles.blockedUserLayout}>
         <View style={styles.blockedUser}>
