@@ -24,7 +24,7 @@ import { setOpened } from "../redux/navbarSlice";
 // Icon Packs
 import { Feather } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign,MaterialIcons} from '@expo/vector-icons';
 import { Ionicons,EvilIcons,MaterialCommunityIcons} from '@expo/vector-icons';
 import StoriesComp from "@/components/storiesComp";
 import { ColorPalatte } from "@/constants/Colors";
@@ -39,6 +39,7 @@ type PostTypes={
     image: string | null,
     video: string | null,
     likes: any[],
+    bookmarks: any[],
     comments: any[],
     created_at: string,
     updated_at: string,
@@ -63,7 +64,9 @@ export default function Home(){
     const user = useSelector((state:rootStore)=>state.user)
     const navbarOpen = useSelector((state:rootStore) => state.navbar.navbar)
     const translateY = useSharedValue(SCREEN_HEIGHT)
+    const actionSheetY = useSharedValue(399)
     const context = useSharedValue({y:0})
+    const actionContext = useSharedValue(0)
     const [posts,setPosts] = useState<PostTypes[]>([])
     const [comment,setComment] = useState('')
     let [activePost,setActivePost] = useState(0)
@@ -75,6 +78,7 @@ export default function Home(){
     const [followCount,setFollowCount] =  useState([0])
     const [activeComments,setActiveComments] = useState([]) 
     const [storyVisible,setStoryVisisble] = useState(false) 
+    const [actionSheet,setActionSheet] = useState(false) 
     const [permission,requestPermission] = useCameraPermissions()
     const [stories, setStories] = useState([])
     const [storyMedia,setStoryMedia] = useState([])
@@ -103,10 +107,30 @@ export default function Home(){
         }
     })
 
+    const SheetGesture = Gesture.Pan().onStart((event) =>{
+        actionContext.value = event.translationY
+    }).onUpdate((event) =>{
+        actionSheetY.value = event.translationY + actionContext.value
+        actionSheetY.value = Math.max(actionSheetY.value , -SCREEN_HEIGHT/20)  
+    }).onEnd((event) =>{
+        if(actionSheetY.value < SCREEN_HEIGHT/8){
+            actionSheetY.value = withSpring(0, {damping:50})
+        }
+        else{
+            runOnJS(CloseBottomSheet)()
+        }
+    })
+
     function ViewProfile(id:number){
         console.log(id)
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
+
+    const sheetStyle = useAnimatedStyle(() =>{
+        return{
+            transform:[{translateY:actionSheetY.value}]
+        }
+    })
 
     const Refresh = useCallback(()=>{
         setRefresh(true)
@@ -182,21 +206,25 @@ export default function Home(){
     }
 
     async function AddBookmark(uid:number){
-        const response = await axios.post(`http://${ipAddress}:3001/posts/bookmark/create/${uid}`,null,{
-            headers:{
-                Authorization : `Bearer ${user?.user?.token}`
-            }
-        })
-        console.log(response.data)
+        // const response = await axios.post(`http://${ipAddress}:3001/posts/bookmark/create/${uid}`,null,{
+        //     headers:{
+        //         Authorization : `Bearer ${user?.user?.token}`
+        //     }
+        // })
+        // console.log(response.data)
+        const data = {"postId":uid , "userId":user?.user?.data._id}
+        socket.emit("createBookmark",data)
     }
-
+    
     async function RemoveBookmark(uid:number){
         const response = await axios.post(`http://${ipAddress}:3001/posts/bookmark/delete/${uid}`,null,{
             headers:{
                 Authorization: `Bearer ${user?.user?.token}`
             }
         })
-        console.log(response.data)
+        const data ={"postId" : uid  , "userId":user?.user?.data._id}
+        socket.emit("removeBookmark",data)
+        // console.log(response.data)
     }
     
     async function HandleCreateComment(){
@@ -224,7 +252,6 @@ export default function Home(){
                 Authorization: `Bearer ${user?.user?.token}`
             }
         })
-        console.log(response.data.getSnapShots[0] , "SNAPSHOTS")
         setStories(response.data.getSnapShots)
     }
 
@@ -322,6 +349,17 @@ export default function Home(){
             }
         }
 
+        function CloseBottomSheet(){
+            // setActionSheet(false)
+            actionSheetY.value = withSpring(SCREEN_HEIGHT, {damping:50})
+        }
+        function OpenBottomSheet(id:number){
+            // console.log("OPEN")
+            // setActionSheet(true)
+            setActivePost(id)
+            actionSheetY.value = withSpring(-SCREEN_HEIGHT/20, {damping:50})
+        }
+
     
         useEffect(() =>{
             GetStories()
@@ -355,6 +393,19 @@ export default function Home(){
             }
         },[])
 
+        useEffect(() =>{
+            socket.on("receiveBookmark" , (data)=>{
+                setPosts((prev) => prev.map((item) =>  item._id == data.postId ?{
+                ...item,
+                bookmarks: item.bookmarks ? [...item.bookmarks,data.userId] :[data.userId]} :  item))
+            })
+
+            return () =>{
+                socket.off("receiveBookmark")
+            }
+
+
+        },[])
 
         useEffect(() => {
             socket.on("receiveUnlikedPost" , (data) =>{
@@ -382,6 +433,21 @@ export default function Home(){
             }
         },[])
 
+        useEffect(() =>{
+            socket.on("receiveRemoveBookmark"  , (data) =>{
+                setPosts((prev) => prev.map((post) => post._id == data.postId?{
+                   ...post,
+                    bookmarks:post.bookmarks ? post.bookmarks.filter((likes) => likes.toString()!= data.userId) : null  
+                }:post))
+            })
+
+            return()=>[
+                socket.off("receiveRemoveBookmark")
+            ]
+        },[])
+
+
+        // console.log(posts[0].bookmarks)
 
     return(
         <View>
@@ -399,7 +465,7 @@ export default function Home(){
         <StatusBar barStyle="dark-content" />
         <View style={styles.homeHeader}>
             <TouchableOpacity>
-                <Text style={{fontFamily:"PlaywriteSK-Regular",fontSize:25, color:"#d92b68"}}>Fleexy</Text>
+                <Text style={{fontFamily:"PlaywriteSK-Regular",fontSize:27, color:"#d92b68"}}>Fleexy</Text>
             </TouchableOpacity>
             <View style={{flexDirection:"row"}}>
                 <TouchableOpacity style={styles.headerIcon} onPress={() => router.push("/liked")}> 
@@ -440,7 +506,7 @@ export default function Home(){
             <View style={styles.postsContainer}>
                 <FlatList data={posts} showsVerticalScrollIndicator={false} renderItem={({item}) =>{
                         return(
-                         <PostComponent  item={item} follows={follows} UnFollowUser={HandleUnfollowUser} FollowUser={HandleFollowUser} unlikePost={HandleUnLikePost} LikePost={HandleLikePost} toggleBottomSheet={toggleBottomSheet} AddBookmark={AddBookmark} RemoveBookmark={RemoveBookmark}/>
+                         <PostComponent  item={item} openBottomSheet={OpenBottomSheet} follows={follows} UnFollowUser={HandleUnfollowUser} FollowUser={HandleFollowUser} unlikePost={HandleUnLikePost} LikePost={HandleLikePost} toggleBottomSheet={toggleBottomSheet} AddBookmark={AddBookmark} RemoveBookmark={RemoveBookmark}/>
                         )
                 }}/>
                 {contentLoading 
@@ -561,6 +627,36 @@ export default function Home(){
                                             </TouchableOpacity>
                                         </View>
                                     }
+                <GestureDetector gesture={SheetGesture}>
+                    <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:Colors.theme.commentsBg,zIndex:2,borderRadius:10,width:"90%",bottom:10,alignSelf:"center"}]}>
+                        <View style={{width:15,borderRadius:50,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:10}}></View>
+                        <View style={{paddingHorizontal:20,paddingVertical:15}}>
+                            <View style={{marginVertical:10,flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
+                                <Text style={{fontFamily:"Poppins-Bold",fontSize:20,color:Colors.theme.fontColor}}>Motion Rades</Text>
+                                <TouchableOpacity onPress={CloseBottomSheet}>
+                                    <AntDesign name="closecircleo" size={20} color={Colors.theme.fontColor} />
+                                </TouchableOpacity>
+                            </View>
+                            <TouchableOpacity style={styles.sheetOption} onPress={() => router.push({pathname:`/viewProfile/${activePost}`,params:{id}})}>
+                                <Text style={styles.bottomSheetText}>View Profile</Text>
+                                <MaterialCommunityIcons name="face-man-outline" size={20} color={Colors.theme.fontColor} style={{marginBottom:3}}  />
+
+                            </TouchableOpacity>
+                            <View style={styles.sheetOption}>
+                                <Text style={styles.bottomSheetText}>Block</Text>
+                                <Entypo name="block" size={18} color={Colors.theme.fontColor}/>
+                            </View>
+                            <View style={styles.sheetOption}>
+                                <Text style={styles.bottomSheetText}>Archive</Text>
+                                <Entypo name="archive" size={18} color={Colors.theme.fontColor} />
+                            </View>
+                            <View style={styles.sheetOption}>
+                                <Text style={styles.bottomSheetText}>Report</Text>
+                                <MaterialIcons name="report-gmailerrorred" size={20} color={Colors.theme.fontColor} />
+                            </View>
+                        </View>
+                    </Animated.View>
+                </GestureDetector>
             </View>
 
     )
@@ -711,5 +807,14 @@ const styles = StyleSheet.create({
         },
         lineContainer:{
             flexDirection:"row"
-        }
+        },    
+        bottomSheetText:{
+            fontFamily:"Poppins-Light",
+            color:Colors.theme.fontColor
+        },
+        sheetOption:{
+            marginVertical:2,
+            flexDirection:"row",
+            justifyContent:"space-between"
+        },
 })

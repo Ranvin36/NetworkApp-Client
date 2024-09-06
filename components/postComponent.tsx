@@ -1,4 +1,4 @@
-import { View,StyleSheet,Text,Image,TouchableOpacity, Dimensions, FlatList } from "react-native"
+import { View,StyleSheet,Text,Image,TouchableOpacity, Dimensions, FlatList, Linking } from "react-native"
 import { Ionicons,AntDesign,Feather,Entypo,FontAwesome} from "@expo/vector-icons"
 import { Video,ResizeMode } from "expo-av"
 import * as Haptics from "expo-haptics"
@@ -7,9 +7,10 @@ import { useSelector } from "react-redux"
 import { rootStore } from "@/app/redux/store"
 const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
 import { ColorPalatte } from "@/constants/Colors";
+import Hyperlink from 'react-native-hyperlink';
 const Colors = ColorPalatte()
 
-function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActiveBottomPost,AddBookmark,RemoveBookmark}){
+function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActivePost,AddBookmark,RemoveBookmark}){
     const user = useSelector((state:rootStore) => state.user.user)
     const creatorImage = item.creator[0].profilePicture
     const imgUrl = item.image
@@ -23,8 +24,8 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
     function BottomSheetAction(){
-        setActiveBottomPost(item._id)
-        openBottomSheet()
+        // setActivePost(item._id)
+        openBottomSheet(item._id)
     }
 
 
@@ -84,7 +85,9 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
             }
         <View style={styles.imageCont}>
             <View style={{marginVertical:2}}>
-                <Text style={[styles.textColor,{fontFamily:'Poppins-Light'}]}>{item.text}</Text>
+                <Hyperlink  linkStyle={{ color: '#2980b9', textDecorationLine: 'underline' }} onPress={(url) => Linking.openURL(url)}>
+                    <Text style={[styles.textColor,{fontFamily:'Poppins-Light'}]}>{item.text}</Text>
+                </Hyperlink>
             </View>
 
 

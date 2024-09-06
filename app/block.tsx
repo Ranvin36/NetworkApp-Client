@@ -42,8 +42,6 @@ const Block:React.FC = () =>{
         GetBlockedUser()
     },[])
 
-    console.log(blockedUsers , "BLOCKED USERS")
-
     useEffect(() =>{
         socket.on("receiveUnblockUser" , (data) =>{
             ToastAndroid.show("User Unblocked Successfully" , ToastAndroid.SHORT)

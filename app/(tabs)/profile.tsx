@@ -427,21 +427,6 @@ function Profile() {
                         }}/>
                     </View>
                     {/* Tab 2 */}
-                <View style={{width:Dimensions.get('window').width}}>
-                    <FlatList data={likedPosts}  numColumns={3} keyExtractor={(item) => item}  renderItem={({item}) => {
-                        const isImage = item.image[0]
-                        return(
-                            <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
-                                {loading ? null :  
-                                <TouchableOpacity onPress={() => router.push("/profileLike")}>
-
-                                    <Image source={{uri:isImage}} style={styles.postLayout} />
-                                </TouchableOpacity>
-                                }
-                            </Skeleton>
-                        )
-                    }} />
-                    </View>
 
                     {/* Tab 3 */}
                 <View style={{width:Dimensions.get('window').width}}>

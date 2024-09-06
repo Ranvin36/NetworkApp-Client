@@ -283,23 +283,6 @@ const GetFollowers = useCallback(async () =>{
                         }}/>
 
                       </View>
-                      <View style={{ flexDirection: "row", width: SCREEN_WIDTH, flexWrap: "wrap" }}>
-                          <View>
-                              <Image source={require("../../assets/images/valorant.jpeg")} style={styles.postLayout} />
-                          </View>
-                          <View>
-                              <Image source={require("../../assets/images/model.jpg")} style={styles.postLayout} />
-                          </View>
-                          <View>
-                              <Image source={require("../../assets/images/valorant.jpeg")} style={styles.postLayout} />
-                          </View>
-                          <View>
-                              <Image source={require("../../assets/images/valorant.jpeg")} style={styles.postLayout} />
-                          </View>
-                          <View>
-                              <Image source={require("../../assets/images/valorant.jpeg")} style={styles.postLayout} />
-                          </View>
-                      </View>
 
         </Animated.ScrollView>
 

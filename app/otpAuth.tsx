@@ -54,7 +54,8 @@ function OtpAuth(){
             <BackArrow/>
             <View style={{marginTop:5,alignItems:"center"}}>
                 <Image source={require("../assets/images/MobileBro.png")} style={{width:250,height:240}}/>
-                <Text style={[styles.textColor,{textAlign:"center",fontFamily:"Poppins-Bold",fontSize:17,marginVertical:10}]}>Enter Verification Code</Text>
+                {/* <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:28,marginVertical:10}]}>Enter Your OTP</Text>
+                <Text>Enter The One Time Passcode Sent To Your Email</Text> */}
             </View>
             <View style={{
                 flexDirection:'row',
