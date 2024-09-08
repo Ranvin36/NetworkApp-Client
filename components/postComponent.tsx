@@ -8,12 +8,15 @@ import { rootStore } from "@/app/redux/store"
 const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
 import { ColorPalatte } from "@/constants/Colors";
 import Hyperlink from 'react-native-hyperlink';
+import { useRef, useState } from "react"
 const Colors = ColorPalatte()
 
-function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActivePost,AddBookmark,RemoveBookmark}){
+function PostComponent({item,index,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActivePost,AddBookmark,RemoveBookmark}){
     const user = useSelector((state:rootStore) => state.user.user)
+    const [status, setStatus] =  useState({})
     const creatorImage = item.creator[0].profilePicture
-    const imgUrl = item.image
+    const video = useRef(null)
+    const imgUrl = item.media
     const videoUrl = item.video
     const like = item.likes
     const comments  = item.comments
@@ -25,8 +28,9 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
     }
     function BottomSheetAction(){
         // setActivePost(item._id)
-        openBottomSheet(item._id)
+        openBottomSheet(item)
     }
+
 
 
     return(
@@ -49,11 +53,11 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
             </View>
             <View style={{flexDirection:'row', alignItems:"center"}} >
                 {ifFollowing.length>0 ?
-                    <TouchableOpacity style={{backgroundColor:"#fff",padding:10,borderRadius:20}} onPress={()=>UnFollowUser(item.creator[0].creator_id)} >
+                    <TouchableOpacity style={styles.following} onPress={()=>UnFollowUser(item.creator[0].creator_id)} >
                         <Text style={[{fontFamily:"Poppins-Bold",fontSize:12}]}>Following</Text>
                     </TouchableOpacity>
                                         :
-                    <TouchableOpacity style={{backgroundColor:"#fff",padding:10,borderRadius:20}} onPress={()=>FollowUser(item.creator[0].creator_id)} >
+                    <TouchableOpacity style={styles.following} onPress={()=>FollowUser(item.creator[0].creator_id)} >
                         <Text style={[{fontFamily:"Poppins-Bold",fontSize:12}]}>Follow</Text>
                     </TouchableOpacity>
                     
@@ -63,25 +67,35 @@ function PostComponent({item,follows,UnFollowUser,FollowUser,unlikePost,LikePost
                 </TouchableOpacity>
             </View>
         </View>
-        {imgUrl ?         
-                <FlatList data={imgUrl} horizontal keyExtractor={(item)=>item}  pagingEnabled renderItem={({item,index}) =>{
+        {imgUrl &&
+                <FlatList data={imgUrl} horizontal keyExtractor={(item)=>item._id}  pagingEnabled renderItem={({item,index}) =>{
                     return(
                         <View>
-                            <Image source={{uri :item}} style={{height:300,width:300,borderRadius:20}}/>
+                            {item.mediaType=="image"?
+                            <Image source={{uri :item.uri}} style={{height:300,width:300,borderRadius:20}}/>
+                            :
+                            <TouchableOpacity onPress={() => status.isPlaying ? video.current.pauseAsync() : video.current.playAsync()} style={{position:"relative"}}>
+                                    <View style={{position:'absolute',zIndex:1,borderRadius:20,justifyContent:"center",alignItems:"center",backgroundColor:status.isPlaying?  'rgba(0, 0, 0, 0)' : 'rgba(0, 0, 0, 0.5)',width:"100%",height:'100%'}}>
+                                        {!status.isPlaying &&  <Ionicons name="play" size={40} color="#fff" />}
+                                    </View>
+                                    <Video 
+                                    ref={video}
+                                    source={{uri:item.uri}}  
+                                    style={{height:300,width:300,borderRadius:20}}
+                                    resizeMode={ResizeMode.COVER}
+                                    isLooping
+                                    shouldPlay={false}
+                                    onPlaybackStatusUpdate={status =>  setStatus(() => status)}
+                                    useNativeControls={false}/>
+                            </TouchableOpacity>
+                            }
                             <View style={styles.amountLabel}>
                                 <Text style={styles.labelColor}> {index+1} / {imgUrl.length}</Text>
                             </View>
                         </View>
 
                     )
-                }}/>                 
-                :
-                <Video source={{uri:videoUrl}}  
-                style={{height:300,borderRadius:20}}
-                resizeMode={ResizeMode.COVER}
-                isLooping
-                shouldPlay
-                useNativeControls={false}/>
+                }}/> 
             }
         <View style={styles.imageCont}>
             <View style={{marginVertical:2}}>
@@ -191,5 +205,10 @@ const styles = StyleSheet.create({
         paddingVertical:5,
         textAlign:"center",
         fontSize:12
+    },
+    following:{
+        backgroundColor:"#fff",
+        padding:10,
+        borderRadius:20
     }
 })

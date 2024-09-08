@@ -111,10 +111,10 @@ export default function Home(){
         actionContext.value = event.translationY
     }).onUpdate((event) =>{
         actionSheetY.value = event.translationY + actionContext.value
-        actionSheetY.value = Math.max(actionSheetY.value , -SCREEN_HEIGHT/20)  
+        actionSheetY.value = Math.max(actionSheetY.value ,10)  
     }).onEnd((event) =>{
         if(actionSheetY.value < SCREEN_HEIGHT/8){
-            actionSheetY.value = withSpring(0, {damping:50})
+            actionSheetY.value = withSpring(10, {damping:50})
         }
         else{
             runOnJS(CloseBottomSheet)()
@@ -351,13 +351,13 @@ export default function Home(){
 
         function CloseBottomSheet(){
             // setActionSheet(false)
+            dispatch(setOpened(false))
             actionSheetY.value = withSpring(SCREEN_HEIGHT, {damping:50})
         }
         function OpenBottomSheet(id:number){
-            // console.log("OPEN")
-            // setActionSheet(true)
+            dispatch(setOpened(true))
             setActivePost(id)
-            actionSheetY.value = withSpring(-SCREEN_HEIGHT/20, {damping:50})
+            actionSheetY.value = withSpring(0, {damping:50})
         }
 
     
@@ -446,9 +446,6 @@ export default function Home(){
             ]
         },[])
 
-
-        // console.log(posts[0].bookmarks)
-
     return(
         <View>
         <ScrollView style={styles.container} onScroll={({nativeEvent}) =>{
@@ -504,9 +501,9 @@ export default function Home(){
             </ScrollView>
               
             <View style={styles.postsContainer}>
-                <FlatList data={posts} showsVerticalScrollIndicator={false} renderItem={({item}) =>{
+                <FlatList data={posts} showsVerticalScrollIndicator={false} renderItem={({item,index}) =>{
                         return(
-                         <PostComponent  item={item} openBottomSheet={OpenBottomSheet} follows={follows} UnFollowUser={HandleUnfollowUser} FollowUser={HandleFollowUser} unlikePost={HandleUnLikePost} LikePost={HandleLikePost} toggleBottomSheet={toggleBottomSheet} AddBookmark={AddBookmark} RemoveBookmark={RemoveBookmark}/>
+                         <PostComponent  item={item} index={index} openBottomSheet={OpenBottomSheet} follows={follows} UnFollowUser={HandleUnfollowUser} FollowUser={HandleFollowUser} unlikePost={HandleUnLikePost} LikePost={HandleLikePost} toggleBottomSheet={toggleBottomSheet} AddBookmark={AddBookmark} RemoveBookmark={RemoveBookmark}/>
                         )
                 }}/>
                 {contentLoading 
@@ -628,7 +625,7 @@ export default function Home(){
                                         </View>
                                     }
                 <GestureDetector gesture={SheetGesture}>
-                    <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:Colors.theme.commentsBg,zIndex:2,borderRadius:10,width:"90%",bottom:10,alignSelf:"center"}]}>
+                    <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:Colors.theme.commentsBg,zIndex:2,borderRadius:10,width:"100%",height:"50%",bottom:-20,alignSelf:"center"}]}>
                         <View style={{width:15,borderRadius:50,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:10}}></View>
                         <View style={{paddingHorizontal:20,paddingVertical:15}}>
                             <View style={{marginVertical:10,flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>

@@ -16,7 +16,7 @@ export default function RootLayout() {
     "Poppins-Bold": require('../assets/fonts/Poppins-Bold.ttf'),
     "Poppins-Light": require('../assets/fonts/Poppins-Light.ttf'),
     "Poppins-Regular": require('../assets/fonts/Poppins-Regular.ttf'),
-    "PlaywriteSK-Regular": require('../assets/fonts/Quicksand-Light.ttf'),
+    "PlaywriteSK-Regular": require('../assets/fonts/PlaywriteSK-Regular.ttf'),
     "wondra": require('../assets/fonts/Wondra.ttf'),
   });
 

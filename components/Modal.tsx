@@ -37,7 +37,7 @@ export default Modal
 const styles= StyleSheet.create({
     container:{
         position:"absolute",
-        backgroundColor:"#00000028",
+        backgroundColor:"#000000ce",
         height:Dimensions.get('window').height,
         width:"100%",
         zIndex:1,

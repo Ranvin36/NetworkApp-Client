@@ -44,6 +44,31 @@ const Stories = [
         image:"../assets/images/model.jpg",
         name:"Ranvin.W"
     },
+    {
+        id:9,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:10,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:11,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:12,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
+    {
+        id:13,
+        image:"../assets/images/model.jpg",
+        name:"Ranvin.W"
+    },
 ]
 
 export default Stories

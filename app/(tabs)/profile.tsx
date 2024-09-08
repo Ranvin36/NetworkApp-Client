@@ -195,13 +195,13 @@ function Profile() {
                 Authorization: `Bearer ${user?.token}`
             }
         })
-
         setBookmarkedPosts(bookmarks.data.data)
     }
 
     useEffect(() => {
         GetBookmarkedPosts()
     },[])
+
 
     async function DeletePosts(){
         setLoading(true)
@@ -283,9 +283,6 @@ function Profile() {
             setUsername(user.data.username)
         }
     }
-
-
-
     return (
         <ScrollView style={styles.container}  showsVerticalScrollIndicator={false} refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={refreshProfile}/>
@@ -398,10 +395,10 @@ function Profile() {
                     }}
                 >
                     <View style={{width:Dimensions.get('window').width}}>
-                        <FlatList data={post} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
-                            const isImage = item.image[0]
+                        <FlatList data={posts} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
+                            const isImage = item.media[0]
                             return(
-                                <View  >
+                                <View>
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                         {loading ? null :
                                             <ProfileActivity item={item} isImage={isImage} userId={user?.data._id} setSelected={setSelected} selected={selected}/> 
@@ -414,7 +411,7 @@ function Profile() {
                     </View>
                     <View style={{width:Dimensions.get('window').width}}>
                         <FlatList data={videos} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
-                            const isImage = item.image[0]
+                            const isImage = item.media[0]
                             return(
                                 <View  >
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
@@ -431,13 +428,13 @@ function Profile() {
                     {/* Tab 3 */}
                 <View style={{width:Dimensions.get('window').width}}>
                     <FlatList data={bookmarkedPosts}  numColumns={3} keyExtractor={(item) => item}  renderItem={({item}) => {
-                        const isImage = item.image[0]
+                        const isImage = item.media[0]
                         return(
                             <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                 {loading ? null :  
                                 <TouchableOpacity onPress={() => router.push("/profileLike")}>
 
-                                    <Image source={{uri:isImage}} style={styles.postLayout} />
+                                    <Image source={{uri:isImage.uri}} style={styles.postLayout} />
                                 </TouchableOpacity>
                                 }
                             </Skeleton>
@@ -456,6 +453,7 @@ export default Profile
 const styles = StyleSheet.create({
     container: {
         backgroundColor:Colors.theme.backgroundColor,
+        height:"100%"
     },
     header: {
         paddingVertical: 7,
