@@ -11,7 +11,7 @@ import { ColorPalatte } from "@/constants/Colors";
 
 const Colors = ColorPalatte()
 
-const VideoScroll = React.memo(({ item, shouldPlay,setVideos,UnlikeClip,LikeClip}) => {
+const VideoScroll = React.memo(({ item,CreateBookmark,index,setActivePost,shouldPlay,setVideos,UnlikeClip,LikeClip,toggleBottomSheet}) => {
   const video = useRef<Video | null>(null);
   const user = useSelector((state:rootStore) => state.user.user)
   const [status, setStatus] = useState({ isPlaying: true });
@@ -30,6 +30,12 @@ const VideoScroll = React.memo(({ item, shouldPlay,setVideos,UnlikeClip,LikeClip
       video.current?.pauseAsync()
     })
   }, [shouldPlay]);
+
+  function ToggleAction(){
+    toggleBottomSheet(index)
+  }
+  console.log(item)
+
   return (
     <Pressable
       onPress={() => status.isPlaying && video.current?.pauseAsync()}
@@ -42,7 +48,7 @@ const VideoScroll = React.memo(({ item, shouldPlay,setVideos,UnlikeClip,LikeClip
           </TouchableOpacity>
         </View>
       )}
-      <ReelUploader user={item.user[0]}/>
+      <ReelUploader user={item.user[0]} text={item.text}/>
       <View style={styles.iconContainer}>
         <TouchableOpacity style={styles.iconActions} >
           {isLiked.length>0 ?
@@ -56,11 +62,11 @@ const VideoScroll = React.memo(({ item, shouldPlay,setVideos,UnlikeClip,LikeClip
           }
           <Text style={styles.iconText}>{item.likes.length}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconActions}>
+        <TouchableOpacity style={styles.iconActions}  onPress={ToggleAction}>
           <MaterialCommunityIcons name="comment-outline" size={31} color="#fff" />
           <Text style={styles.iconText}>{item.comments.length}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconActions}>
+        <TouchableOpacity style={styles.iconActions} onPress={() => CreateBookmark(item._id)}>
           <Feather name="bookmark" size={31} color="#fff" />
           <Text style={styles.iconText}>110</Text>
         </TouchableOpacity>

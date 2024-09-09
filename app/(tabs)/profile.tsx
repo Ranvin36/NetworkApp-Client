@@ -52,6 +52,7 @@ function Profile() {
     const [likedPosts, setLikePosts] = useState([])
     const [bookmarkedPosts, setBookmarkedPosts] = useState([])
     const [selected,setSelected] =  useState([])
+    const [clips,setClips] =  useState([])
     const [posts, setPosts] = useState<PostTypes[]>([])
     const [refreshing, setRefreshing] = useState(false)
     const [editUsername, setEditUsername] = useState(false)
@@ -65,7 +66,7 @@ function Profile() {
     const postLayout = Dimensions.get('window').width / 3
     const screenWidth = Dimensions.get('window').width
     const tabWidth = screenWidth / 3
-    const videos = posts.filter((item) => item.video)
+    // const videos = posts.filter((item) => item.video)
     const post = posts.filter((item) => item.image) 
     async function UpdateProfilePic() {
         const selectImage = await ImagePicker.launchImageLibraryAsync({
@@ -182,6 +183,15 @@ function Profile() {
         setLoading(false)
     }
 
+    async function GetClips(){
+        const response = await axios.get(`http://${ipAddress}:3001/reels/myclips`,{
+            headers:{
+                Authorization:`Bearer ${user?.token}`
+            }
+        })
+        setClips([response.data.findClip])
+    }
+
     async function GetBookmarkedPosts(){
         const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user?.data._id}`,{
             headers:{
@@ -271,6 +281,10 @@ function Profile() {
     useEffect(() => {
         getPosts()
     }, [refreshing])
+
+    useEffect(() =>{
+        GetClips()
+    },[])
 
     useEffect(()=>{
         setSelectedIndex(0)
@@ -396,7 +410,7 @@ function Profile() {
                 >
                     <View style={{width:Dimensions.get('window').width}}>
                         <FlatList data={posts} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
-                            const isImage = item.media[0]
+                            const isImage = item.media[0].uri
                             return(
                                 <View>
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
@@ -410,8 +424,8 @@ function Profile() {
                         }}/>
                     </View>
                     <View style={{width:Dimensions.get('window').width}}>
-                        <FlatList data={videos} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
-                            const isImage = item.media[0]
+                        <FlatList data={clips} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
+                            const isImage = false
                             return(
                                 <View  >
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>

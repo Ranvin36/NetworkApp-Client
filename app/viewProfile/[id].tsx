@@ -26,6 +26,7 @@ function Page(){
   const [selected, setSelected] = useState([])
   const [followCount, setFollowCount] = useState([])
   const [follows, setFollows] = useState([])
+  const [clips, setClips] = useState([])
   const [posts,setPosts] = useState([])
   const position = useSharedValue(40)
   const [bottomSheetOpened,setBottomSheetOpened] = useState(false)
@@ -70,9 +71,20 @@ function Page(){
         Authorization:`Bearer ${user?.user.token}`
       }
     })
-
+    
     setPosts(response.data.data)
   }
+  
+  async function GetClips(){
+    const response = await axios.get(`http://${ipAddress}:3001/reels/clips/${id}`,{
+      headers:{
+        Authorization:`Bearer ${user?.user.token}`
+      }
+    })
+    setClips([response.data.findClip])
+  }
+
+  console.log(clips)
 
   function ViewFollowers(){
     router.push({pathname:`${id}/followers`})
@@ -155,6 +167,10 @@ const GetFollowers = useCallback(async () =>{
 
   useEffect(()=>{
     GetFollowers()
+  },[])
+
+  useEffect(() =>{
+    GetClips()
   },[])
 
   useEffect(() => {
@@ -243,9 +259,9 @@ const GetFollowers = useCallback(async () =>{
         }}
         >
                       <View style={{ width: SCREEN_WIDTH}}>
-                        <FlatList data={postImages} numColumns={3} keyExtractor={(item) => item._id} renderItem={({item}) =>{
+                        <FlatList data={posts} numColumns={3} keyExtractor={(item) => item._id} renderItem={({item}) =>{
                             const userId = item.creator[0].creator_id
-                            const isImage = item.image[0]
+                            const isImage = item.media[0].uri
                             return(
                               <View>
                               
@@ -263,9 +279,8 @@ const GetFollowers = useCallback(async () =>{
                         }}/>
                       </View>
                       <View style={{ width:SCREEN_WIDTH}}>
-                        <FlatList data={postVideo} numColumns={3} keyExtractor={(item) => item._id} renderItem={({item}) =>{
-                            const userId = item.creator[0].creator_id
-                            const isImage = item.image[0]
+                        <FlatList data={clips} numColumns={3} keyExtractor={(item) => item._id} renderItem={({item}) =>{
+                            const isImage = false
                             return(
                               <View>
                               
@@ -275,7 +290,7 @@ const GetFollowers = useCallback(async () =>{
                                   </TouchableOpacity>
                                   :
                                   <TouchableOpacity>
-                                      <Video source={{ uri: item.video }} style={[styles.postLayout]} resizeMode={ResizeMode.COVER} />
+                                      <Video source={{ uri: item.media }} style={[styles.postLayout]} resizeMode={ResizeMode.COVER} />
                                   </TouchableOpacity>
                               }
                               </View>

@@ -29,6 +29,7 @@ import { Ionicons,EvilIcons,MaterialCommunityIcons} from '@expo/vector-icons';
 import StoriesComp from "@/components/storiesComp";
 import { ColorPalatte } from "@/constants/Colors";
 import { duration } from "moment";
+import CommentBottomSheet from "@/components/CommentBottomSheet";
 const Colors = ColorPalatte()
 
 
@@ -571,48 +572,7 @@ export default function Home(){
                 </Animated.View>
         }
                 
-                    <GestureDetector gesture={gesture}>
-                        <Animated.View style={[styles.bottomSheet,rBottomSheetStyle]}>
-                            <View style={styles.line}></View>
-                            <View style={styles.sheetLayout}>
-                                <View style={{flexDirection:"row",justifyContent:"center",alignItems:"center"}}>
-                                    <View>
-                                        <Text style={{fontFamily:"Poppins-Light",fontSize:18,color:Colors.theme.fontColor}}>Comments</Text>
-                                    </View>
-                                </View>
-                                <View style={{justifyContent:"space-between",flexDirection:"column"}}>
-                                    <ScrollView>
-
-                                        {activeComments && activeComments.length>0?
-                                        activeComments.map((item,index)=>{
-                                            return(
-                                                <View key={index} style={{marginVertical:10}}>
-                                                    <View style={{flexDirection:"row",alignItems:"center"}}>
-                                                        {item.profilePicture 
-                                                                    ?
-                                                        <Image source={{uri:item.profilePicture}} style={{width:50,height:50, borderRadius:50}}/>
-                                                                    :
-
-                                                        <Image source={require('../../assets/images/model.jpg')} style={{width:50,height:50, borderRadius:50}}/>
-                                                    }
-                                                        <View style={{marginHorizontal:5,height:20,justifyContent:"center"}}>
-                                                            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>Motion Rades</Text>
-                                                            <Text style={[styles.textColor,{fontFamily: "Poppins-Light"}]}>{item.message}</Text>
-                                                        </View>
-                                                    </View>
-                                                </View>
-                                            )
-                                        })
-                                        :
-                                        <View style={{alignItems:"center",justifyContent:"center",height:"70%"}}>
-                                            <Text style={{fontFamily:"Poppins-Bold",fontSize:17}}>No Comments Were Found!</Text>
-                                        </View>
-                                        }
-                                    </ScrollView>
-                                </View>
-                                </View>
-                        </Animated.View>
-                    </GestureDetector>
+                    <CommentBottomSheet gesture={gesture} translateY={translateY} activeComments={activeComments}/>
                                     {isSheetOpened &&
                     
                                         <View style={{position:"absolute",bottom:70,zIndex:1,backgroundColor:Colors.theme.backgroundColor,width:SCREEN_WIDTH,padding:10,paddingHorizontal:20,flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>

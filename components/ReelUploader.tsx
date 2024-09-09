@@ -1,6 +1,6 @@
 import { View,Text,Image, StyleSheet } from "react-native"
 
-function ReelUploader({user}){
+function ReelUploader({user,text}){
     return(
         <View style={styles.infoContainer}>
             <View style={{flexDirection:"row",alignItems:"center"}}>
@@ -8,7 +8,7 @@ function ReelUploader({user}){
             <Image source={{uri:user.profilePicture}} style={styles.image} />
             <Text style={styles.title}>{user.username}</Text>
             </View>
-            <Text style={styles.subtitle}>4 Years Ago!!</Text>
+            <Text style={styles.subtitle}>{text}</Text>
       </View>
     )
 }

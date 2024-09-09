@@ -59,7 +59,7 @@ function Add(){
             console.log(pickImage.assets)
         }
     }
-
+    
     async function uploadPost(){
         try{
             setLoading(true)
@@ -91,7 +91,7 @@ function Add(){
         try{
             setLoading(true)
             const data = new FormData()
-            data.append('image',{uri: image.uri,name: image.name,type: image.type})
+            data.append('image',{uri: image[0].uri,name: image[0].name,type: image[0].type})
             data.append('text',text) 
             const response = await axios.post(`http://${ipAddress}:3001/posts/create-reel`,data,{
                 headers:{
@@ -139,9 +139,6 @@ function Add(){
             x:SCREEN_WIDTH * index
         })
     }
-
-    console.log(image.uri , "IMAE")
-
 
     return(
         <ScrollView>

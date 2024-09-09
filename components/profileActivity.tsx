@@ -14,7 +14,6 @@ function ProfileActivity({item,isImage,userId,setSelected,selected}){
     }
     const isSelected = selected && selected.filter((id) => id.toString() == item._id.toString())
     const index = selected  && selected.findIndex((id) => id.toString() == item._id.toString())
-    console.log(isImage,"ISIMAGE")
     return(
         <View>
             {isSelected.length>0 &&            
@@ -27,12 +26,12 @@ function ProfileActivity({item,isImage,userId,setSelected,selected}){
             onPress={() => isSelected.length > 0 ? AddToSelected() : router.push({pathname: `/post/${userId}`, params: {userId}})}
             onLongPress={AddToSelected}
           >
-            <Image source={{ uri: isImage.uri }} style={styles.postLayout} />
+            <Image source={{ uri: isImage }} style={styles.postLayout} />
           </TouchableOpacity>
           
             :
             <TouchableOpacity>
-                <Video source={{ uri: isImage.uri }} style={[styles.postLayout]} resizeMode={ResizeMode.COVER} />
+                <Video source={{ uri: item.media }} style={[styles.postLayout]} resizeMode={ResizeMode.COVER} />
             </TouchableOpacity>
         }
         </View>
@@ -46,6 +45,6 @@ export default ProfileActivity
 const styles = StyleSheet.create({
     postLayout: {
         width: Dimensions.get('window').width / 3,
-        height: 200
+        height: 200,
     }
 })
