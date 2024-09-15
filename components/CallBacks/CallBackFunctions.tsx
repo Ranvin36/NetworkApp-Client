@@ -64,3 +64,14 @@ export async function CreateComment(activePost:number,comment,user){
         }
     })
 }
+
+
+export async function BlockUser(uid:any,token:any){
+    console.log(uid,token)
+    const response =await axios.post(`http://${ipAddress}:3001/users/block/${uid}`,null,{
+        headers:{
+            Authorization:`Bearer ${token}`
+        }
+    })
+    return response.data
+}

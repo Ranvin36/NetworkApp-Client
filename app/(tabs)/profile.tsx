@@ -68,6 +68,8 @@ function Profile() {
     const tabWidth = screenWidth / 3
     // const videos = posts.filter((item) => item.video)
     const post = posts.filter((item) => item.image) 
+    // console.log(clips ,  "DATA")
+
     async function UpdateProfilePic() {
         const selectImage = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -184,12 +186,17 @@ function Profile() {
     }
 
     async function GetClips(){
-        const response = await axios.get(`http://${ipAddress}:3001/reels/myclips`,{
+        const response = await axios.get(`http://${ipAddress}:3001/reels/clips/${user?.data._id}`,{
             headers:{
                 Authorization:`Bearer ${user?.token}`
             }
         })
-        setClips([response.data.findClip])
+        console.log(response.data)
+        if(response.data.findClip){
+            setClips([response.data.findClip])
+            return
+        }
+        setClips([])
     }
 
     async function GetBookmarkedPosts(){
@@ -409,7 +416,7 @@ function Profile() {
                     }}
                 >
                     <View style={{width:Dimensions.get('window').width}}>
-                        <FlatList data={posts} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
+                        <FlatList data={posts} numColumns={3}  keyExtractor={(item) => item?._id }  renderItem={({item}) =>{
                             const isImage = item.media[0].uri
                             return(
                                 <View>
@@ -424,8 +431,9 @@ function Profile() {
                         }}/>
                     </View>
                     <View style={{width:Dimensions.get('window').width}}>
-                        <FlatList data={clips} numColumns={3}  keyExtractor={(item) => item._id }  renderItem={({item}) =>{
+                        <FlatList data={clips} numColumns={3}  keyExtractor={(item) => item?._id }  renderItem={({item}) =>{
                             const isImage = false
+                            // console.log(item , "DATA")
                             return(
                                 <View  >
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
@@ -437,12 +445,10 @@ function Profile() {
                             )
                         }}/>
                     </View>
-                    {/* Tab 2 */}
 
-                    {/* Tab 3 */}
                 <View style={{width:Dimensions.get('window').width}}>
                     <FlatList data={bookmarkedPosts}  numColumns={3} keyExtractor={(item) => item}  renderItem={({item}) => {
-                        const isImage = item.media[0]
+                        const isImage = item.media  && item.media[0]
                         return(
                             <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                 {loading ? null :  

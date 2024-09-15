@@ -117,26 +117,26 @@ function Posts(){
         const data = {"message":comment}
         const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
             headers:{
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
     }
-    async function UnFollowUser(uid){
+    async function UnFollowUser(uid:number){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         const response = await axios.delete(`http://${ipAddress}:3001/users/remove-follower/${uid}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
         setFollowCount((prev) => [...prev,1])
     }
-    async function FollowUser(uid){
+    async function FollowUser(uid:number){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         try{
             const response = await axios.post(`http://${ipAddress}:3001/users/add-follower/${uid}`,null,{
                 headers:{
-                    Authorization:`Bearer ${user.token}`
+                    Authorization:`Bearer ${user?.token}`
                 }
             })
             setFollowCount((prev) => [...prev, 1])

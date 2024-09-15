@@ -9,7 +9,7 @@ type ChatLayout = {
     lastMessage: string
 }
 
-const ChatLayoutComponent:React.FC<ChatLayout> = ({item,lastMessage}) => {
+const ChatLayoutComponent:React.FC<ChatLayout> = ({item,lastMessage,formattedUpdateAt}) => {
     const userId = item[0].userId[0]
 
     return(
@@ -30,7 +30,7 @@ const ChatLayoutComponent:React.FC<ChatLayout> = ({item,lastMessage}) => {
                 </View>
             </View>
             <View>
-                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:11}]}>Tue 15:30</Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:11}]}>{formattedUpdateAt}</Text>
             </View>
         </TouchableOpacity>
     )

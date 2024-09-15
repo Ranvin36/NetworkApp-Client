@@ -11,6 +11,7 @@ import { Entypo } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { ColorPalatte } from '@/constants/Colors';
 const {Navigator} = createMaterialTopTabNavigator()
 export const MaterialTopTabs = withLayoutContext<
     MaterialTopTabNavigationOptions,
@@ -20,6 +21,7 @@ export const MaterialTopTabs = withLayoutContext<
 >(Navigator)
 
 
+const Colors = ColorPalatte()
 export default function _layout(){
     const {id} = useLocalSearchParams()  
     const router = useRouter()
@@ -38,8 +40,15 @@ export default function _layout(){
                 </TouchableOpacity>
             </View>
         </View>
-            <MaterialTopTabs>
-                <MaterialTopTabs.Screen name='followers' initialParams={{id}} />
+            <MaterialTopTabs screenOptions={{
+                tabBarLabelStyle:{
+                    textTransform:'capitalize'
+                },
+                tabBarIndicatorStyle:{
+                    backgroundColor:Colors.theme.primary,
+                }
+            }}>
+                <MaterialTopTabs.Screen name='followers'  initialParams={{id}} />
                 <MaterialTopTabs.Screen name='following' initialParams={{id}}/>
             </MaterialTopTabs>
         </View>
@@ -57,8 +66,7 @@ const styles = StyleSheet.create({
         justifyContent:"space-between",
         alignItems:"center",
         // marginTop:30,
-        paddingTop:45,
-        paddingVertical:5,
+        paddingTop:35,
         backgroundColor:"#fff"
     },
     headerIcon:{

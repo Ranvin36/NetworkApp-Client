@@ -1,13 +1,14 @@
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler} from "react-native-gesture-handler"
 import  Animated,{useAnimatedStyle} from "react-native-reanimated"
-import { StyleSheet,View,Image,Text,ScrollView, Dimensions } from "react-native"
+import { StyleSheet,View,Image,Text,ScrollView, Dimensions,TextInput,TouchableOpacity} from "react-native"
 import { ColorPalatte } from "@/constants/Colors"
+import { Ionicons } from "@expo/vector-icons"
 
 
 const Colors  = ColorPalatte()
 const  {width:SCREEN_WIDTH,height:SCREEN_HEIGHT} = Dimensions.get('window')
 
-function  CommentBottomSheet({gesture,translateY,activeComments}){
+function  CommentBottomSheet({gesture,translateY,activeComments,isSheetOpened,HandleCreateComment,setComment}){
     const rBottomSheetStyle = useAnimatedStyle(() =>{
         return{
             transform : [{translateY: translateY.value}]
@@ -55,6 +56,16 @@ function  CommentBottomSheet({gesture,translateY,activeComments}){
                                     </ScrollView>
                                 </View>
                                 </View>
+
+                                    <View style={{position:"absolute",bottom:20,zIndex:1,backgroundColor:Colors.theme.backgroundColor,width:SCREEN_WIDTH,padding:10,paddingHorizontal:20,flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
+                                        <View style={{backgroundColor:Colors.theme.backgroundTransparent,paddingVertical:10,borderRadius:5}}>
+                                            <TextInput placeholder="Type Your Comment." placeholderTextColor={Colors.theme.fontColor} style={{paddingHorizontal:5,color:Colors.theme.fontColor,fontFamily:"Poppins-Light",width:SCREEN_WIDTH/1.3}} onChangeText={(e) => setComment(e)}/>
+                                        </View>
+                                        <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:35,height:35,justifyContent:"center",alignItems:"center"}} onPress={HandleCreateComment}>
+                                            <Ionicons name="send-outline" size={20} color="#fff" />
+                                        </TouchableOpacity>
+                                    </View>
+                                
                         </Animated.View>
                     </GestureDetector>
     )

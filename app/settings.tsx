@@ -57,7 +57,7 @@ function Settings(){
                     <Text style={{fontFamily:"Poppins-Bold",color:"#ccc"}}>Account Settings</Text>
                     <View style={styles.settingOptions}>
                        <SettingOptions title="Notifications" icon="bell" to="notifications"/>
-                       <SettingOptions title="Liked" icon="heart" to="block"/>
+                       <SettingOptions title="Liked" icon="heart" to="liked"/>
                        <SettingOptions title="Saved" icon="bookmark" to="saved"/>
                        <SettingOptions title="Edit Profile" icon="edit" to="editProfile"/>
                        <SettingOptions title="Blocked" icon="user-x" to="block"/>

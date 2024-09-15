@@ -46,7 +46,7 @@ type PostTypes={
     updated_at: string,
     creator: [{
         id: number,
-        userId: string,
+        creator_id: string,
         username: string,
         profile_pic: string | null,
         created_at: string,
@@ -70,9 +70,9 @@ export default function Home(){
     const actionContext = useSharedValue(0)
     const [posts,setPosts] = useState<PostTypes[]>([])
     const [comment,setComment] = useState('')
-    let [activePost,setActivePost] = useState(0)
-    const [isSheetOpened,setIsSheetOpened] = useState(true)
-    const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 3)
+    let [activePost,setActivePost] = useState({index:0,id:0})
+    const [isSheetOpened,setIsSheetOpened] = useState(false)
+    const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 1.7)
     const [follows,setFollows] = useState([])
     const [refresh,setRefresh] = useState(false)
     const [dummyData,setDummyData] = useState(['Item 1'])
@@ -88,12 +88,14 @@ export default function Home(){
     const [contentLoading,setContentLoading] = useState(false)
     const scaleAnim = useSharedValue(0)
     const lineWidth = useSharedValue(10)
-    useAnimatedReaction(
-        () => isSheetOpenedDerived.value,
-        (isOpen)=>{
-            runOnJS(setIsSheetOpened)(isOpen)
-        } 
-    )
+    const snapsRef = useRef(0)
+    // useAnimatedReaction(
+    //     () => isSheetOpenedDerived.value,
+    //     (isOpen)=>{
+    //         runOnJS(setIsSheetOpened)(isOpen)
+    //         runOnJS(Reaction)(isOpen)
+    //     } 
+    // )
     const gesture = Gesture.Pan().onStart((event)=>{
         context.value = {y:translateY.value}
     }).onUpdate((event)=>{
@@ -101,6 +103,7 @@ export default function Home(){
         translateY.value = Math.max(translateY.value, -SCREEN_HEIGHT)
     }).onEnd(()=>{
         if(translateY.value > -SCREEN_HEIGHT/2){
+            runOnJS(setIsSheetOpened)(false)
             translateY.value = withSpring(SCREEN_HEIGHT,{damping:50})
         }
         else if(translateY.value < -SCREEN_HEIGHT/1.7){
@@ -161,33 +164,33 @@ export default function Home(){
         setPosts((prev) =>  [...prev,...newData])
     },[page,user?.user?.token])
     
-
-
+    function Reaction(){
+        if(isSheetOpened){
+            dispatch(setOpened(true))
+        }
+        else{
+            dispatch(setOpened(false))
+        }
+    }
     async function PlaySound(){
         const {sound}  = await Audio.Sound.createAsync(require('../../assets/videos/ding.mp3'))
         await sound.playAsync();
     }
 
-    const toggleBottomSheet = async(id:number) =>{
+    const toggleBottomSheet = async(index:number,id:number) =>{
         // dispatch(setOpened(false))
-        setActivePost(id)
+        setActivePost({index:id,id})
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         if(isSheetOpened){
+            setIsSheetOpened(false)
             translateY.value = withSpring(0,{damping:50})
         }
         else{
+            setIsSheetOpened(true)
             translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
-            const findPosts = posts[0]
-            if(findPosts){
-                setActiveComments(findPosts.comments ? findPosts.comments : [])
-            }
-            else{
-                setActiveComments([])
-                return
-            }
+            setActiveComments(posts[index].comments ? posts[index].comments : [])
         }
     }
-
     async function HandleFollowUser(uid:number){
         await FollowUser(uid,user,setFollowCount)
     }
@@ -197,12 +200,20 @@ export default function Home(){
 
     async function HandleLikePost(uid:number){
         const data = {"postId":uid , "userId":user?.user?.data._id}
+        setPosts((prev) => prev.map((item) => item._id == data.postId ?{ 
+                ...item ,
+                likes:item.likes ? [...item.likes,data.userId] :[data.userId]} : item) )
         socket.emit("likePost",data)
         // await LikePost(uid,user,dummyData,setDummyData)
     }
     
     async function HandleUnLikePost(uid:number){
         const data = {"postId":uid , "userId":user?.user?.data._id}
+        setPosts((prev:any) => prev.map((post:any) => post._id == data.postId?{
+            ...post,
+            likes:post.likes ? post.likes.filter((likes:number) => likes.toString() != data.userId) : null  
+
+        }:post))
         socket.emit("unlikePost",data)
     }
 
@@ -212,20 +223,25 @@ export default function Home(){
         //         Authorization : `Bearer ${user?.user?.token}`
         //     }
         // })
-        // console.log(response.data)
         const data = {"postId":uid , "userId":user?.user?.data._id}
+        setPosts((prev) => prev.map((item) =>  item._id == data.postId ?{
+            ...item,
+            bookmarks: item.bookmarks ? [...item.bookmarks,data.userId] :[data.userId]} :  item))
         socket.emit("createBookmark",data)
     }
     
     async function RemoveBookmark(uid:number){
-        const response = await axios.post(`http://${ipAddress}:3001/posts/bookmark/delete/${uid}`,null,{
-            headers:{
-                Authorization: `Bearer ${user?.user?.token}`
-            }
-        })
+        // const response = await axios.post(`http://${ipAddress}:3001/posts/bookmark/delete/${uid}`,null,{
+        //     headers:{
+        //         Authorization: `Bearer ${user?.user?.token}`
+        //     }
+        // })
         const data ={"postId" : uid  , "userId":user?.user?.data._id}
+        setPosts((prev:any) => prev.map((post:any) => post._id == data.postId?{
+            ...post,
+             bookmarks:post.bookmarks ? post.bookmarks.filter((likes:number) => likes.toString()!= data.userId) : null  
+         }:post))
         socket.emit("removeBookmark",data)
-        // console.log(response.data)
     }
     
     async function HandleCreateComment(){
@@ -235,7 +251,7 @@ export default function Home(){
         //         Authorization: `Bearer ${user?.user?.token}`
         //     }
         // })
-        socket.emit("createComment",{"message":comment, "userId":user?.user?.data._id,"postId":activePost})
+        socket.emit("createComment",{"message":comment, "userId":user?.user?.data._id,"postId":activePost.id})
     }
 
     const GetFollowers = useCallback(async () =>{
@@ -342,8 +358,12 @@ export default function Home(){
 
         function handleNextStory(){
             if(activeStory < stories.length-1){
-                console.log("NEXT")
-                setActiveStory((prev) => prev+1)
+                // setActiveStory((prev) => prev+1)
+                snapsRef.current?.scrollToIndex({
+                    index: 1,
+                    animated: true,
+                    useNativeDriver: true
+            })
             }
             else{
                 scaleDown()
@@ -355,9 +375,10 @@ export default function Home(){
             dispatch(setOpened(false))
             actionSheetY.value = withSpring(SCREEN_HEIGHT, {damping:50})
         }
-        function OpenBottomSheet(id:number){
+        function OpenBottomSheet(index:number , id:number){
             dispatch(setOpened(true))
-            setActivePost(id)
+            console.log(index,id)
+            setActivePost({index:index,id})
             actionSheetY.value = withSpring(0, {damping:50})
         }
 
@@ -375,7 +396,7 @@ export default function Home(){
         },[dummyData])
         useEffect(() =>{
             lineWidth.value=0
-            lineWidth.value = withTiming(140/ 2,{duration:7000},(isFinished) =>{
+            lineWidth.value = withTiming(140/2  ,{duration:7000},(isFinished) =>{
                 if(isFinished){
                     runOnJS(handleNextStory)()
                 }
@@ -383,43 +404,43 @@ export default function Home(){
 
         },[storyVisible,activeStory])
 
-        useEffect(() =>{
-            socket.on("receivePost" , (data) =>{
-                setPosts((prev) => prev.map((item) => item._id == data.postId ?{ 
-                ...item ,
-                likes:item.likes ? [...item.likes,data.userId] :[data.userId]} : item) )
-            })
-            return () =>{
-                socket.off("receivePost")
-            }
-        },[])
+        // useEffect(() =>{
+        //     socket.on("receivePost" , (data) =>{
+        //         setPosts((prev) => prev.map((item) => item._id == data.postId ?{ 
+        //         ...item ,
+        //         likes:item.likes ? [...item.likes,data.userId] :[data.userId]} : item) )
+        //     })
+        //     return () =>{
+        //         socket.off("receivePost")
+        //     }
+        // },[])
 
-        useEffect(() =>{
-            socket.on("receiveBookmark" , (data)=>{
-                setPosts((prev) => prev.map((item) =>  item._id == data.postId ?{
-                ...item,
-                bookmarks: item.bookmarks ? [...item.bookmarks,data.userId] :[data.userId]} :  item))
-            })
+        // useEffect(() =>{
+        //     socket.on("receiveBookmark" , (data)=>{
+        //         setPosts((prev) => prev.map((item) =>  item._id == data.postId ?{
+        //         ...item,
+        //         bookmarks: item.bookmarks ? [...item.bookmarks,data.userId] :[data.userId]} :  item))
+        //     })
 
-            return () =>{
-                socket.off("receiveBookmark")
-            }
+        //     return () =>{
+        //         socket.off("receiveBookmark")
+        //     }
 
 
-        },[])
+        // },[])
 
-        useEffect(() => {
-            socket.on("receiveUnlikedPost" , (data) =>{
-                setPosts((prev) => prev.map((post) => post._id == data.postId?{
-                    ...post,
-                    likes:post.likes ? post.likes.filter((likes) => likes.toString() != data.userId) : null  
+        // useEffect(() => {
+        //     socket.on("receiveUnlikedPost" , (data) =>{
+        //         setPosts((prev:any) => prev.map((post:any) => post._id == data.postId?{
+        //             ...post,
+        //             likes:post.likes ? post.likes.filter((likes:number) => likes.toString() != data.userId) : null  
 
-                }:post))
-            })
-            return() =>{
-                socket.off("receiveUnlikedPost")
-            }
-        },[])
+        //         }:post))
+        //     })
+        //     return() =>{
+        //         socket.off("receiveUnlikedPost")
+        //     }
+        // },[])
 
         useEffect(() =>{
             socket.on("receiveComment", (data) =>{
@@ -427,25 +448,28 @@ export default function Home(){
                     ...item ,
                     comments:item.comments ? [...item.comments,data] :[data]} : item) )
                 setActiveComments((prev) => [...prev,data])
-                console.log(data , "data")
             })
             return()=>{
                 socket.off("receiveComment")
             }
         },[])
 
-        useEffect(() =>{
-            socket.on("receiveRemoveBookmark"  , (data) =>{
-                setPosts((prev) => prev.map((post) => post._id == data.postId?{
-                   ...post,
-                    bookmarks:post.bookmarks ? post.bookmarks.filter((likes) => likes.toString()!= data.userId) : null  
-                }:post))
-            })
+        // useEffect(() =>{
+        //     socket.on("receiveRemoveBookmark"  , (data) =>{
+        //         setPosts((prev:any) => prev.map((post:any) => post._id == data.postId?{
+        //            ...post,
+        //             bookmarks:post.bookmarks ? post.bookmarks.filter((likes:number) => likes.toString()!= data.userId) : null  
+        //         }:post))
+        //     })
 
-            return()=>[
-                socket.off("receiveRemoveBookmark")
-            ]
-        },[])
+        //     return()=>[
+        //         socket.off("receiveRemoveBookmark")
+        //     ]
+        // },[])
+
+        useEffect(() =>{
+            Reaction()
+        },[isSheetOpened])
 
     return(
         <View>
@@ -467,7 +491,7 @@ export default function Home(){
             </TouchableOpacity>
             <View style={{flexDirection:"row"}}>
                 <TouchableOpacity style={styles.headerIcon} onPress={() => router.push("/liked")}> 
-                    <AntDesign name="hearto" size={20} color={Colors.theme.fontColor} />
+                    <Ionicons name="notifications-outline" size={23} color={Colors.theme.fontColor} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.headerIcon} onPress={()=> router.push('/chats')}>
                     <AntDesign name="message1" size={20} color={Colors.theme.fontColor} />   
@@ -527,13 +551,12 @@ export default function Home(){
                         </TouchableOpacity>
                         <View style={[styles.storySection,{flexDirection:"row"}]}>
                             <View style={styles.lineContainer}>
-                                  {stories.length>0 && stories[activeStory].snaps.map((story) =>{
-                                    let view = -1
-                                    view+=1
-                                    console.log(view)
+                                  {stories.length>0 && stories[activeStory].snaps.map((story:any,index:number) =>{
+                                   
                                     return(                                        
-                                            <View style={[styles.storyLine,{width:140/stories[activeStory].snaps.length}]}>
-                                                <Animated.View style={[styles.completionLine,completionLineAnimation]}></Animated.View>
+                                            <View style={[styles.storyLine,{width:140/stories[activeStory].snaps.length}]}>           
+                                                <Animated.View style={[styles.completionLine,completionLineAnimation,{maxWidth:140/stories[activeStory].snaps.length}]}></Animated.View>
+                                                
                                             </View>
                                     )
                                     })} 
@@ -556,7 +579,8 @@ export default function Home(){
                         </TouchableOpacity>
                     </View>
                     <View style={styles.storyContent}>
-                        <FlatList data={stories[activeStory].snaps} horizontal renderItem={({item})  =>{
+                        <FlatList ref={snapsRef} data={stories[activeStory].snaps} horizontal pagingEnabled renderItem={({item,index})  =>{
+                            
                             return(
                                     <View style={{width:Dimensions.get('window').width-20}}>
                                             <Image source={{uri: item.image}} style={{width:"100%",height:500,borderRadius:30}} />
@@ -572,29 +596,19 @@ export default function Home(){
                 </Animated.View>
         }
                 
-                    <CommentBottomSheet gesture={gesture} translateY={translateY} activeComments={activeComments}/>
-                                    {isSheetOpened &&
-                    
-                                        <View style={{position:"absolute",bottom:70,zIndex:1,backgroundColor:Colors.theme.backgroundColor,width:SCREEN_WIDTH,padding:10,paddingHorizontal:20,flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
-                                            <View style={{backgroundColor:Colors.theme.backgroundTransparent,paddingVertical:10,borderRadius:5}}>
-                                                <TextInput placeholder="Type Your Comment." placeholderTextColor={Colors.theme.fontColor} style={{paddingHorizontal:5,color:Colors.theme.fontColor,fontFamily:"Poppins-Light",width:SCREEN_WIDTH/1.3}} onChangeText={(e) => setComment(e)}/>
-                                            </View>
-                                            <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:35,height:35,justifyContent:"center",alignItems:"center"}} onPress={HandleCreateComment}>
-                                                <Ionicons name="send-outline" size={20} color="#fff" />
-                                            </TouchableOpacity>
-                                        </View>
-                                    }
+                    <CommentBottomSheet gesture={gesture} translateY={translateY} activeComments={activeComments} isSheetOpened={isSheetOpened} HandleCreateComment={HandleCreateComment}  setComment={setComment}/>
+                                    
                 <GestureDetector gesture={SheetGesture}>
                     <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:Colors.theme.commentsBg,zIndex:2,borderRadius:10,width:"100%",height:"50%",bottom:-20,alignSelf:"center"}]}>
                         <View style={{width:15,borderRadius:50,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:10}}></View>
                         <View style={{paddingHorizontal:20,paddingVertical:15}}>
                             <View style={{marginVertical:10,flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
-                                <Text style={{fontFamily:"Poppins-Bold",fontSize:20,color:Colors.theme.fontColor}}>Motion Rades</Text>
+                                <Text style={{fontFamily:"Poppins-Bold",fontSize:20,color:Colors.theme.fontColor}}>{posts[activePost.index]?.creator[0].username}</Text>
                                 <TouchableOpacity onPress={CloseBottomSheet}>
                                     <AntDesign name="closecircleo" size={20} color={Colors.theme.fontColor} />
                                 </TouchableOpacity>
                             </View>
-                            <TouchableOpacity style={styles.sheetOption} onPress={() => router.push({pathname:`/viewProfile/${activePost}`,params:{id}})}>
+                            <TouchableOpacity style={styles.sheetOption} onPress={() => router.push({pathname:`/viewProfile/${posts[activePost.index].creator[0].creator_id}`,params:{ id:posts[activePost.index].creator[0].creator_id}})}>
                                 <Text style={styles.bottomSheetText}>View Profile</Text>
                                 <MaterialCommunityIcons name="face-man-outline" size={20} color={Colors.theme.fontColor} style={{marginBottom:3}}  />
 

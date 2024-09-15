@@ -37,7 +37,6 @@ function Page(){
   const postVideo = posts &&  posts.filter((item) => item.video)
   const postImages= posts &&  posts.filter((item) => item.image)
   const isBlocked = user.user?.data.blocked.filter((item) => item == id)
-  console.log(isBlocked)
   const gesture = Gesture.Pan().onStart((event) =>{
       context.value = offSet.value
   }).onUpdate((event) =>{
@@ -81,10 +80,12 @@ function Page(){
         Authorization:`Bearer ${user?.user.token}`
       }
     })
-    setClips([response.data.findClip])
+    if(response.data.findClip){
+      setClips([response.data.findClip])
+      return
+    }
+    setClips([])
   }
-
-  console.log(clips)
 
   function ViewFollowers(){
     router.push({pathname:`${id}/followers`})
@@ -182,7 +183,7 @@ const GetFollowers = useCallback(async () =>{
     position.value=40
   },[])
 
-  const isFollowing = follows.filter((item:any) => item._id ===  id) 
+  const isFollowing = follows && follows.filter((item:any) => item._id ===  id) 
 
   return(
     <View>
@@ -259,7 +260,7 @@ const GetFollowers = useCallback(async () =>{
         }}
         >
                       <View style={{ width: SCREEN_WIDTH}}>
-                        <FlatList data={posts} numColumns={3} keyExtractor={(item) => item._id} renderItem={({item}) =>{
+                        <FlatList data={posts} numColumns={3} keyExtractor={(item) => item?._id} renderItem={({item}) =>{
                             const userId = item.creator[0].creator_id
                             const isImage = item.media[0].uri
                             return(
@@ -279,7 +280,7 @@ const GetFollowers = useCallback(async () =>{
                         }}/>
                       </View>
                       <View style={{ width:SCREEN_WIDTH}}>
-                        <FlatList data={clips} numColumns={3} keyExtractor={(item) => item._id} renderItem={({item}) =>{
+                        <FlatList data={clips} numColumns={3} keyExtractor={(item) => item?._id} renderItem={({item}) =>{
                             const isImage = false
                             return(
                               <View>

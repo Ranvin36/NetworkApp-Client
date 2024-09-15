@@ -14,7 +14,7 @@ export default function Page(){
         async function GetFollowers(){
           const response  =  await axios.get(`http://${ipAddress}:3001/users/get-followers/${id}`,{
               headers:{
-                  Authorization: `Bearer ${user.token}`
+                  Authorization: `Bearer ${user?.token}`
               }
           })
   

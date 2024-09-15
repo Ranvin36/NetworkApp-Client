@@ -149,7 +149,7 @@ function Add(){
                     <Animated.View style={[{backgroundColor:Colors.light.text,width:200/7,justifyContent:"center",height:3,borderRadius:50,position:"absolute",bottom:-5},lineStyle]}/>
                     {categiores && categiores.map((item,index) =>{
                         return(
-                            <TouchableOpacity style={{width:itemWidth/categiores.length , alignItems:"center",justifyContent:"center"}} onPress={() =>TabClick(index)}>
+                            <TouchableOpacity style={{width:itemWidth/categiores.length , alignItems:"center",justifyContent:"center"}} onPress={() =>TabClick(index)} key={index}> 
                                 <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>{item}</Text>
                             </TouchableOpacity>
                         )

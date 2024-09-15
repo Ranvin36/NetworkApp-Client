@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import {AntDesign,Entypo,Feather} from '@expo/vector-icons';
 import SelectedOptions from "@/components/SelectedOptions";
 import { ColorPalatte } from "@/constants/Colors";
+import moment from "moment";
 const Colors = ColorPalatte()
 
 function Chats(){
@@ -22,8 +23,6 @@ function Chats(){
     const [chatData,setChatData] = useState([])
     const [searchText, setSearchText] = useState("")
     const [selectedChats , setSelectedChat] = useState([])
-
-
     function FilterSearch() {
         const searchFilter = chatData.filter((item) => 
             item.receiverData[0].username.toLowerCase().includes(searchText.toLowerCase(),
@@ -53,7 +52,7 @@ function Chats(){
         const data  ={id:selectedChats[0]}
         const response = await axios.post(`http://${ipAddress}:3001/chats/delete/`,data ,{
             headers:{
-                Authorization : `Bearer ${user.token}`
+                Authorization : `Bearer ${user?.token}`
             }
         })
 
@@ -99,11 +98,12 @@ function Chats(){
                                         const creatorId = item.creatorData[0].userId[0].toString()
                                         const userId = user.data._id
                                         const isSeleceted = selectedChats.filter((chatId) => chatId == item._id )
+                                        const formattedUpdateAt = moment(item.updatedAt).format("ddd  hh:mm a ")
                                         if(creatorId == userId){
                                             const receiverId  = item.receiverData[0].userId
                                             return(
                                                 <TouchableOpacity style={[isSeleceted.length>0 ? styles.chatContainer : null,{marginVertical:5,marginHorizontal:10,paddingHorizontal:10}]} onLongPress={() =>selectChat(item._id)} onPress={() => router.push({pathname:`chatRoom/${receiverId}` , params:{id:receiverId}})}>
-                                                    <ChatLayoutComponent item={item.receiverData} lastMessage={item.lastMessage}/>
+                                                    <ChatLayoutComponent item={item.receiverData} lastMessage={item.lastMessage} formattedUpdateAt={formattedUpdateAt}/>
                                                 </TouchableOpacity>
                                             )
                                         }                                        
@@ -111,7 +111,7 @@ function Chats(){
                                             const creatorId  = item.creatorData[0].userId
                                             return(
                                                 <TouchableOpacity onLongPress={() => selectChat(item._id)} onPress={() => router.push({pathname:`chatRoom/${creatorId}` , params:{id:creatorId}})}>
-                                                    <ChatLayoutComponent item={item.creatorData} lastMessage={item.lastMessage}/>
+                                                    <ChatLayoutComponent item={item.creatorData} lastMessage={item.lastMessage} formattedUpdateAt={formattedUpdateAt}/>
                                                 </TouchableOpacity>
                                             )
                                         }

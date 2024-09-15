@@ -6,7 +6,10 @@ import { useSelector } from "react-redux";
 import { rootStore } from "../../redux/store";
 import { ipAddress } from "@/constants/ipAddress";
 import { useLocalSearchParams } from "expo-router";
+import { ColorPalatte } from "@/constants/Colors";
 
+
+const Colors = ColorPalatte()
 export default function Page() {
     const { id } = useLocalSearchParams();
     const [followerData, setFollowerData] = useState([]);
@@ -16,7 +19,7 @@ export default function Page() {
         try {
             const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${id}`, {
                 headers: {
-                    Authorization: `Bearer ${user.token}`
+                    Authorization: `Bearer ${user?.token}`
                 }
             });
             setFollowerData(response.data);
@@ -43,7 +46,7 @@ export default function Page() {
                           else{
                             return(
                                 <View style={{ alignItems: "center", justifyContent: "center", height: "90%" }}>
-                                    <Text style={{ fontFamily: "Poppins-Regular", fontSize: 18 }}>No Followers</Text>
+                                    <Text style={{ fontFamily: "Poppins-Regular", fontSize: 18,color:Colors.theme.fontColor}}>No Followers</Text>
                                 </View>
                             )
                           }
@@ -57,7 +60,7 @@ export default function Page() {
 const styles = StyleSheet.create({
     container: {
         padding: 12,
-        backgroundColor: "#fff",
+        backgroundColor: Colors.theme.backgroundColor,
         height: "100%"
     }
 });

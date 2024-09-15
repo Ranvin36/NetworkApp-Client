@@ -8,6 +8,7 @@ import { rootStore } from "./redux/store"
 import { router } from "expo-router"
 import { Skeleton } from "moti/skeleton"
 import { ColorPalatte } from "@/constants/Colors";
+import PageHeader from "@/components/pageHeader"
 const Colors = ColorPalatte()
 
 
@@ -31,15 +32,15 @@ function Liked() {
     const [loading,setLoading] = useState(true)
     async function GetLikedPosts(){
         setLoading(true)
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user?.data._id}`,{
-            headers:{
-                Authorization:`Bearer ${user?.token}`
-            }
-        })
+        // const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user?.data._id}`,{
+        //     headers:{
+        //         Authorization:`Bearer ${user?.token}`
+        //     }
+        // })
 
-        const likedPost = response.data.data.likes
-        const data = {IDS : likedPost}
-        const posts = await axios.post(`http://${ipAddress}:3001/posts/liked`,data,{
+        // const likedPost = response.data.data.likes
+        // const data = {LikeIds : likedPost}
+        const posts = await axios.post(`http://${ipAddress}:3001/posts/liked`,null,{
             headers:{
                 Authorization:`Bearer ${user?.token}`
             }
@@ -55,7 +56,7 @@ function Liked() {
 
     return(
         <View style={styles.container}>
-            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:25}]}>Favourites</Text>
+            <PageHeader text="Liked"/>
             <View style={styles.containerLayout}>
                 <FlatList data={likedPosts}  renderItem={({item}) =>{
                         return(
@@ -95,13 +96,13 @@ export default Liked
 
 const styles = StyleSheet.create({
     container:{
-        paddingVertical:40,
-        paddingHorizontal:30,
+        paddingVertical:10,
+        paddingHorizontal:20,
         height:"100%",
         backgroundColor:Colors.theme.backgroundColor
     },
     containerLayout:{
-        marginVertical:20
+        marginVertical:10
     },
     favouritesLayout:{
         flexDirection:"row",

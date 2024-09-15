@@ -20,15 +20,15 @@ function PostComponent({item,index,follows,UnFollowUser,FollowUser,unlikePost,Li
     const videoUrl = item.video
     const like = item.likes
     const comments  = item.comments
-    const ifBookmarked = item.bookmarks && item.bookmarks.filter((post) => post.toString() == user.data._id) 
-    const ifFollowing = follows && follows.filter((followItem) => followItem?.following[0]?._id == item.creator[0]?.creator_id)
-    const ifLiked = like && like.filter((liked) => liked == user.data._id)
+    const ifBookmarked = item.bookmarks && item.bookmarks.filter((post:any) => post.toString() == user?.data._id) 
+    const ifFollowing = follows && follows.filter((followItem:any) => followItem?.following[0]?._id == item.creator[0]?.creator_id)
+    const ifLiked = like && like.filter((liked:any) => liked == user?.data._id)
     function ViewProfile(id:number){
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
     function BottomSheetAction(){
         // setActivePost(item._id)
-        openBottomSheet(item)
+        openBottomSheet(index,item.creator[0].creator_id)
     }
 
 
@@ -116,7 +116,7 @@ function PostComponent({item,index,follows,UnFollowUser,FollowUser,unlikePost,Li
                     }
                     <Text style={[styles.iconsText,styles.textColor]}>{like.length > 0 ? like.length +  " Likes" : null}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.icons} onPress={()=>toggleBottomSheet(item._id)}>
+                <TouchableOpacity style={styles.icons} onPress={()=>toggleBottomSheet(index,item._id)}>
                     <Ionicons name="chatbubble-outline" size={24} color="black" style={styles.textColor} />
                     <Text style={[styles.iconsText,styles.textColor]}>{comments.length > 0 ? comments.length : null}</Text>
                 </TouchableOpacity>
@@ -126,9 +126,9 @@ function PostComponent({item,index,follows,UnFollowUser,FollowUser,unlikePost,Li
             </View>
             <TouchableOpacity onPress={()=>ifBookmarked.length>0 ? RemoveBookmark(item._id) : AddBookmark(item._id)}>
                 {ifBookmarked.length>0 ?
-                <FontAwesome name="bookmark" size={24} color={Colors.theme.primary} />    
+                <Ionicons name="bookmark" size={24} color={Colors.theme.primary} />            
                 :
-                <Feather name="bookmark" size={24} color="#000" style={styles.textColor} />
+                <Ionicons name="bookmark-outline" size={24} color={Colors.theme.fontColor} />            
             }
             </TouchableOpacity>
         </View>
@@ -141,7 +141,7 @@ export default PostComponent
 
 const styles = StyleSheet.create({
     posts:{
-        marginVertical:10,
+        marginVertical:5,
         marginBottom:25,
         backgroundColor:Colors.theme.backgroundTransparent,
         padding:10,
@@ -158,7 +158,8 @@ const styles = StyleSheet.create({
         marginVertical:15
     },
     imageCont:{
-        marginVertical:10
+        marginTop:10,
+        marginVertical:0,
     }
     ,interactions:{
         marginTop:5,

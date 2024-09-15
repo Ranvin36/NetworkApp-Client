@@ -1,4 +1,4 @@
-import { StyleSheet, View ,Text, Image, TextInput, Dimensions, FlatList, TouchableOpacity,ActivityIndicator } from "react-native"
+import { StyleSheet, View ,Text, Image, TextInput, Dimensions, FlatList, TouchableOpacity,ActivityIndicator, ToastAndroid } from "react-native"
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, useLocalSearchParams } from "expo-router";
 import axios from "axios";
@@ -12,8 +12,9 @@ import moment from "moment"
 import Modal from "@/components/Modal";
 import {Entypo,MaterialCommunityIcons,AntDesign} from '@expo/vector-icons';
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated,{ useAnimatedStyle, useSharedValue, withDelay, withSpring,useDerivedValue,runOnJS } from "react-native-reanimated";
+import Animated,{ useAnimatedStyle, useSharedValue, withDelay, withSpring,useDerivedValue,runOnJS, measure } from "react-native-reanimated";
 import { ColorPalatte } from "@/constants/Colors";
+import { BlockUser } from "@/components/CallBacks/CallBackFunctions";
 const Colors = ColorPalatte()
 
 function ChatRoom(){
@@ -31,6 +32,10 @@ function ChatRoom(){
     const SCREEN_HEIGHT = Dimensions.get('window').height
     const translateY = useSharedValue(SCREEN_HEIGHT)
     const context = useSharedValue(0)
+    const messageIds = messages.filter((message) => message.senderId[0] == id).map((messageId) => messageId._id)
+    const unAuthorizedSelection = selectedChats.filter((chats) => {
+        return messageIds.includes(chats.toString())
+    })
 
     const SheetGesture = Gesture.Pan().onStart((event) =>{
         context.value = event.translationY
@@ -55,7 +60,7 @@ function ChatRoom(){
     async function GetUser(){
         const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${id}`,{
             headers:{
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
         setChatUser(response.data.data)
@@ -64,7 +69,7 @@ function ChatRoom(){
     async function GetMessage(){
         const response = await axios.get(`http://${ipAddress}:3001/chats/${id}` ,{
             headers:{
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
 
@@ -73,7 +78,7 @@ function ChatRoom(){
     }
 
     async function SendMessage(){
-        const data = {"message" : textInput , "opponentId" :id , "userAuth" :{"_id" : user.data._id , "username":user.data.username,"profilePicture":user.data.profilePicture}}
+        const data = {"message" : textInput , "opponentId" :id , "userAuth" :{"_id" : user?.data._id , "username":user?.data.username,"profilePicture":user?.data.profilePicture}}
         // const response = await axios.post(`http://${ipAddress}:3001/chats/create-chat/${id}` , data , {
             //     headers:{
                 //         Authorization: `Bearer ${user.token}`
@@ -87,13 +92,23 @@ function ChatRoom(){
     }
 
     async function DeleteChat(){
-        setLoading(true)
-        const data ={"id" : selectedChats}
-        const response = await axios.post(`http://${ipAddress}:3001/chats/delete-message`,data,{
-            headers:{
-                Authorization:`Bearer ${user.token}`
+        try{
+            setLoading(true)
+            const data ={"id" : selectedChats}
+            const response = await axios.post(`http://${ipAddress}:3001/chats/delete-message`,data,{
+                headers:{
+                    Authorization:`Bearer ${user?.token}`
+                }
+            })
+            if(response.status === 204){
+                selectedChats.forEach((chat) =>{
+                    setMessage((prev) => prev.filter((msg) => msg._id != chat))
+                })
             }
-        })
+        }
+        catch(error){
+            console.log(error)
+        }
         setLoading(false)
         setSelectedChat([])
         setPopupOpened((prev) => !prev)
@@ -101,6 +116,17 @@ function ChatRoom(){
 
     function PopUpController(){
         setPopupOpened((prev) => !prev)
+    }
+
+    async function BlockController(){
+        try{
+            const response = await BlockUser(id,user?.token)
+            ToastAndroid.show("User Blocked Sucessfully", ToastAndroid.SHORT)
+            router.push('/home')
+        }
+        catch(error){
+            console.error(error)
+        }
     }
 
 
@@ -113,7 +139,6 @@ function ChatRoom(){
 
     useEffect(() => {
         socket.on("messages" , (data) =>{
-            console.log("data",data)
             setMessage(data)
         })
 
@@ -124,14 +149,12 @@ function ChatRoom(){
 
     useEffect(() => {
         socket.on("fetchMessages" , (data) =>{
-            console.log(data ,  "data")
             setMessage((prev) => [...prev,data.findMessages])
         })
     },[socket])
 
     useEffect(() =>{
         socket.on("receiveMessasge" ,  (data) =>{
-            console.log(data ,  "FETCHED")
             setMessage((prev) => [...prev,data])
             setSendingMessage(false)
         })
@@ -180,18 +203,18 @@ function ChatRoom(){
                     </View>
                 </View>
                 <TouchableOpacity style={[styles.selectOption]} onPress={OpenBottomSheet}>
-                    <Entypo name="dots-two-vertical" size={24} color="black" />
+                    <Entypo name="dots-two-vertical" size={24} color={Colors.theme.fontColor} />
                 </TouchableOpacity>
             </View>
             :
            <View style={styles.selected}>
-                <SelectedOptions selectedChats={selectedChats} setSelectedChat={setSelectedChat} DeleteChat={PopUpController}/>
+                <SelectedOptions selectedChats={selectedChats} unAuthorizedSelection={unAuthorizedSelection} setSelectedChat={setSelectedChat} DeleteChat={PopUpController}/>
            </View>
             }
            <View style={styles.messageArea}>
             <FlatList data={messages} renderItem={({item}) =>{
                 const formattedUpdatedAt = moment(item.updatedAt).format('h:mm a');
-                const isSelected = selectedChats.filter((selected) => selected == item._id)     
+                const isSelected = selectedChats.filter((selected) => selected == item?._id)     
                 return(
                 <TouchableOpacity style={{backgroundColor:isSelected.length>0?Colors.theme.backgroundTransparent:null}} onLongPress={() => setSelectedChat((prev) => [...prev,item._id])} onPress={selectedChats.length>0 ? isSelected.length>0? ()=> setSelectedChat((prev) => prev.filter((chatId) => chatId.toString() != item._id.toString())) : () => setSelectedChat((prev) => [...prev,item._id]) : null}>
                     <View style={[styles.messageBackground,{alignItems: item.senderId == user.data._id ? "flex-end" : "flex-start"}]}>
@@ -220,31 +243,31 @@ function ChatRoom(){
                     </TouchableOpacity>
                 </View>
                 <GestureDetector gesture={SheetGesture}>
-                    <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:"#fff",zIndex:2,borderRadius:10,width:"90%",bottom:10,alignSelf:"center"}]}>
+                    <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:Colors.theme.commentsBg,zIndex:2,borderRadius:10,width:"90%",bottom:10,alignSelf:"center"}]}>
                         <View style={{width:15,borderRadius:50,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:10}}></View>
                         <View style={{paddingHorizontal:20,paddingVertical:15}}>
                             <View style={{marginVertical:10,flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
-                                <Text style={{fontFamily:"Poppins-Bold",fontSize:20}}>{chatUser.username}</Text>
+                                <Text style={{fontFamily:"Poppins-Bold",fontSize:20,color:Colors.theme.fontColor}}>{chatUser.username}</Text>
                                 <TouchableOpacity onPress={CloseBottomSheet}>
-                                    <AntDesign name="closecircleo" size={20} color="black" />
+                                    <AntDesign name="closecircleo" size={20} color={Colors.theme.fontColor} />
                                 </TouchableOpacity>
                             </View>
                             <TouchableOpacity style={styles.sheetOption} onPress={() => router.push({pathname:`/viewProfile/${id}`,params:{id}})}>
                                 <Text style={styles.bottomSheetText}>View Profile</Text>
-                                <MaterialCommunityIcons name="face-man-outline" size={20} color="black" style={{marginBottom:3}}  />
+                                <MaterialCommunityIcons name="face-man-outline" size={20} color={Colors.theme.fontColor} style={{marginBottom:3}}  />
 
                             </TouchableOpacity>
-                            <View style={styles.sheetOption}>
+                            <TouchableOpacity style={styles.sheetOption} onPress={BlockController}>
                                 <Text style={styles.bottomSheetText}>Block</Text>
-                                <Entypo name="block" size={18} color="black" />
-                            </View>
+                                <Entypo name="block" size={18} color={Colors.theme.fontColor} />
+                            </TouchableOpacity>
                             <View style={styles.sheetOption}>
                                 <Text style={styles.bottomSheetText}>Archive</Text>
-                                <Entypo name="archive" size={18} color="black" />
+                                <Entypo name="archive" size={18} color={Colors.theme.fontColor} />
                             </View>
                             <View style={styles.sheetOption}>
                                 <Text style={styles.bottomSheetText}>Report</Text>
-                                <MaterialIcons name="report-gmailerrorred" size={20} color="black" />
+                                <MaterialIcons name="report-gmailerrorred" size={20} color={Colors.theme.fontColor} />
                             </View>
                         </View>
                     </Animated.View>
@@ -285,13 +308,15 @@ const styles = StyleSheet.create({
         width:"100%",
         justifyContent:"space-between",
         paddingVertical:10,
+        marginBottom:30
     },
     message:{
         backgroundColor:Colors.light.text,
         borderRadius:30,
         paddingHorizontal:20,
         paddingVertical:10,
-        maxWidth:250
+        maxWidth:250,
+        elevation:2,shadowColor:"#000",  shadowOffset: {width: -10, height: 3},shadowOpacity: 0.2,shadowRadius: 50,
     },
     messageText:{
         fontFamily:"Poppins-Light",
@@ -302,12 +327,13 @@ const styles = StyleSheet.create({
         marginHorizontal:20,
     },
     selectOption:{
-        backgroundColor:"#f2f2f2",
+        backgroundColor:Colors.theme.commentsBg,
         padding:5,
         borderRadius:10
     },
     bottomSheetText:{
-        fontFamily:"Poppins-Light"
+        fontFamily:"Poppins-Light",
+        color:Colors.theme.fontColor
     },
     sheetOption:{
         marginVertical:2,

@@ -12,7 +12,7 @@ type Options={
 }
 
 
-const SelectedOptions:React.FC<Options> = ({setSelectedChat,selectedChats,DeleteChat}) =>{
+const SelectedOptions:React.FC<Options> = ({setSelectedChat,selectedChats,DeleteChat,unAuthorizedSelection}) =>{
     return(
         <View style={{marginHorizontal:20,marginVertical:10,flexDirection:"row",justifyContent:"space-between",width:"100%"}}>
         <View style={{flexDirection:"row",alignItems:"center"}}>
@@ -27,9 +27,11 @@ const SelectedOptions:React.FC<Options> = ({setSelectedChat,selectedChats,Delete
 
         </View>
         <View style={{flexDirection:"row"}}>
+            {unAuthorizedSelection.length>0 ? null :            
             <TouchableOpacity style={styles.selectedIcons} onPress={DeleteChat}>
                 <AntDesign name="delete" size={24} color={Colors.theme.fontColor} />
             </TouchableOpacity>
+            }
             <TouchableOpacity style={styles.selectedIcons}>
                 <Entypo name="block" size={24} color={Colors.theme.fontColor} />
             </TouchableOpacity>

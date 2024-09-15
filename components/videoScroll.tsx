@@ -1,22 +1,51 @@
 import { View, Text, StyleSheet, Dimensions, Image, Pressable, TouchableOpacity } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import React, { useEffect, useRef, useState } from "react";
-import { AntDesign, MaterialCommunityIcons, Feather, Entypo } from '@expo/vector-icons';
+import { AntDesign, MaterialCommunityIcons, Feather, Entypo,Ionicons } from '@expo/vector-icons';
 import ReelUploader from "./ReelUploader";
 import { useSelector } from "react-redux";
 import { rootStore } from "@/app/redux/store";
 import axios from "axios";
 import { ipAddress } from "@/constants/ipAddress";
 import { ColorPalatte } from "@/constants/Colors";
+import Animated,{ useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 const Colors = ColorPalatte()
 
-const VideoScroll = React.memo(({ item,CreateBookmark,index,setActivePost,shouldPlay,setVideos,UnlikeClip,LikeClip,toggleBottomSheet}) => {
+const VideoScroll = React.memo(({ item,CreateBookmark,CreateComment,RemoveBookmark,index,setActivePost,shouldPlay,setVideos,UnlikeClip,LikeClip,toggleBottomSheet}) => {
   const video = useRef<Video | null>(null);
   const user = useSelector((state:rootStore) => state.user.user)
   const [status, setStatus] = useState({ isPlaying: true });
   const isLiked = item.likes.filter((like:number) => like.toString() == user?.data._id)
+  const isBookmarked  =  item.bookmarks.filter((bookmark:number) => bookmark.toString() == user?.data._id)
+  const likeValue = useSharedValue(1)
+  const unLikeValue = useSharedValue(1)
+  const createBookmarkValue = useSharedValue(0)
+  const removeBookmarkValue = useSharedValue(0)
+  const like = useAnimatedStyle(() =>{
+      return{
+        transform:[{scale:likeValue.value}]
+      }
+  },[])
 
+  const unlike = useAnimatedStyle(() =>{
+      return{
+        transform:[{scale:unLikeValue.value}]
+      }
+  },[]) 
+
+  const createBookmark = useAnimatedStyle(() =>{
+      return{
+        transform:[{scale:createBookmarkValue.value}]
+      }
+  },[])
+
+  const removeBookmark = useAnimatedStyle(() =>{
+      return{
+        transform:[{scale:removeBookmarkValue.value}]
+      }
+  },[]) 
+  
   useEffect(() => {
     if (!video.current) return;
     if (shouldPlay) {
@@ -32,9 +61,91 @@ const VideoScroll = React.memo(({ item,CreateBookmark,index,setActivePost,should
   }, [shouldPlay]);
 
   function ToggleAction(){
-    toggleBottomSheet(index)
+
+    toggleBottomSheet(index,item._id)
   }
-  console.log(item)
+
+  function toggleLike() {
+    setTimeout(() =>{
+      setVideos((videos:any) => videos.map((video:any) =>{
+        if(video._id.toString() == item._id.toString()){
+          return{
+           ...video,
+            likes: video.likes ? [...video.likes,user?.data._id] : [user?.data._id],
+          }
+  
+        }
+        return video
+  
+      }))
+      LikeClip(item._id)
+    },250)
+    likeValue.value = withSpring(0.5, { damping: 50,stiffness:700 }, () => {
+      likeValue.value = withSpring(1, { damping: 50,stiffness:700 });
+    });
+
+  }
+
+  function UnlikeToggle(){
+    setTimeout(() =>{
+      setVideos((prevVideos:any) => prevVideos.map((video:any) => {
+        if (video._id.toString() == item._id.toString()) {
+          return {
+            ...video,
+            likes: video.likes ? video.likes.filter((like: number) => like.toString() != user?.data._id.toString()) : null,
+          }
+        }
+        return video;
+      }))
+
+      UnlikeClip(item._id)
+    },250)
+      unLikeValue.value = withSpring(1.5,{damping:50,stiffness:700}, ()  =>{
+        unLikeValue.value = withSpring(1, { damping: 50,stiffness:700 });
+      });
+  }
+
+  function ToggleBookmark(){
+    setTimeout(() =>{
+      setVideos((prev:any) => prev.map((video:any) =>{
+        if(video._id  == item._id ){
+          return{
+          ...video,
+            bookmarks: video.bookmarks? [...video.bookmarks,user?.data._id] : [user?.data._id],
+          }
+        }
+        else{
+          return video
+        }
+      }))
+      CreateBookmark(item._id)
+    },250)
+    createBookmarkValue.value =   withSpring(0.5,{damping:50,stiffness:700} , () =>{
+      createBookmarkValue.value = withSpring(1 , {damping:50,stiffness:700})
+    })
+  }
+
+  function ToggleRemoveBookmark(){
+    setTimeout(() =>{
+        setVideos((prev:any) => prev.map((video:any) =>{
+          if(video._id){
+            return{
+              ...video,
+              bookmarks: video.bookmarks? video.bookmarks.filter((bookmark:number) => bookmark.toString() != user?.data._id) : null
+            }
+          }
+          else{
+            return video
+          }
+        }))
+        RemoveBookmark(item._id)
+    },250)
+
+    removeBookmarkValue.value = withSpring(1.5,{damping:50,stiffness:700}, () =>{
+      removeBookmarkValue.value = withSpring(1, {damping: 50,stiffness:700})
+    })
+  }
+
 
   return (
     <Pressable
@@ -52,12 +163,16 @@ const VideoScroll = React.memo(({ item,CreateBookmark,index,setActivePost,should
       <View style={styles.iconContainer}>
         <TouchableOpacity style={styles.iconActions} >
           {isLiked.length>0 ?
-          <TouchableOpacity onPress={()=>UnlikeClip(item._id)} >
-            <AntDesign name="heart" size={31} color={Colors.theme.primary} />
+          <TouchableOpacity onPress={UnlikeToggle}>
+            <Animated.View style={[unlike]}>
+              <AntDesign name="heart" size={31} color={Colors.theme.primary} />
+            </Animated.View>
           </TouchableOpacity>
                             :
-          <TouchableOpacity onPress={()=>LikeClip(item._id)}>
-            <AntDesign name="hearto" size={31} color="#fff" />
+          <TouchableOpacity onPress={toggleLike} >
+            <Animated.View style={[like]}>
+              <AntDesign name="hearto" size={31} color="#fff" />
+            </Animated.View>
           </TouchableOpacity>
           }
           <Text style={styles.iconText}>{item.likes.length}</Text>
@@ -66,13 +181,24 @@ const VideoScroll = React.memo(({ item,CreateBookmark,index,setActivePost,should
           <MaterialCommunityIcons name="comment-outline" size={31} color="#fff" />
           <Text style={styles.iconText}>{item.comments.length}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconActions} onPress={() => CreateBookmark(item._id)}>
-          <Feather name="bookmark" size={31} color="#fff" />
-          <Text style={styles.iconText}>110</Text>
-        </TouchableOpacity>
+        {isBookmarked.length>0 ?
+
+          <TouchableOpacity style={styles.iconActions} onPress={ToggleRemoveBookmark}>
+            <Animated.View style={[removeBookmark]}>
+                <Ionicons name="bookmark" size={31} color={Colors.theme.primary} />            
+            </Animated.View>
+          </TouchableOpacity>
+                              :        
+          <TouchableOpacity style={styles.iconActions} onPress={ToggleBookmark}>
+            <Animated.View style={[createBookmark]}>
+              <Ionicons name="bookmark-outline" size={31} color="#fff" />
+            </Animated.View>
+          </TouchableOpacity>
+        }
+      <Text style={styles.iconText}>{item.bookmarks.length}</Text>
         <TouchableOpacity style={styles.iconActions}>
           <AntDesign name="sharealt" size={31} color="#fff" />
-          <Text style={styles.iconText}>110</Text>
+          <Text style={styles.iconText}>0</Text>
         </TouchableOpacity>
       </View>
       <Video
