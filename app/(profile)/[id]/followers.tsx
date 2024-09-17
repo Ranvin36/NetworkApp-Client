@@ -32,15 +32,16 @@ export default function Page() {
         GetFollowers();
     }, []);
 
+
     return (
         <View style={styles.container}>
             {followerData && followerData.length > 0 ? 
                 <FlatList
                     data={followerData}
                     renderItem={({ item }) => {
-                        if(item.followers && item.followers.length>0){
+                        if(item.followersDetails && item.followersDetails.length>0){
                             return(
-                              <FollowerLayout data={item.followers}/>
+                              <FollowerLayout data={item.followersDetails}/>
                             )
                           }
                           else{

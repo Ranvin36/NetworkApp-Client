@@ -68,7 +68,7 @@ function Page(){
                 Authorization:`Bearer ${user?.token}`
             }
         })
-        setFollows(response.data)
+        setFollows(response.data[0].followingDetails)
     }
     async function LikePost(uid){
         const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
@@ -158,6 +158,8 @@ function Page(){
             GetFollowers()
         },[])
 
+        console.log(follows)
+
     return(
         <View style={styles.container}>
             <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:25}]}>Posts</Text>
@@ -167,7 +169,7 @@ function Page(){
                     const videoUrl = item.video
                     const like = item.likes
                     const comments  = item.comments
-                    const ifFollowing = follows && follows.filter((followItem) => followItem?.following[0]?._id == item.creator[0]?.creator_id)
+                    const ifFollowing = follows && follows.filter((followItem) => followItem._id == item.creator[0]?.creator_id)
                     const ifLiked = like && like.filter((liked) => liked == user.data._id)
                     return(
                         <PostComponent item={item} follows={follows} unlikePost={unlikePost} UnFollowUser={UnFollowUser} toggleBottomSheet={toggleBottomSheet} LikePost={LikePost} FollowUser={FollowUser}/>

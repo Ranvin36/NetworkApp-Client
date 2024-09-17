@@ -58,7 +58,7 @@ function Page(){
   async function GetUser(){
     const response  = await axios.get(`http://${ipAddress}:3001/users/get-user/${id}`,{
         headers:{
-            Authorization:`Bearer ${user?.user.token}`
+            Authorization:`Bearer ${user?.user?.token}`
         }
     })
     setProfileUser(response.data.data)
@@ -67,7 +67,7 @@ function Page(){
   async function GetPosts(){
     const response = await axios.get(`http://${ipAddress}:3001/posts/${id}`,{
       headers:{
-        Authorization:`Bearer ${user?.user.token}`
+        Authorization:`Bearer ${user?.user?.token}`
       }
     })
     
@@ -77,7 +77,7 @@ function Page(){
   async function GetClips(){
     const response = await axios.get(`http://${ipAddress}:3001/reels/clips/${id}`,{
       headers:{
-        Authorization:`Bearer ${user?.user.token}`
+        Authorization:`Bearer ${user?.user?.token}`
       }
     })
     if(response.data.findClip){
@@ -125,20 +125,20 @@ function Page(){
   })
   
   async function HandleFollowUser(){
-    await FollowUser(id,user,setFollowCount)
+    await FollowUser(id,user)
 }
 async function HandleUnfollowUser(){
-    await UnFollowUser(id,user,setFollowCount)
+    await UnFollowUser(id,user)
 }
 
 const GetFollowers = useCallback(async () =>{
   const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user.user.data._id}`,{
       headers:{
-          Authorization:`Bearer ${user.user.token}`
+          Authorization:`Bearer ${user?.user?.token}`
       }
   })
-  setFollows(response.data[0].following)
-},[user.user.data._id, user.user.token])
+  setFollows(response.data[0].followingDetails)
+},[user?.user?.data._id, user?.user?.token])
 
 
   async function BlockUser(){

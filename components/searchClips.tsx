@@ -1,4 +1,4 @@
-import { Dimensions, FlatList, Image, StyleSheet,Text ,View} from "react-native"
+import { Dimensions, FlatList, Image, StyleSheet,Text ,TouchableOpacity,View} from "react-native"
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { ipAddress } from "@/constants/ipAddress"
@@ -6,10 +6,12 @@ import { useSelector } from "react-redux"
 import { rootStore } from "@/app/redux/store"
 import { Video,ResizeMode} from "expo-av"
 import {Feather,Ionicons} from '@expo/vector-icons';
+import { useNavigation } from "@react-navigation/native"
 
 const SearchClips:React.FC = ({searchText}) =>{
     const user = useSelector((state:rootStore) => state.user.user)
     const [searchClips,setSearchClips] = useState([])
+    const navigation = useNavigation()
     async function GetSearchResults(){
         const response =await axios.post(`http://${ipAddress}:3001/reels/search?title=${searchText}`,null,{
             headers:{
@@ -19,6 +21,9 @@ const SearchClips:React.FC = ({searchText}) =>{
         setSearchClips(response.data.findReels)
     }
 
+    const RedirectClip =(id:number) =>{
+        navigation.navigate('reels',{clipId:id})
+    }
     
     useEffect(()=>{
         GetSearchResults()
@@ -33,7 +38,7 @@ const SearchClips:React.FC = ({searchText}) =>{
              keyExtractor={(item)  =>item._id}
              renderItem={({item}) =>{
                 return(
-                    <View style={styles.clipContainer}>
+                    <TouchableOpacity style={styles.clipContainer} onPress={() => RedirectClip(item._id)}> 
                         <View style={styles.playButton}>
                             <Ionicons name="play-circle-outline" size={40} color="#fff" />
                         </View>
@@ -47,7 +52,7 @@ const SearchClips:React.FC = ({searchText}) =>{
                         <View>
                             <Text style={styles.fontSpec}>{item.text}</Text>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 )
             }}/>
         </View>

@@ -23,7 +23,7 @@ export default function Page(){
     const [searchUsers,setSearchUsers] =  useState([])
     const [knownpeople,setKnownPeople] = useState([])
     const [selectedOption,setSelectedOption] = useState(0)
-    const tabs = ['All','People','Posts','Snaps','Reels']
+    const tabs = ['All','People','Posts','Clips']
     const scrollRef = useRef<ScrollView>(null)
     function ChangeText(text:string){ 
         setSearchText(text)
@@ -181,36 +181,7 @@ export default function Page(){
                                 <SearchPosts searchParam={searchText}/>
                                 
                             </View>
-                            <View style={styles.contentLayout}>
-                                <FlatList data={searchUsers} renderItem={({item}) =>{
-                                    // console.log(item)
-                                    return(
-                                        <TouchableOpacity style={styles.tabLayout} onPress={() =>ViewProfile(item._id)}>
-                                            <Skeleton colorMode="light" width={50} height={50} radius='round'>
-                                                {loading ? null :
-                                                
-                                                    item.profilePicture ?
-                                                        <View>
-                                                            <Image source={{uri:item.profilePicture}} style={{width:50,height:50,borderRadius:50}}/>
-                                                        </View>
-                                                        :
-                                                        <View>
-                                                            <Image source={require("../../assets/images/user.jpg")} style={{width:50,height:50,borderRadius:50}}/>
-                                                        </View>
-                                                    
-                                                }
-                                            </Skeleton>
-                                            <View style={{marginHorizontal:10}}>
-                                                <Skeleton colorMode="light"  height={20} width={150}>
-                                                    {loading ? null :
-                                                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light"}]}>{item.username}</Text>
-                                                    }
-                                                </Skeleton>
-                                            </View>
-                                        </TouchableOpacity>
-                                    )
-                                }}/>
-                            </View>
+
                             <View style={[styles.contentLayout,{paddingHorizontal:20}]}>
                                 <SearchClips searchText={searchText}/>
                             </View>

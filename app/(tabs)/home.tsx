@@ -30,6 +30,8 @@ import StoriesComp from "@/components/storiesComp";
 import { ColorPalatte } from "@/constants/Colors";
 import { duration } from "moment";
 import CommentBottomSheet from "@/components/CommentBottomSheet";
+import ActionBottomSheet from "@/components/ActionBottomSheet";
+import { BlockUser } from "@/components/CallBacks/CallBackFunctions";
 const Colors = ColorPalatte()
 
 
@@ -191,11 +193,16 @@ export default function Home(){
             setActiveComments(posts[index].comments ? posts[index].comments : [])
         }
     }
-    async function HandleFollowUser(uid:number){
-        await FollowUser(uid,user,setFollowCount)
+    async function HandleFollowUser(userData:any){
+        const data  ={"_id":userData.creator_id, "name":userData.username,"profilePicture":userData.profilePicture}
+        setFollows((follows:any) => [...follows,data])
+        await FollowUser(userData.creator_id,user)
     }
     async function HandleUnfollowUser(uid:number){
-        await UnFollowUser(uid,user,setFollowCount)
+        setFollows((follow:any) => follows.filter((item) =>{
+            return item._id.toString() != uid.toString()
+        }))
+        await UnFollowUser(uid,user)
     }
 
     async function HandleLikePost(uid:number){
@@ -260,7 +267,7 @@ export default function Home(){
                  Authorization:`Bearer ${user?.user?.token}`
              }
          })
-         setFollows(response.data)
+         setFollows(response.data[0].followersDetails)
      },[user?.user?.data._id, user?.user?.token])
 
     async function GetStories(){
@@ -404,6 +411,11 @@ export default function Home(){
 
         },[storyVisible,activeStory])
 
+        
+    async function BlockUserController(id:number){
+        await BlockUser(id,user?.user?.token)
+    }
+
         // useEffect(() =>{
         //     socket.on("receivePost" , (data) =>{
         //         setPosts((prev) => prev.map((item) => item._id == data.postId ?{ 
@@ -490,7 +502,7 @@ export default function Home(){
                 <Text style={{fontFamily:"PlaywriteSK-Regular",fontSize:27, color:"#d92b68"}}>Fleexy</Text>
             </TouchableOpacity>
             <View style={{flexDirection:"row"}}>
-                <TouchableOpacity style={styles.headerIcon} onPress={() => router.push("/liked")}> 
+                <TouchableOpacity style={styles.headerIcon} onPress={() => router.push("/notifications")}> 
                     <Ionicons name="notifications-outline" size={23} color={Colors.theme.fontColor} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.headerIcon} onPress={()=> router.push('/chats')}>
@@ -598,7 +610,7 @@ export default function Home(){
                 
                     <CommentBottomSheet gesture={gesture} translateY={translateY} activeComments={activeComments} isSheetOpened={isSheetOpened} HandleCreateComment={HandleCreateComment}  setComment={setComment}/>
                                     
-                <GestureDetector gesture={SheetGesture}>
+                {/* <GestureDetector gesture={SheetGesture}>
                     <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:Colors.theme.commentsBg,zIndex:2,borderRadius:10,width:"100%",height:"50%",bottom:-20,alignSelf:"center"}]}>
                         <View style={{width:15,borderRadius:50,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:10}}></View>
                         <View style={{paddingHorizontal:20,paddingVertical:15}}>
@@ -627,7 +639,8 @@ export default function Home(){
                             </View>
                         </View>
                     </Animated.View>
-                </GestureDetector>
+                </GestureDetector> */}
+                <ActionBottomSheet SheetGesture={SheetGesture} CloseBottomSheet={CloseBottomSheet} posts={posts} actionTranslateY={actionSheetY} activePost={activePost}/>
             </View>
 
     )

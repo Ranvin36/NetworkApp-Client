@@ -5,7 +5,7 @@ import axios from "axios";
 import { ipAddress } from "@/constants/ipAddress";
 import { useDispatch, useSelector } from "react-redux";
 import { rootStore } from "../redux/store";
-import { PreventRemoveProvider, useFocusEffect } from "@react-navigation/native";
+import { PreventRemoveProvider, useFocusEffect, useRoute } from "@react-navigation/native";
 import { setOpened } from "../redux/navbarSlice";
 import BackArrow from "@/components/backArrow";
 import CommentBottomSheet from "@/components/CommentBottomSheet";
@@ -15,6 +15,8 @@ import * as  Haptics from "expo-haptics"
 
 const  {width:SCREEN_WIDTH,height:SCREEN_HEIGHT} = Dimensions.get('window')
 export default function Page() {
+  const route = useRoute()
+  const clipId = route?.params?.clipId
   const [viewableItemsIndex, setViewableItemsIndex] = useState(0);
   const [activePost,setActivePost] = useState({index:0,id:null})
   const translateY = useSharedValue(SCREEN_HEIGHT)  
@@ -27,7 +29,6 @@ export default function Page() {
   const [isSheetOpened,setIsSheetOpened] = useState(false)
   const [activeComments,setActiveComments] = useState([])
   const [comment,setComment]  =useState("")
-
   const gesture = Gesture.Pan().onStart((event)=>{
     context.value = {y:translateY.value}
 }).onUpdate((event)=>{
@@ -67,12 +68,24 @@ const toggleBottomSheet = async(index:number,id:any) =>{
   }]);
 
   async function GetReels(){
-    const response = await axios.get(`http://${ipAddress}:3001/reels/`,{
-      headers:{
-        Authorization:`Bearer ${user?.token}`
-      }
-    })
-    setVideos(response.data.GetAllReels)
+    if(clipId){
+      const response = await axios.get(`http://${ipAddress}:3001/reels/after/${clipId}`,{
+        headers:{
+          Authorization:`Bearer ${user?.token}`
+        }
+      })
+      const {ClipsAfter,GetClip} = response.data
+      setVideos([...(Array.isArray(GetClip)?GetClip:[GetClip]),
+      ...(Array.isArray(ClipsAfter)?ClipsAfter :[ClipsAfter])])
+    }
+    else{
+      const response = await axios.get(`http://${ipAddress}:3001/reels/`,{
+        headers:{
+          Authorization:`Bearer ${user?.token}`
+        }
+      })
+      setVideos(response.data.GetAllReels)
+    }
   }
   async function UnlikeClip(clipId){
    
@@ -140,7 +153,7 @@ const toggleBottomSheet = async(index:number,id:any) =>{
 
   useEffect(() =>{
       GetReels()
-  },[refreshing])
+  },[refreshing,clipId])
 
   useFocusEffect(
     useCallback(() =>{  

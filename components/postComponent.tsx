@@ -21,7 +21,7 @@ function PostComponent({item,index,follows,UnFollowUser,FollowUser,unlikePost,Li
     const like = item.likes
     const comments  = item.comments
     const ifBookmarked = item.bookmarks && item.bookmarks.filter((post:any) => post.toString() == user?.data._id) 
-    const ifFollowing = follows && follows.filter((followItem:any) => followItem?.following[0]?._id == item.creator[0]?.creator_id)
+    const ifFollowing = follows && follows.filter((followItem:any) => followItem?._id == item.creator[0]?.creator_id)
     const ifLiked = like && like.filter((liked:any) => liked == user?.data._id)
     function ViewProfile(id:number){
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
@@ -57,7 +57,7 @@ function PostComponent({item,index,follows,UnFollowUser,FollowUser,unlikePost,Li
                         <Text style={[{fontFamily:"Poppins-Bold",fontSize:12}]}>Following</Text>
                     </TouchableOpacity>
                                         :
-                    <TouchableOpacity style={styles.following} onPress={()=>FollowUser(item.creator[0].creator_id)} >
+                    <TouchableOpacity style={styles.following} onPress={()=>FollowUser(item.creator[0])} >
                         <Text style={[{fontFamily:"Poppins-Bold",fontSize:12}]}>Follow</Text>
                     </TouchableOpacity>
                     

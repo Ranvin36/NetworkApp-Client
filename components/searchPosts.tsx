@@ -11,6 +11,8 @@ import { Gesture,GestureDetector} from "react-native-gesture-handler"
 import { router } from "expo-router"
 import { AntDesign,Entypo,MaterialIcons,MaterialCommunityIcons } from "@expo/vector-icons"
 import { setOpened } from "@/app/redux/navbarSlice"
+import CommentBottomSheet from "./CommentBottomSheet"
+import ActionBottomSheet from "./ActionBottomSheet"
 
 function SearchPosts({searchParam}){
     const user = useSelector((state:rootStore)=>state.user.user)
@@ -18,31 +20,46 @@ function SearchPosts({searchParam}){
     const [followCount,  setFollowCount] = useState([0])
     const [follows, setFollows] = useState([])
     const [posts, setPosts] = useState([])
-    const [activatePost, setActivePost] = useState(0)
+    const [activePost, setActivePost] = useState({index:0,id:0})
     const [activateBottomPost, setActiveBottomPost] = useState(0)
-    const  [activeComments, setActiveComments] = useState([])
+    const [activeComments, setActiveComments] = useState([])
+    const [comments,setComment] = useState("")
     const [isSheetOpened, setIsSheetOpened] = useState(false)
     const [bottomSheetOpened, setBottomSheetOpened] = useState(false)
     const [sheetOpened,setSheetOpened] = useState(false)
     const offSet = useSharedValue(0)
     const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
     const translateY = useSharedValue(SCREEN_HEIGHT)
-    const context = useSharedValue(0)
-    const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 3)
-    const isBottomSheetOpened = useDerivedValue(() => offSet.value == 0 )
+    const context = useSharedValue({y:0})
+    const actionContext = useSharedValue({y:0})
     const dispatch = useDispatch()
 
     const SheetGesture = Gesture.Pan().onStart((event) =>{
-        context.value = event.translationY
+        actionContext.value = {y:offSet.value}
     }).onUpdate((event) =>{
-        translateY.value = event.translationY + context.value
-        translateY.value = Math.max(translateY.value , -SCREEN_HEIGHT/30)  
+        offSet.value = event.translationY + actionContext.value.y
+        offSet.value = Math.max(offSet.value , -SCREEN_HEIGHT/30)  
     }).onEnd((event) =>{
-        if(translateY.value < SCREEN_HEIGHT/8){
-            translateY.value = withSpring(0, {damping:50})
+        if(offSet.value < SCREEN_HEIGHT/8){
+            offSet.value = withSpring(0, {damping:50})
         }
         else{
             runOnJS(CloseBottomSheet)()
+        }
+    })
+
+    const gesture = Gesture.Pan().onStart((event)=>{
+        context.value = {y:translateY.value}
+    }).onUpdate((event)=>{
+        translateY.value = event.translationY + context.value.y
+        translateY.value = Math.max(translateY.value, -SCREEN_HEIGHT)
+    }).onEnd(()=>{
+        if(translateY.value > -SCREEN_HEIGHT/2){
+            runOnJS(setIsSheetOpened)(false)
+            translateY.value = withSpring(SCREEN_HEIGHT,{damping:50})
+        }
+        else if(translateY.value < -SCREEN_HEIGHT/1.7){
+            translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
         }
     })
 
@@ -51,7 +68,7 @@ function SearchPosts({searchParam}){
         if(searchParam){
             const response = await axios.get(`http://${ipAddress}:3001/posts/search?title=${searchParam}`,{
                 headers:{
-                    Authorization:`Bearer ${user.token}`
+                    Authorization:`Bearer ${user?.token}`
                 }
             })
             setPostData(response.data.findPost)
@@ -62,25 +79,6 @@ function SearchPosts({searchParam}){
         GetSearchPost()
     },[searchParam])
 
-    // const toggleBottomSheet = async(id) =>{
-    //     setActivePost(id)
-    //     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-    //     if(isSheetOpened){
-    //         translateY.value = withSpring(0,{damping:50})
-    //     }
-    //     else{
-    //         translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
-    //         const findPosts = posts && posts.find((item) => item._id === id)
-    //         if(findPosts){
-    //             setActiveComments(findPosts.comments ? findPosts.comments : [])
-    //         }
-    //         else{
-    //             setActiveComments([])
-    //             return
-    //         }
-    //     }
-    // }
-    
       const sheetStyle = useAnimatedStyle(() =>{
         return{
             transform:[{translateY:translateY.value}]
@@ -89,29 +87,29 @@ function SearchPosts({searchParam}){
 
 
     async function CreateComment(){
-        const data = {"message":comment}
-        const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
+        const data = {"message":comments}
+        const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost.id}`,data,{
             headers:{
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
     }
-    async function UnFollowUser(uid){
+    async function UnFollowUser(uid:number){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         const response = await axios.delete(`http://${ipAddress}:3001/users/remove-follower/${uid}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
         setFollowCount((prev) => [...prev,1])
     }
-    async function FollowUser(uid){
+    async function FollowUser(uid:number){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         try{
             const response = await axios.post(`http://${ipAddress}:3001/users/add-follower/${uid}`,null,{
                 headers:{
-                    Authorization:`Bearer ${user.token}`
+                    Authorization:`Bearer ${user?.token}`
                 }
             })
             setFollowCount((prev) => [...prev, 1])
@@ -122,7 +120,7 @@ function SearchPosts({searchParam}){
     }    async function GetPosts(){
         const response = await axios.get(`http://${ipAddress}:3001/posts/${id}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
@@ -131,25 +129,25 @@ function SearchPosts({searchParam}){
     
     
     async function GetFollowers(){
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user.data._id}`,{
+        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user?.data._id}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
         setFollows(response.data)
     }
-    async function LikePost(uid){
+    async function LikePost(uid:number){
         const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
     }
-    async function unlikePost(uid){
+    async function unlikePost(uid:number){
         const response = await axios.post(`http://${ipAddress}:3001/posts/unlike-posts/${uid}`,null,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
     }    
@@ -160,56 +158,61 @@ function SearchPosts({searchParam}){
         function CloseBottomSheet(){
             setSheetOpened(false)
             dispatch(setOpened(false))
-            translateY.value = withSpring(SCREEN_HEIGHT, {damping:50})
+            offSet.value = withSpring(SCREEN_HEIGHT, {damping:50})
         }
     
-        function OpenBottomSheet(){
+        function OpenBottomSheet(index:number,id:number){
             dispatch(setOpened(true))
-            setSheetOpened(true)
-            translateY.value = withSpring(-200, {damping:50})
+            setActivePost({index:index,id})
+            offSet.value = withSpring(0, {damping:50})
         }
 
+        function HandleCreateComment(){
+
+        }
+
+        function Reaction(){
+            if(isSheetOpened){
+                dispatch(setOpened(false))
+            }
+            else{
+                dispatch(setOpened(true))
+
+            }
+        }
+
+        const toggleBottomSheet = async(index:number,id:number) =>{
+            // dispatch(setOpened(false))
+            setActivePost({index:id,id})
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+            if(isSheetOpened){
+                setIsSheetOpened(false)
+                translateY.value = withSpring(SCREEN_HEIGHT,{damping:50})
+            }
+            else{
+                setIsSheetOpened(true)
+                translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
+                
+                setActiveComments(postData[index].comments ? postData[index].comments : [])
+            }
+        }
+
+        useEffect(() =>{
+            Reaction()
+        },[isSheetOpened])
     return(
-        <View>
+        <View style={{paddingBottom:150}}>
             <TouchableOpacity onPress={() =>CloseBottomSheet()} style={{backgroundColor:"#000",display:sheetOpened ?"flex" : "none",width:'100%',height:Dimensions.get('window').height,opacity:0.5,position:"absolute",left:0,top:0,zIndex:1}}></TouchableOpacity>
-            <FlatList data={postData} renderItem={({item}) => {
+            <FlatList data={postData} showsVerticalScrollIndicator={false} renderItem={({item,index}) => {
                 return(
-                    <View style={{paddingHorizontal:25}}>
-                        <PostComponent item={item} LikePost={LikePost} unlikePost={unlikePost} follows={follows} FollowUser={FollowUser} UnFollowUser={UnFollowUser} openBottomSheet={OpenBottomSheet} setActiveBottomPost={setActiveBottomPost}/> 
+                    <View style={{paddingHorizontal:20}}>
+                        <PostComponent item={item} index={index} LikePost={LikePost} unlikePost={unlikePost} follows={follows} FollowUser={FollowUser} UnFollowUser={UnFollowUser} toggleBottomSheet={toggleBottomSheet}  openBottomSheet={OpenBottomSheet} setActiveBottomPost={setActiveBottomPost}/> 
 
                     </View>
                 )
             }}/>
-                 <GestureDetector gesture={SheetGesture}>
-                    <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:"#fff",zIndex:2,borderRadius:10,width:"90%",bottom:10,alignSelf:"center"}]}>
-                        <View style={{width:15,borderRadius:50,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:10}}></View>
-                        <View style={{paddingHorizontal:20,paddingVertical:15}}>
-                            <View style={{marginVertical:10,flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
-                                <Text style={{fontFamily:"Poppins-Bold",fontSize:20}}>Ranvin Wick</Text>
-                                <TouchableOpacity onPress={CloseBottomSheet}>
-                                    <AntDesign name="closecircleo" size={20} color="black" />
-                                </TouchableOpacity>
-                            </View>
-                            <TouchableOpacity style={styles.sheetOption} onPress={() => router.push({pathname:`/viewProfile/${id}`,params:{id}})}>
-                                <Text style={styles.bottomSheetText}>View Profile</Text>
-                                <MaterialCommunityIcons name="face-man-outline" size={20} color="black" style={{marginBottom:3}}  />
-
-                            </TouchableOpacity>
-                            <View style={styles.sheetOption}>
-                                <Text style={styles.bottomSheetText}>Block</Text>
-                                <Entypo name="block" size={18} color="black" />
-                            </View>
-                            <View style={styles.sheetOption}>
-                                <Text style={styles.bottomSheetText}>Archive</Text>
-                                <Entypo name="archive" size={18} color="black" />
-                            </View>
-                            <View style={styles.sheetOption}>
-                                <Text style={styles.bottomSheetText}>Report</Text>
-                                <MaterialIcons name="report-gmailerrorred" size={20} color="black" />
-                            </View>
-                        </View>
-                    </Animated.View>
-                </GestureDetector>
+                 <ActionBottomSheet SheetGesture={SheetGesture} CloseBottomSheet={CloseBottomSheet} posts={postData} actionTranslateY={offSet} activePost={activePost}/>
+                <CommentBottomSheet gesture={gesture}  translateY={translateY} activeComments={activeComments} HandleCreateComment={HandleCreateComment} setComment={setComment}/>
 
         </View>
     )

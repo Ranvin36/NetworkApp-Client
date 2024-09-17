@@ -12,7 +12,7 @@ type Options={
 }
 
 
-const SelectedOptions:React.FC<Options> = ({setSelectedChat,selectedChats,DeleteChat,unAuthorizedSelection}) =>{
+const SelectedOptions:React.FC<Options> = ({setSelectedChat,selectedChats,DeleteChat,unAuthorizedSelection=[]}) =>{
     return(
         <View style={{marginHorizontal:20,marginVertical:10,flexDirection:"row",justifyContent:"space-between",width:"100%"}}>
         <View style={{flexDirection:"row",alignItems:"center"}}>

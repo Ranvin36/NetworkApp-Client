@@ -20,15 +20,13 @@ export async function LikePost(uid,user,dummyData,setDummyData){
 }
 
 
-export async function UnFollowUser(uid,user,setFollowCount){
+export async function UnFollowUser(uid:number,user:any){
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     const response = await axios.delete(`http://${ipAddress}:3001/users/remove-follower/${uid}`,{
         headers:{
             Authorization:`Bearer ${user.user.token}`
         }
     })
-
-    setFollowCount((prev:any) => [...prev,1])
 }
 
 export async function UnlikePost(uid,user,dummyData,setDummyData){
@@ -40,16 +38,14 @@ export async function UnlikePost(uid,user,dummyData,setDummyData){
     setDummyData((prevData:any) => [...prevData, `Item ${dummyData.length+1}`]) 
 }
 
-export async function FollowUser(uid:number,user,setFollowCount){
+export async function FollowUser(uid:number,user:any){
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     try{
         const response = await axios.post(`http://${ipAddress}:3001/users/add-follower/${uid}`,null,{
             headers:{
                 Authorization:`Bearer ${user.user.token}`
             }
-        })
-        setFollowCount((prev:any) => [...prev, 1])
-    }
+        })    }
     catch(error){
         console.log(error)
     }

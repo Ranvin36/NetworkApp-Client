@@ -31,9 +31,9 @@ export default function Page(){
             <View style={styles.container}>
               {followerData && followerData.length > 0  ?            
                 <FlatList  data={followerData} renderItem={({item}) =>{
-                  if(item.following && item.following.length>0){
+                  if(item.followingDetails && item.followingDetails.length>0){
                     return(
-                      <FollowerLayout data={item.following}/>
+                      <FollowerLayout data={item.followingDetails}/>
                     )
                   }
                   else{

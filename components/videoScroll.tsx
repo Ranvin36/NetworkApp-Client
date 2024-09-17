@@ -20,7 +20,7 @@ const VideoScroll = React.memo(({ item,CreateBookmark,CreateComment,RemoveBookma
   const isBookmarked  =  item.bookmarks.filter((bookmark:number) => bookmark.toString() == user?.data._id)
   const likeValue = useSharedValue(1)
   const unLikeValue = useSharedValue(1)
-  const createBookmarkValue = useSharedValue(0)
+  const createBookmarkValue = useSharedValue(1)
   const removeBookmarkValue = useSharedValue(0)
   const like = useAnimatedStyle(() =>{
       return{

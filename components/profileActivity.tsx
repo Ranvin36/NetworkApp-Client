@@ -14,6 +14,8 @@ function ProfileActivity({item,isImage,userId,setSelected,selected}){
     }
     const isSelected = selected && selected.filter((id) => id.toString() == item._id.toString())
     const index = selected  && selected.findIndex((id) => id.toString() == item._id.toString())
+
+    
     return(
         <View>
             {isSelected.length>0 &&            

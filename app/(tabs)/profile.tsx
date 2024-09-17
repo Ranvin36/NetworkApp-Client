@@ -17,6 +17,7 @@ import ProfileTabs from "@/components/profileTabs";
 import { Skeleton } from "moti/skeleton";
 import { ColorPalatte } from "@/constants/Colors";
 import Modal from "@/components/Modal";
+import { useNavigation } from "@react-navigation/native";
 const Colors = ColorPalatte()
 
 type ProfilePicture={
@@ -66,6 +67,7 @@ function Profile() {
     const postLayout = Dimensions.get('window').width / 3
     const screenWidth = Dimensions.get('window').width
     const tabWidth = screenWidth / 3
+    const navigation = useNavigation()
     // const videos = posts.filter((item) => item.video)
     const post = posts.filter((item) => item.image) 
     // console.log(clips ,  "DATA")
@@ -146,6 +148,8 @@ function Profile() {
                 Authorization: `Bearer ${user?.token}`
             }
         })
+
+        console.log(response?.data , "FOLLOWS")
 
         setFollowerData(response.data)
     }
@@ -304,6 +308,8 @@ function Profile() {
             setUsername(user.data.username)
         }
     }
+
+
     return (
         <ScrollView style={styles.container}  showsVerticalScrollIndicator={false} refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={refreshProfile}/>
@@ -381,12 +387,12 @@ function Profile() {
                 </View>
                 <View style={styles.boxLayout}>
                     <TouchableOpacity style={styles.box} onPress={NavigateFollowing}>
-                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>{followerData && followerData.length>0 &&  followerData[0].following.length}</Text>
+                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>{followerData && followerData.length>0 &&  followerData[0].followingDetails.length}</Text>
                         <Text style={[styles.textColor,{ fontFamily: "Poppins-Regular"}]}>Following</Text>
                         <View style={styles.line}></View>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.box} onPress={NavigateFollowers}>
-                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>{followerData && followerData.length>0 &&  followerData[0].followers.length}</Text>
+                        <Text style={[styles.textColor,{ fontFamily: "Poppins-Bold"}]}>{followerData && followerData.length>0 &&  followerData[0].followersDetails.length}</Text>
                         <Text style={[styles.textColor,{ fontFamily: "Poppins-Regular"}]}>Followers</Text>
                         <View style={styles.line}></View>
                     </TouchableOpacity>
@@ -433,9 +439,8 @@ function Profile() {
                     <View style={{width:Dimensions.get('window').width}}>
                         <FlatList data={clips} numColumns={3}  keyExtractor={(item) => item?._id }  renderItem={({item}) =>{
                             const isImage = false
-                            // console.log(item , "DATA")
                             return(
-                                <View  >
+                                <View>
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                         {loading ? null :
                                             <ProfileActivity item={item} isImage={isImage} userId={user?.data._id} setSelected={setSelected} selected={selected}/> 

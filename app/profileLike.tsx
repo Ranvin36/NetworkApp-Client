@@ -74,9 +74,9 @@ function ProfileLiked(){
     
     
     async function GetFollowers(){
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user.data._id}`,{
+        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user?.data._id}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
         setFollows(response.data)
