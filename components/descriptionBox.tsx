@@ -1,7 +1,15 @@
 import { View,TextInput, StyleSheet } from "react-native"
 import { ColorPalatte } from "@/constants/Colors";
+import React from "react";
 const Colors = ColorPalatte()
-function DescriptionBox({onChange,text}){
+
+type DescriptionBoxTypes = {
+    onChange: (text:string) => void,
+    text: string
+ 
+}
+
+const DescriptionBox:React.FC<DescriptionBoxTypes>= ({onChange,text}) =>{
     return(
         <View style={styles.InputContainer}>
             <View style={styles.textInput}>

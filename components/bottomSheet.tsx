@@ -24,16 +24,6 @@ function BottomSheet({children,openBottomSheet}){
             offSet.value=withSpring(0 , {damping:50})
         }
     })
-
-    // function openBottomSheet(){
-    //     if(bottomSheetOpened){
-    //         offSet.value=withSpring(SCREEN_HEIGHT , {damping:50})
-    //     }
-    //     else{
-    //       offSet.value=withSpring(0 , {damping:50})
-    
-    //     }    
-    //   }
     
       const animateBottomSheet = useAnimatedStyle(() =>{
         return{

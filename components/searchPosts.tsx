@@ -1,7 +1,7 @@
 import { rootStore } from "@/app/redux/store"
 import { ipAddress } from "@/constants/ipAddress"
 import axios from "axios"
-import { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { View  , Dimensions, FlatList,Text, StyleSheet,TouchableOpacity} from "react-native"
 import { useDispatch, useSelector, UseSelector } from "react-redux"
 import PostComponent from "./postComponent"
@@ -13,16 +13,62 @@ import { AntDesign,Entypo,MaterialIcons,MaterialCommunityIcons } from "@expo/vec
 import { setOpened } from "@/app/redux/navbarSlice"
 import CommentBottomSheet from "./CommentBottomSheet"
 import ActionBottomSheet from "./ActionBottomSheet"
+import { BlockUser } from "./CallBacks/CallBackFunctions"
+import { ToastAndroid } from "react-native"
 
-function SearchPosts({searchParam}){
+
+type SearchTypes={
+    searchParam: string
+}
+
+type PostTypes={
+    _id: number,
+    user_id: number,
+    title: string,
+    image: string | null,
+    video: string | null,
+    likes: any[],
+    bookmarks: any[],
+    comments: any[],
+    created_at: string,
+    updated_at: string,
+    creator: [{
+        id: number,
+        creator_id: string,
+        username: string,
+        profile_pic: string | null,
+        created_at: string,
+        updated_at: string,
+    }]
+}
+
+type CommentTypes={
+    _id: number,
+    post_id: number,
+    user_id: number,
+    content: string,
+    created_at: string,
+    updated_at: string,
+    creator: [{
+        id: number,
+        creator_id: string,
+        username: string,
+        profile_pic: string | null,
+        created_at: string,
+        updated_at: string,
+    }]
+}
+
+
+const SearchPosts:React.FC<SearchTypes> =({searchParam}) => {
     const user = useSelector((state:rootStore)=>state.user.user)
-    const [postData,  setPostData] = useState([])
+    const [postData,  setPostData] = useState<PostTypes[]>([])
     const [followCount,  setFollowCount] = useState([0])
     const [follows, setFollows] = useState([])
     const [posts, setPosts] = useState([])
     const [activePost, setActivePost] = useState({index:0,id:0})
     const [activateBottomPost, setActiveBottomPost] = useState(0)
-    const [activeComments, setActiveComments] = useState([])
+    const [activeComments, setActiveComments] = useState<CommentTypes[]>([])
     const [comments,setComment] = useState("")
     const [isSheetOpened, setIsSheetOpened] = useState(false)
     const [bottomSheetOpened, setBottomSheetOpened] = useState(false)
@@ -197,6 +243,16 @@ function SearchPosts({searchParam}){
             }
         }
 
+        async function BlockUserController(id:number){
+            try{
+                const response = await BlockUser(id,user?.token)
+                ToastAndroid.show("User Blocked Successfully" ,ToastAndroid.SHORT)
+            }
+            catch(error){
+                console.log(error)
+            }
+        }
+
         useEffect(() =>{
             Reaction()
         },[isSheetOpened])
@@ -206,12 +262,12 @@ function SearchPosts({searchParam}){
             <FlatList data={postData} showsVerticalScrollIndicator={false} renderItem={({item,index}) => {
                 return(
                     <View style={{paddingHorizontal:20}}>
-                        <PostComponent item={item} index={index} LikePost={LikePost} unlikePost={unlikePost} follows={follows} FollowUser={FollowUser} UnFollowUser={UnFollowUser} toggleBottomSheet={toggleBottomSheet}  openBottomSheet={OpenBottomSheet} setActiveBottomPost={setActiveBottomPost}/> 
+                        <PostComponent item={item} index={index} LikePost={LikePost} unlikePost={unlikePost} follows={follows} FollowUser={FollowUser} UnFollowUser={UnFollowUser} toggleBottomSheet={toggleBottomSheet}  openBottomSheet={OpenBottomSheet} setActivePost={setActiveBottomPost}/> 
 
                     </View>
                 )
             }}/>
-                 <ActionBottomSheet SheetGesture={SheetGesture} CloseBottomSheet={CloseBottomSheet} posts={postData} actionTranslateY={offSet} activePost={activePost}/>
+                 <ActionBottomSheet SheetGesture={SheetGesture} BlockUser={BlockUserController} CloseBottomSheet={CloseBottomSheet} posts={postData} actionTranslateY={offSet} activePost={activePost}/>
                 <CommentBottomSheet gesture={gesture}  translateY={translateY} activeComments={activeComments} HandleCreateComment={HandleCreateComment} setComment={setComment}/>
 
         </View>

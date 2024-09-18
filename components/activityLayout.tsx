@@ -3,7 +3,11 @@ import { ColorPalatte } from "@/constants/Colors"
 import moment from "moment"
 const Colors = ColorPalatte()
 
-const ActivitySummary:React.FC = ({item}) =>{
+interface ActivitySummaryTypes{
+    item:any
+}
+
+const ActivitySummary:React.FC<ActivitySummaryTypes> = ({item}) =>{
     const dateTime = moment(item.updatedAt).format("dd h:mm a")
     console.log(dateTime)
     return(

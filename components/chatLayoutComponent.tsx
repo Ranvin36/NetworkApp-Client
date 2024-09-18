@@ -6,7 +6,8 @@ const Colors = ColorPalatte()
 
 type ChatLayout = {
     item:any[],
-    lastMessage: string
+    lastMessage: string,
+    formattedUpdateAt:string
 }
 
 const ChatLayoutComponent:React.FC<ChatLayout> = ({item,lastMessage,formattedUpdateAt}) => {

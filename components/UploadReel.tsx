@@ -1,7 +1,21 @@
 import { View,Text, StyleSheet,Dimensions, Image} from "react-native"
 import ReelUploader from "./ReelUploader"
+import React from "react"
 
-function UploadReel({user,image,text,setImage}){
+type UserTypes={
+  userId:string[],
+  username:string,
+  profilePicture:string
+}
+
+type UploadTypes ={
+  user:UserTypes,
+  image:any[],
+  text:string,
+  setImage:any[]
+}
+
+ const UploadReel:React.FC<UploadTypes>= ({user,image,text,setImage}) =>{
     return(
         <View style={styles.container}>
           {image.length > 0 && image[0].uri.length>0 ? 

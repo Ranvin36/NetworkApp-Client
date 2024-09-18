@@ -28,8 +28,8 @@ const EditProfile: React.FC = () => {
   const [dropDownOpened, setDropDownOpened] = useState(true);
   const [loading, setLoading] = useState(false);
   const [profilePic, setProfilePic] = useState<any>(null)
-  const [username, setUsername] = useState(user?.data.username);
-  const [bio, setBio] = useState(user?.data.bio);
+  const [username, setUsername] = useState<any>(user?.data.username);
+  const [bio, setBio] = useState<any>(user?.data.bio);
 
   async function UpdateProfilePic() {
     const selectImage = await ImagePicker.launchImageLibraryAsync({

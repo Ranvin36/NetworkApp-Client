@@ -45,7 +45,7 @@ const Block:React.FC = () =>{
     useEffect(() =>{
         socket.on("receiveUnblockUser" , (data) =>{
             ToastAndroid.show("User Unblocked Successfully" , ToastAndroid.SHORT)
-            setBlockedUsers((prev) => prev.filter((user) => user.userId != data.opponentId))
+            setBlockedUsers((prev) => prev.filter((user:any) => user.userId != data.opponentId))
         })
         return()=>{
             socket.off("receiveUnblockUser")

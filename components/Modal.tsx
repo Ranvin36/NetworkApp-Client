@@ -1,8 +1,18 @@
 import { StyleSheet, View,Text, Touchable, TouchableOpacity, ActivityIndicator, Dimensions} from "react-native";
 import { ColorPalatte } from "@/constants/Colors";
+import React from "react";
 
 const Colors = ColorPalatte()
-function Modal({popupOpened,PopUpController,DeleteChat,loading,children}){
+
+type ModalType={
+    popupOpened: boolean,
+    PopUpController: () => void,
+    DeleteChat: () => void,
+    loading: boolean,
+    children:React.ReactNode
+}
+
+const Modal:React.FC <ModalType>= ({popupOpened,PopUpController,DeleteChat,loading,children}) =>{
     return(
         <View style={[styles.container , {display:popupOpened ?"flex":"none"}]}>
             <View style={styles.popUp}>

@@ -51,9 +51,9 @@ function ProfileLiked(){
         }
     })
     async function GetLikedPosts(){
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user.data._id}`,{
+        const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user?.data._id}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
@@ -61,7 +61,7 @@ function ProfileLiked(){
         const data = {IDS : likedPost}
         const posts = await axios.post(`http://${ipAddress}:3001/posts/liked`,data,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
         setPosts(posts.data.data)
@@ -79,20 +79,21 @@ function ProfileLiked(){
                 Authorization:`Bearer ${user?.token}`
             }
         })
-        setFollows(response.data)
+        console.log(response.data[0].followersDetails)
+        setFollows(response.data[0].followersDetails)
     }
-    async function LikePost(uid){
+    async function LikePost(uid:number){
         const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
     }
-    async function unlikePost(uid){
+    async function unlikePost(uid:number){
         const response = await axios.post(`http://${ipAddress}:3001/posts/unlike-posts/${uid}`,null,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
     }
@@ -104,11 +105,11 @@ function ProfileLiked(){
     })
 
     
-    function ViewProfile(id){
+    function ViewProfile(id:number){
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
 
-    const toggleBottomSheet = async(id) =>{
+    const toggleBottomSheet = async(id:number) =>{
         setActivePost(id)
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         if(isSheetOpened){
@@ -131,26 +132,26 @@ function ProfileLiked(){
         const data = {"message":comment}
         const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
             headers:{
-                Authorization: `Bearer ${user.token}`
+                Authorization: `Bearer ${user?.token}`
             }
         })
     }
-    async function UnFollowUser(uid){
+    async function UnFollowUser(uid:number){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         const response = await axios.delete(`http://${ipAddress}:3001/users/remove-follower/${uid}`,{
             headers:{
-                Authorization:`Bearer ${user.token}`
+                Authorization:`Bearer ${user?.token}`
             }
         })
 
         setFollowCount((prev) => [...prev,1])
     }
-    async function FollowUser(uid){
+    async function FollowUser(uid:number){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         try{
             const response = await axios.post(`http://${ipAddress}:3001/users/add-follower/${uid}`,null,{
                 headers:{
-                    Authorization:`Bearer ${user.token}`
+                    Authorization:`Bearer ${user?.token}`
                 }
             })
             setFollowCount((prev) => [...prev, 1])
@@ -174,7 +175,7 @@ function ProfileLiked(){
                     const videoUrl = item.video
                     const like = item.likes
                     const comments  = item.comments
-                    const ifFollowing = follows && follows.filter((followItem) => followItem?.following[0]?._id == item.creator[0]?.creator_id)
+                    const ifFollowing = follows && follows.filter((followItem) => followItem?._id == item.creator[0]?.creator_id)
                     const ifLiked = like && like.filter((liked) => liked == user.data._id)
                     return(
                         <PostComponent item={item} follows={follows} unlikePost={unlikePost} UnFollowUser={UnFollowUser} toggleBottomSheet={toggleBottomSheet} LikePost={LikePost} FollowUser={FollowUser}/>

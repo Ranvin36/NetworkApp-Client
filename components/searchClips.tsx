@@ -8,7 +8,19 @@ import { Video,ResizeMode} from "expo-av"
 import {Feather,Ionicons} from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native"
 
-const SearchClips:React.FC = ({searchText}) =>{
+type SearchTypes={
+    searchText: string
+}
+
+type MediaTypes={
+    _id:any,
+    text: string,
+    media: string,
+    user: any
+
+}
+
+const SearchClips:React.FC<SearchTypes> = ({searchText}) =>{
     const user = useSelector((state:rootStore) => state.user.user)
     const [searchClips,setSearchClips] = useState([])
     const navigation = useNavigation()
@@ -31,7 +43,7 @@ const SearchClips:React.FC = ({searchText}) =>{
 
     return(
         <View style={styles.container}>
-            <FlatList 
+            <FlatList<MediaTypes>
              data={searchClips}
              numColumns={2}
              horizontal={false}

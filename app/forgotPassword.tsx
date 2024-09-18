@@ -15,6 +15,7 @@ const Colors = ColorPalatte()
 function ForgotPassword(){
     const [email,setEmail] = useState("")
     const dispatch = useDispatch()
+    const [loading,setLoading] = useState(false)
     async function SendOtp(){
         const data = {"email":email}
         const response  =  await axios.post(`http://${ipAddress}:3001/users/password-email`,data)
@@ -35,7 +36,7 @@ function ForgotPassword(){
             <View>
                 <TextInputLayout placeholder="Enter Your Email" onChange={setEmail} icon="email-outline"/>
             </View>
-            <TouchButton text="Send Otp" onPress={SendOtp}/>
+            <TouchButton text="Send Otp" onPress={SendOtp} loading={loading}/>
         </View>
     )
 }

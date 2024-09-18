@@ -3,12 +3,23 @@ import  Animated,{useAnimatedStyle} from "react-native-reanimated"
 import { StyleSheet,View,Image,Text,ScrollView, Dimensions,TextInput,TouchableOpacity} from "react-native"
 import { ColorPalatte } from "@/constants/Colors"
 import { Ionicons } from "@expo/vector-icons"
+import React from "react"
 
 
 const Colors  = ColorPalatte()
 const  {width:SCREEN_WIDTH,height:SCREEN_HEIGHT} = Dimensions.get('window')
 
-function  CommentBottomSheet({gesture,translateY,activeComments,isSheetOpened,HandleCreateComment,setComment}){
+
+interface CommentsSheet{
+    gesture: any,
+    translateY: any,
+    activeComments: Array<any>,
+    isSheetOpened: boolean,
+    HandleCreateComment: () => void,
+    setComment: (comment:string)=>void
+}
+
+const CommentBottomSheet:React.FC<CommentsSheet>= ({gesture,translateY,activeComments,isSheetOpened,HandleCreateComment,setComment}) =>{
     const rBottomSheetStyle = useAnimatedStyle(() =>{
         return{
             transform : [{translateY: translateY.value}]

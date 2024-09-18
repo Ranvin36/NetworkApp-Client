@@ -8,7 +8,7 @@ type Options={
     setSelectedChat:Function,
     selectedChats:Array<string>,
     DeleteChat:() => void
-
+    unAuthorizedSelection:[]
 }
 
 

@@ -121,9 +121,6 @@ const toggleBottomSheet = async(index:number,id:any) =>{
         Authorization: `Bearer ${user?.token}`
       }
     })
-
-    console.log(response.data)
-
   }
 
   async function CreateComment(){

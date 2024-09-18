@@ -11,6 +11,15 @@ import { ColorPalatte } from "@/constants/Colors";
 import PageHeader from "@/components/pageHeader"
 const Colors = ColorPalatte()
 
+type ItemTypes={
+    username:string,
+    profilePicture:string,
+}
+
+type LikedTypes ={
+    creator:ItemTypes[],
+    text:string
+}
 
 function Liked() {
     const SkeletonCommonProps = {
@@ -58,7 +67,7 @@ function Liked() {
         <View style={styles.container}>
             <PageHeader text="Liked"/>
             <View style={styles.containerLayout}>
-                <FlatList data={likedPosts}  renderItem={({item}) =>{
+                <FlatList<LikedTypes> data={likedPosts}  renderItem={({item}) =>{
                         return(
                         <TouchableOpacity style={styles.favouritesLayout} onPress={() => router.push("/profileLike")}>
                                 <View style={styles.flexElements}>

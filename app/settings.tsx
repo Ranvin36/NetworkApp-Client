@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 const Colors = ColorPalatte()
 
 function Settings(){
-    const [selectedMode,setSelectedMode] = useState(0)
+    const [selectedMode,setSelectedMode] = useState<boolean>(false)
     const offset =  useSharedValue(5)
     async function LogOut(){
         try{

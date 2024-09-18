@@ -14,12 +14,13 @@ const Colors = ColorPalatte()
 function PasswordAuth(){
     const [otp,setOtp] = useState(['','','',''])
     const [validOtp,setValidOtp] = useState(true) 
+    const [loading,setLoading] = useState(false)
     const user = useSelector((state:rootStore) => state.user.user)
     const receivedOtp = useSelector((state:rootStore) => state.otp.otp)
     function handleOtpChange(value:number,index:number){
         console.log(value)
         const newOtp = [...otp]
-        newOtp[index] = value
+        newOtp[index] = value.toString()
         setOtp(newOtp)
     }
     // console.log(otp, receivedOtp.data.otp,user.token)
@@ -71,7 +72,7 @@ function PasswordAuth(){
             <View style={{alignItems:"center"}}>
                 {!validOtp && <Text style={{fontFamily:"Poppins-Bold",color:"red"}}>Invalid Otp</Text>}
             </View>
-            <TouchButton onPress={VerifyOtp} text="Reset Password"/>
+            <TouchButton onPress={VerifyOtp} text="Reset Password" loading={loading}/>
         </View>
     )
 }

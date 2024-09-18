@@ -1,9 +1,18 @@
 import { View,Text,TouchableOpacity, StyleSheet,Dimensions, ActivityIndicator } from "react-native"
 import { Ionicons,AntDesign } from "@expo/vector-icons"
 import { ColorPalatte } from "@/constants/Colors";
+import React from "react";
 const Colors = ColorPalatte()
 
-function UploadAcc({uploadPost,selectImage,placeholder,loading}){
+type UploadTypes={
+    uploadPost:() => void,
+    selectImage:() => void,
+    placeholder:string,
+    loading:boolean,
+    uploadType:string  // "image" or "video"  // default is "image"
+}
+
+const UploadAcc:React.FC<UploadTypes> = ({uploadPost,selectImage,placeholder,loading}) =>{
     return(
         <View style={{flexDirection:"row",alignItems:"center",alignSelf:"center",marginVertical:15}}>
             <TouchableOpacity style={styles.uploadButton} onPress={uploadPost}>

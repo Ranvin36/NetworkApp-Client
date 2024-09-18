@@ -8,22 +8,66 @@ import { rootStore } from "@/app/redux/store"
 const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
 import { ColorPalatte } from "@/constants/Colors";
 import Hyperlink from 'react-native-hyperlink';
-import { useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 const Colors = ColorPalatte()
 
-function PostComponent({item,index,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,setActivePost,AddBookmark,RemoveBookmark}){
+type ItemTypes={
+    _id: number,
+    user_id: number,
+    text: string,
+    media:string|null,
+    likes: any[],
+    bookmarks: any[],
+    comments: any[],
+    created_at: string,
+    updated_at: string,
+    mediaType: string
+    creator: [{
+        id: number,
+        creator_id: string,
+        username: string,
+        profilePicture: string | null,
+        created_at: string,
+        updated_at: string,
+    }]
+}
+
+type MediaTypes={
+    _id: number,
+    uri: string,
+    mediaType: string
+    width: number,
+    height: number
+}
+
+type PostTypes = {
+    item:ItemTypes,
+    index:number,
+    follows: any[],
+    UnFollowUser: (id: any) => void,
+    FollowUser: (id: any) => void,
+    unlikePost: (postId: number) => void,
+    LikePost: (postId: number)=> void,
+    toggleBottomSheet: (item:number ,index:number) => void,
+    openBottomSheet: (index:number,id:any) => void,
+    setActivePost:number,
+    AddBookmark: (postId: number) => void,
+    RemoveBookmark: (postId: number) => void
+}
+
+
+const PostComponent:React.FC<PostTypes> = ({item,index,follows,UnFollowUser,FollowUser,unlikePost,LikePost,toggleBottomSheet,openBottomSheet,AddBookmark,RemoveBookmark}) =>{
     const user = useSelector((state:rootStore) => state.user.user)
     const [status, setStatus] =  useState({})
     const creatorImage = item.creator[0].profilePicture
     const video = useRef(null)
     const imgUrl = item.media
-    const videoUrl = item.video
     const like = item.likes
     const comments  = item.comments
     const ifBookmarked = item.bookmarks && item.bookmarks.filter((post:any) => post.toString() == user?.data._id) 
     const ifFollowing = follows && follows.filter((followItem:any) => followItem?._id == item.creator[0]?.creator_id)
     const ifLiked = like && like.filter((liked:any) => liked == user?.data._id)
-    function ViewProfile(id:number){
+    function ViewProfile(id:any){
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
     function BottomSheetAction(){
@@ -68,7 +112,8 @@ function PostComponent({item,index,follows,UnFollowUser,FollowUser,unlikePost,Li
             </View>
         </View>
         {imgUrl &&
-                <FlatList data={imgUrl} horizontal keyExtractor={(item)=>item._id}  pagingEnabled renderItem={({item,index}) =>{
+                <FlatList<MediaTypes> 
+                data={imgUrl} horizontal keyExtractor={(item)=>item._id}  pagingEnabled renderItem={({item,index}) =>{
                     return(
                         <View>
                             {item.mediaType=="image"?
@@ -80,7 +125,7 @@ function PostComponent({item,index,follows,UnFollowUser,FollowUser,unlikePost,Li
                                     </View>
                                     <Video 
                                     ref={video}
-                                    source={{uri:item.uri}}  
+                                    source={{uri:item?.uri}}  
                                     style={{height:300,width:300,borderRadius:20}}
                                     resizeMode={ResizeMode.COVER}
                                     isLooping

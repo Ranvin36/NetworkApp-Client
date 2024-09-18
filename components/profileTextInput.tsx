@@ -2,7 +2,16 @@ import { View,TextInput, StyleSheet,Text} from "react-native"
 import { ColorPalatte } from "@/constants/Colors"
 const Colors = ColorPalatte()
 
-const ProfileTextInput:React.FC = ({user,placeholder,value,onChange}) =>{
+
+type ProfileTextInputProps = {
+    user:any,
+    placeholder:string,
+    value:string,
+    onChange: (text:string) => void,
+ 
+}
+
+const ProfileTextInput:React.FC<ProfileTextInputProps> = ({user,placeholder,value,onChange}) =>{
     return(
         <View >
         <View style={styles.textLabel}>

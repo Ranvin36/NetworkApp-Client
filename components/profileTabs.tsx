@@ -2,8 +2,17 @@ import { View,TouchableOpacity, StyleSheet, Dimensions,Text} from "react-native"
 import Animated,{useAnimatedStyle,withTiming} from "react-native-reanimated"
 import { MaterialCommunityIcons,AntDesign} from "@expo/vector-icons"
 import { ColorPalatte } from "@/constants/Colors";
+import React from "react";
 const Colors = ColorPalatte()
-function ProfileTabs({selectedIndex,TabClick,position,profileView}){
+
+type ProfileTypes ={
+    selectedIndex:number,
+    TabClick:Function,
+    position:any,
+    profileView:any
+}
+
+const ProfileTabs:React.FC<ProfileTypes>= ({selectedIndex,TabClick,position,profileView})=> {
     const screenWidth = Dimensions.get('window').width
         
     const lineAnimate = useAnimatedStyle(() => {

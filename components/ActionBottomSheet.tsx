@@ -8,12 +8,25 @@ const {width:SCREEN_WIDTH,height:SCREEN_HEIGHT} = Dimensions.get('window')
 const Colors = ColorPalatte()
 import { router } from 'expo-router'
 import { BlockUser } from './CallBacks/CallBackFunctions'
-function ActionBottomSheet({SheetGesture,CloseBottomSheet,posts,actionTranslateY,activePost}){
+import React from 'react'
+
+type BottomSheet ={
+    SheetGesture: any,
+    CloseBottomSheet: () => void,
+    posts: any[],
+    actionTranslateY: any,
+    activePost: any,
+    BlockUser: (userId: number) => void
+}
+
+
+const  ActionBottomSheet:React.FC<BottomSheet> = ({SheetGesture,CloseBottomSheet,posts,actionTranslateY,activePost,BlockUser}) =>{
     const sheetStyle = useAnimatedStyle(() =>{
         return{
             transform:[{translateY:actionTranslateY.value}]
         }
     })
+
 
     return(
         <GestureDetector gesture={SheetGesture}>
@@ -31,10 +44,10 @@ function ActionBottomSheet({SheetGesture,CloseBottomSheet,posts,actionTranslateY
                     <MaterialCommunityIcons name="face-man-outline" size={20} color={Colors.theme.fontColor} style={{marginBottom:3}}  />
 
                 </TouchableOpacity>
-                <View style={styles.sheetOption}>
+                <TouchableOpacity style={styles.sheetOption} onPress={() =>BlockUser(posts[activePost.index].creator[0].creator_id)}>
                     <Text style={styles.bottomSheetText}>Block</Text>
                     <Entypo name="block" size={18} color={Colors.theme.fontColor}/>
-                </View>
+                </TouchableOpacity>
                 <View style={styles.sheetOption}>
                     <Text style={styles.bottomSheetText}>Archive</Text>
                     <Entypo name="archive" size={18} color={Colors.theme.fontColor} />

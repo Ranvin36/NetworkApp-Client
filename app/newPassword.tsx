@@ -17,15 +17,17 @@ function NewPassword(){
     const user = useSelector((state:rootStore) => state.user.user)
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
+    const [loading,setLoading] = useState(false)
     function eyeToggle(){
         setSecretField((prev) => !prev)
     }
 
     async function ResetPassword(){
+        let data={}
         if(confirmPassword == password){
             if(user != null){
                 
-                const data = {"newPassword":password, "userId":user? user[0]._id : null}
+             data = {"newPassword":password, "userId":user? user[0]._id : null}
             }
             try{
                 const response = await axios.post(`http://${ipAddress}:3001/users/reset-password`,data)
@@ -75,7 +77,7 @@ function NewPassword(){
                             </TouchableOpacity>
                     }
             </View>
-            <TouchButton text="Reset Password" onPress={ResetPassword}/>
+            <TouchButton text="Reset Password" onPress={ResetPassword} loading={loading}/>
 
         </View>
     )

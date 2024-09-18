@@ -11,8 +11,32 @@ import { ColorPalatte } from "@/constants/Colors";
 import Animated,{ useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 const Colors = ColorPalatte()
+type ItemTypes={
+  _id: string,
+  likes:[],
+  bookmarks:[],
+  media:string,
+  user:any[],
+  text:string,
+  comments:[]
+}
 
-const VideoScroll = React.memo(({ item,CreateBookmark,CreateComment,RemoveBookmark,index,setActivePost,shouldPlay,setVideos,UnlikeClip,LikeClip,toggleBottomSheet}) => {
+type VideoTypes={
+  item:ItemTypes,
+  CreateBookmark:()=>void,
+  CreateComment:(id:any)=>void,
+  RemoveBookmark:(id:any)=>void,
+  index:number,
+  setActivePost:Function,
+  setVideos:Function,
+  UnlikeClip:(id:any)=>void,
+  LikeClip:(id:any)=>void,
+  toggleBottomSheet:(index:number,item:any)=>void,
+  openBottomSheet:()=>void,
+  shouldPlay:boolean
+}
+
+const VideoScroll = React.memo<VideoTypes>(({ item,CreateBookmark,CreateComment,RemoveBookmark,index,setActivePost,shouldPlay,setVideos,UnlikeClip,LikeClip,toggleBottomSheet}) => {
   const video = useRef<Video | null>(null);
   const user = useSelector((state:rootStore) => state.user.user)
   const [status, setStatus] = useState({ isPlaying: true });
@@ -21,7 +45,7 @@ const VideoScroll = React.memo(({ item,CreateBookmark,CreateComment,RemoveBookma
   const likeValue = useSharedValue(1)
   const unLikeValue = useSharedValue(1)
   const createBookmarkValue = useSharedValue(1)
-  const removeBookmarkValue = useSharedValue(0)
+  const removeBookmarkValue = useSharedValue(1)
   const like = useAnimatedStyle(() =>{
       return{
         transform:[{scale:likeValue.value}]

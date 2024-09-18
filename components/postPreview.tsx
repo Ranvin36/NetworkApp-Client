@@ -2,10 +2,23 @@ import { View,Text,TouchableOpacity,Dimensions,StyleSheet,Image, FlatList} from 
 import { Entypo,AntDesign,Feather,Ionicons } from "@expo/vector-icons"
 import * as Haptics from 'expo-haptics' 
 import { ColorPalatte } from "@/constants/Colors";
+import React from "react";
 const Colors = ColorPalatte()
 
 
-function PostPreview({user,image,text,setImage}){
+type UserTypes ={
+    profilePicture:string,
+    username:string,
+}
+
+type PostTypes={
+    user:UserTypes,
+    image:any[],
+    text:string,
+    setImage: (images:any[]) => void
+}
+
+const PostPreview:React.FC<PostTypes>= ({user,image,text,setImage}) => {
 
     return(
         <View style={{backgroundColor:Colors.theme.backgroundTransparent,borderRadius:15,padding:10,width:Dimensions.get('window').width-50 ,alignSelf:"center"}}>

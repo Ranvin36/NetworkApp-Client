@@ -3,7 +3,7 @@ import * as Haptics from "expo-haptics"
 import { ipAddress } from "@/constants/ipAddress"
 import RefreshToken from "../RefreshToken"
 
-export async function LikePost(uid,user,dummyData,setDummyData){
+export async function LikePost(uid:number,user,dummyData,setDummyData){
     try{
         const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
             headers:{
@@ -29,7 +29,7 @@ export async function UnFollowUser(uid:number,user:any){
     })
 }
 
-export async function UnlikePost(uid,user,dummyData,setDummyData){
+export async function UnlikePost(uid:number,user:any,dummyData:any,setDummyData:any){
     const response = await axios.post(`http://${ipAddress}:3001/posts/unlike-posts/${uid}`,null,{
         headers:{
             Authorization:`Bearer ${user.user.token}`
@@ -63,7 +63,6 @@ export async function CreateComment(activePost:number,comment,user){
 
 
 export async function BlockUser(uid:any,token:any){
-    console.log(uid,token)
     const response =await axios.post(`http://${ipAddress}:3001/users/block/${uid}`,null,{
         headers:{
             Authorization:`Bearer ${token}`

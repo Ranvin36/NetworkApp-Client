@@ -21,10 +21,10 @@ export default function Index() {
         <Text style={{fontFamily:"Poppins-Light",fontSize:17,textAlign:"center",color:"#ccc",marginTop:5}}>Welcome To FLEEXY To Manage Your Personal Needs </Text>
       </View>
       <View style={styles.buttons}>
-          <TouchableOpacity style={styles.button} onPress={()=>router.push("login")}>
+          <TouchableOpacity style={styles.button} onPress={()=>router.push("/login")}>
              <Text style={{fontFamily:'Poppins-Bold',color:"#fff"}}>Login</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button,{backgroundColor:"transparent",borderWidth:1,borderColor:"#d92b68"}]} onPress={()=>router.push("register")}>
+          <TouchableOpacity style={[styles.button,{backgroundColor:"transparent",borderWidth:1,borderColor:"#d92b68"}]} onPress={()=>router.push("/register")}>
              <Text style={{fontFamily:"Poppins-Bold",color:"#d92b68"}}>Sign Up</Text>
           </TouchableOpacity>
       </View>

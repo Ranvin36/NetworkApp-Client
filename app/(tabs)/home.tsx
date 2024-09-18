@@ -1,4 +1,4 @@
-import { View,Text, StyleSheet, StatusBar,Image, FlatList ,TextInput, TouchableOpacity ,ScrollView , RefreshControl, Dimensions,ImageBackground} from "react-native"
+import { View,Text, StyleSheet, StatusBar,Image, FlatList ,TextInput, TouchableOpacity ,ScrollView , RefreshControl, Dimensions,ImageBackground, ToastAndroid} from "react-native"
 import { useDispatch, useSelector } from "react-redux"
 import { router } from "expo-router";
 import axios from "axios";
@@ -74,18 +74,19 @@ export default function Home(){
     const [comment,setComment] = useState('')
     let [activePost,setActivePost] = useState({index:0,id:0})
     const [isSheetOpened,setIsSheetOpened] = useState(false)
-    const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 1.7)
+    // const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 1.7)
     const [follows,setFollows] = useState([])
     const [refresh,setRefresh] = useState(false)
     const [dummyData,setDummyData] = useState(['Item 1'])
     const [followCount,setFollowCount] =  useState([0])
     const [activeComments,setActiveComments] = useState([]) 
     const [storyVisible,setStoryVisisble] = useState(false) 
-    const [actionSheet,setActionSheet] = useState(false) 
-    const [permission,requestPermission] = useCameraPermissions()
+    // const [actionSheet,setActionSheet] = useState(false) 
+    // const [permission,requestPermission] = useCameraPermissions()
     const [stories, setStories] = useState([])
     const [storyMedia,setStoryMedia] = useState([])
     const [activeStory , setActiveStory] = useState(0)
+    const [activeClip , setActiveClip] = useState(0)
     const [page,setPage]=  useState(1)
     const [contentLoading,setContentLoading] = useState(false)
     const scaleAnim = useSharedValue(0)
@@ -128,7 +129,6 @@ export default function Home(){
     })
 
     function ViewProfile(id:number){
-        console.log(id)
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
 
@@ -324,6 +324,7 @@ export default function Home(){
     }
     const scaleUp = (index:number) =>{
         setActiveStory(index)
+        setActiveClip(0)
         setStoryVisisble(true)
         scaleAnim.value = withTiming(1,{duration:200})
         dispatch(setOpened(true))
@@ -362,16 +363,28 @@ export default function Home(){
                 width: lineWidth.value
             }
         },[activeStory])
-
         function handleNextStory(){
-            if(activeStory < stories.length-1){
+            const totalClips = stories[activeStory]?.snaps.length -1
+            if(activeClip < totalClips){
                 // setActiveStory((prev) => prev+1)
+                setActiveClip((prev)=>prev+1)
                 snapsRef.current?.scrollToIndex({
-                    index: 1,
+                    index: activeClip+1,
                     animated: true,
                     useNativeDriver: true
-            })
+                })
             }
+
+            else if(activeStory < stories.length-1){
+                setActiveStory((prev) => prev+1)
+                setActiveClip(0)
+                snapsRef.current?.scrollToIndex({
+                    index: 0,
+                    animated: true,
+                    useNativeDriver: true
+                })
+            }
+
             else{
                 scaleDown()
             }
@@ -384,7 +397,6 @@ export default function Home(){
         }
         function OpenBottomSheet(index:number , id:number){
             dispatch(setOpened(true))
-            console.log(index,id)
             setActivePost({index:index,id})
             actionSheetY.value = withSpring(0, {damping:50})
         }
@@ -403,17 +415,23 @@ export default function Home(){
         },[dummyData])
         useEffect(() =>{
             lineWidth.value=0
-            lineWidth.value = withTiming(140/2  ,{duration:7000},(isFinished) =>{
+            lineWidth.value = withTiming(140/2  ,{duration:9000},(isFinished) =>{
                 if(isFinished){
                     runOnJS(handleNextStory)()
                 }
             })
 
-        },[storyVisible,activeStory])
+        },[storyVisible,activeStory,activeClip])
 
         
     async function BlockUserController(id:number){
-        await BlockUser(id,user?.user?.token)
+        try{
+            const response = await BlockUser(id,user?.user?.token)
+            ToastAndroid.show("User Blocked Successfully" ,ToastAndroid.SHORT)
+        }
+        catch(error){
+            console.log(error)
+        }
     }
 
         // useEffect(() =>{
@@ -567,7 +585,7 @@ export default function Home(){
                                    
                                     return(                                        
                                             <View style={[styles.storyLine,{width:140/stories[activeStory].snaps.length}]}>           
-                                                <Animated.View style={[styles.completionLine,completionLineAnimation,{maxWidth:140/stories[activeStory].snaps.length}]}></Animated.View>
+                                                <Animated.View style={[styles.completionLine,activeClip>=index? completionLineAnimation : null,{maxWidth:140/stories[activeStory].snaps.length}]}></Animated.View>
                                                 
                                             </View>
                                     )
@@ -591,7 +609,10 @@ export default function Home(){
                         </TouchableOpacity>
                     </View>
                     <View style={styles.storyContent}>
-                        <FlatList ref={snapsRef} data={stories[activeStory].snaps} horizontal pagingEnabled renderItem={({item,index})  =>{
+                        <FlatList ref={snapsRef} data={stories[activeStory].snaps}  onMomentumScrollEnd={(e) => {
+                            const offset = Math.round(e.nativeEvent.contentOffset.x/SCREEN_WIDTH)
+                            setActiveClip(offset)
+                        }}  horizontal pagingEnabled renderItem={({item,index})  =>{
                             
                             return(
                                     <View style={{width:Dimensions.get('window').width-20}}>
@@ -609,38 +630,8 @@ export default function Home(){
         }
                 
                     <CommentBottomSheet gesture={gesture} translateY={translateY} activeComments={activeComments} isSheetOpened={isSheetOpened} HandleCreateComment={HandleCreateComment}  setComment={setComment}/>
-                                    
-                {/* <GestureDetector gesture={SheetGesture}>
-                    <Animated.View style={[sheetStyle,{position:"absolute",backgroundColor:Colors.theme.commentsBg,zIndex:2,borderRadius:10,width:"100%",height:"50%",bottom:-20,alignSelf:"center"}]}>
-                        <View style={{width:15,borderRadius:50,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:10}}></View>
-                        <View style={{paddingHorizontal:20,paddingVertical:15}}>
-                            <View style={{marginVertical:10,flexDirection:"row",alignItems:"center",justifyContent:"space-between"}}>
-                                <Text style={{fontFamily:"Poppins-Bold",fontSize:20,color:Colors.theme.fontColor}}>{posts[activePost.index]?.creator[0].username}</Text>
-                                <TouchableOpacity onPress={CloseBottomSheet}>
-                                    <AntDesign name="closecircleo" size={20} color={Colors.theme.fontColor} />
-                                </TouchableOpacity>
-                            </View>
-                            <TouchableOpacity style={styles.sheetOption} onPress={() => router.push({pathname:`/viewProfile/${posts[activePost.index].creator[0].creator_id}`,params:{ id:posts[activePost.index].creator[0].creator_id}})}>
-                                <Text style={styles.bottomSheetText}>View Profile</Text>
-                                <MaterialCommunityIcons name="face-man-outline" size={20} color={Colors.theme.fontColor} style={{marginBottom:3}}  />
-
-                            </TouchableOpacity>
-                            <View style={styles.sheetOption}>
-                                <Text style={styles.bottomSheetText}>Block</Text>
-                                <Entypo name="block" size={18} color={Colors.theme.fontColor}/>
-                            </View>
-                            <View style={styles.sheetOption}>
-                                <Text style={styles.bottomSheetText}>Archive</Text>
-                                <Entypo name="archive" size={18} color={Colors.theme.fontColor} />
-                            </View>
-                            <View style={styles.sheetOption}>
-                                <Text style={styles.bottomSheetText}>Report</Text>
-                                <MaterialIcons name="report-gmailerrorred" size={20} color={Colors.theme.fontColor} />
-                            </View>
-                        </View>
-                    </Animated.View>
-                </GestureDetector> */}
-                <ActionBottomSheet SheetGesture={SheetGesture} CloseBottomSheet={CloseBottomSheet} posts={posts} actionTranslateY={actionSheetY} activePost={activePost}/>
+                                
+                <ActionBottomSheet SheetGesture={SheetGesture} BlockUser={BlockUserController} CloseBottomSheet={CloseBottomSheet} posts={posts} actionTranslateY={actionSheetY} activePost={activePost}/>
             </View>
 
     )

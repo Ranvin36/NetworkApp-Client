@@ -1,8 +1,18 @@
 import { View,Text,Image, StyleSheet } from "react-native"
 import { ColorPalatte } from "@/constants/Colors";
+import React from "react";
 const Colors = ColorPalatte()
 
-function CreatePostHeader({user}){
+interface UserItems{
+    profilePicture: string,
+    username:string
+}
+
+interface UserTypes{
+    user:UserItems
+}
+
+const CreatePostHeader:React.FC<UserTypes> =({user}) =>{
     return(
         <View style={[styles.userAccount , {width:185,marginTop:8}]}>
         <View>

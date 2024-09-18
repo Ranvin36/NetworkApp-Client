@@ -2,15 +2,25 @@ import { StyleSheet, View,TouchableOpacity,Image,Dimensions,Text} from "react-na
 import { router } from "expo-router"
 import { Video,ResizeMode } from "expo-av"
 import * as Haptics from "expo-haptics"
-function ProfileActivity({item,isImage,userId,setSelected,selected}){
+import React from "react"
+
+type ProfileActivityTypes ={
+    item:any,
+    isImage:string | boolean,
+    userId:string,
+    setSelected:Function,
+    selected:Array<string>
+}
+
+const ProfileActivity:React.FC<ProfileActivityTypes> = ({item,isImage,userId,setSelected,selected}) =>{
 
     function AddToSelected(){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-        setSelected((prev) => [...prev,item._id])
+        setSelected((prev:any) => [...prev,item._id])
     }
     function RemoveFromSelected(){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-        setSelected((prev) => prev.filter((id) => id.toString() != item._id.toString()))
+        setSelected((prev:any) => prev.filter((id:any) => id.toString() != item._id.toString()))
     }
     const isSelected = selected && selected.filter((id) => id.toString() == item._id.toString())
     const index = selected  && selected.findIndex((id) => id.toString() == item._id.toString())
