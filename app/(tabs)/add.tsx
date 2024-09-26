@@ -44,12 +44,6 @@ function Add(){
             allowsMultipleSelection:true
         })
         if(!pickImage.canceled){
-            if(pickImage.assets[0].type == "image"){
-                console.log("Image")
-            }
-            else{
-                console.log("Video")
-            }
             const selectedImages = pickImage.assets.map((image) =>({
                 uri: image.uri,
                 name: image.fileName,
@@ -73,7 +67,7 @@ function Add(){
             const response = await axios.post(`http://${ipAddress}:3001/posts/create-post`,data,{
                 headers:{
                     'Content-Type': 'multipart/form-data',
-                    Authorization:`Bearer ${user.token}`
+                    Authorization:`Bearer ${user?.token}`
                 }
             })
             setLoading(false)

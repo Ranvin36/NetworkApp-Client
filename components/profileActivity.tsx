@@ -9,10 +9,11 @@ type ProfileActivityTypes ={
     isImage:string | boolean,
     userId:string,
     setSelected:Function,
+    index:number,
     selected:Array<string>
 }
 
-const ProfileActivity:React.FC<ProfileActivityTypes> = ({item,isImage,userId,setSelected,selected}) =>{
+const ProfileActivity:React.FC<ProfileActivityTypes> = ({item,index,isImage,userId,setSelected,selected}) =>{
 
     function AddToSelected(){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
@@ -23,28 +24,36 @@ const ProfileActivity:React.FC<ProfileActivityTypes> = ({item,isImage,userId,set
         setSelected((prev:any) => prev.filter((id:any) => id.toString() != item._id.toString()))
     }
     const isSelected = selected && selected.filter((id) => id.toString() == item._id.toString())
-    const index = selected  && selected.findIndex((id) => id.toString() == item._id.toString())
+    const PostIndex = selected  && selected.findIndex((id) => id.toString() == item._id.toString())
 
     
     return(
         <View>
             {isSelected.length>0 &&            
                 <TouchableOpacity style={{position:"absolute",backgroundColor:"#000000ab",width:"100%",height:"100%",justifyContent:"center",zIndex:1}} onPress={RemoveFromSelected}>
-                        <Text style={{color:"#fff",textAlign:"center",fontFamily:"Poppins-Bold",fontSize:30}}>{index+1}</Text>
+                        <Text style={{color:"#fff",textAlign:"center",fontFamily:"Poppins-Bold",fontSize:30}}>{PostIndex+1}</Text>
                 </TouchableOpacity>
             }
         {isImage ?
             <TouchableOpacity 
-            onPress={() => isSelected.length > 0 ? AddToSelected() : router.push({pathname: `/post/${userId}`, params: {userId}})}
+            onPress={() => isSelected.length > 0 ? AddToSelected() : router.push({pathname: `/post/${userId}`, params: {userId,index}})}
             onLongPress={AddToSelected}
           >
             <Image source={{ uri: isImage }} style={styles.postLayout} />
           </TouchableOpacity>
           
             :
+        item.media != null?
             <TouchableOpacity>
                 <Video source={{ uri: item.media }} style={[styles.postLayout]} resizeMode={ResizeMode.COVER} />
             </TouchableOpacity>
+                    :
+            <TouchableOpacity 
+            onPress={() => isSelected.length > 0 ? AddToSelected() : router.push({pathname: `/post/${userId}`, params: {userId}})}
+            onLongPress={AddToSelected}
+          >
+            <Image source={require("../assets/images/model.jpg")} style={styles.postLayout} />
+          </TouchableOpacity>
         }
         </View>
     )

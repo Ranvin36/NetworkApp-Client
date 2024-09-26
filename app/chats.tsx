@@ -102,7 +102,7 @@ function Chats(){
                                         if(creatorId == userId){
                                             const receiverId  = item.receiverData[0].userId
                                             return(
-                                                <TouchableOpacity style={[isSeleceted.length>0 ? styles.chatContainer : null,{marginVertical:5,marginHorizontal:10,paddingHorizontal:10}]} onLongPress={() =>selectChat(item._id)} onPress={() => router.push({pathname:`chatRoom/${receiverId}` , params:{id:receiverId}})}>
+                                                <TouchableOpacity style={[isSeleceted.length>0 ? styles.chatContainer : null,{marginVertical:5,marginHorizontal:10}]} onLongPress={() =>selectChat(item._id)} onPress={() => router.push({pathname:`chatRoom/${receiverId}` , params:{id:receiverId}})}>
                                                     <ChatLayoutComponent item={item.receiverData} lastMessage={item.lastMessage} formattedUpdateAt={formattedUpdateAt}/>
                                                 </TouchableOpacity>
                                             )

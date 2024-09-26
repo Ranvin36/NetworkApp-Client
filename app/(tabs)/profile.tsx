@@ -354,7 +354,7 @@ function Profile() {
             <View style={styles.details}>
                 <View style={styles.profilePic}>
                     <View>
-                        {user?.data.profilePicture.length > 5 ?
+                        {user?.data?.profilePicture.length > 5 ?
                             <Image source={{ uri: user?.data.profilePicture }} style={{ width: 100, height: 100, borderRadius: 20 }} />
                             :
                             <Image source={require("../../assets/images/model.jpg")} style={{ width: 100, height: 100, borderRadius: 20 }} />
@@ -422,13 +422,13 @@ function Profile() {
                     }}
                 >
                     <View style={{width:Dimensions.get('window').width}}>
-                        <FlatList data={posts} numColumns={3}  keyExtractor={(item) => item?._id }  renderItem={({item}) =>{
-                            const isImage = item.media[0].uri
+                        <FlatList data={posts} numColumns={3}  keyExtractor={(item) => item?._id }  renderItem={({item,index}) =>{
+                            const isImage = item.media && item.media[0].uri
                             return(
                                 <View>
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                         {loading ? null :
-                                            <ProfileActivity item={item} isImage={isImage} userId={user?.data._id} setSelected={setSelected} selected={selected}/> 
+                                            <ProfileActivity item={item} index={index} isImage={isImage} userId={user?.data._id} setSelected={setSelected} selected={selected}/> 
                                         }
                                     </Skeleton>
                                 </View>
@@ -443,7 +443,7 @@ function Profile() {
                                 <View>
                                     <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                         {loading ? null :
-                                            <ProfileActivity item={item} isImage={isImage} userId={user?.data._id} setSelected={setSelected} selected={selected}/> 
+                                            <ProfileActivity index={index} item={item} isImage={isImage} userId={user?.data._id} setSelected={setSelected} selected={selected}/> 
                                         }
                                     </Skeleton>
                                 </View>
@@ -458,8 +458,11 @@ function Profile() {
                             <Skeleton width={postLayout} height={200} colorMode="light" radius='square'>
                                 {loading ? null :  
                                 <TouchableOpacity onPress={() => router.push("/profileLike")}>
-
-                                    <Image source={{uri:isImage.uri}} style={styles.postLayout} />
+                                    {isImage ? 
+                                    <Image source={{uri:isImage.uri}} style={styles.postLayout} /> 
+                                    : 
+                                    <Image source={require("../../assets/images/model.jpg")} style={styles.postLayout} /> 
+                                    }
                                 </TouchableOpacity>
                                 }
                             </Skeleton>

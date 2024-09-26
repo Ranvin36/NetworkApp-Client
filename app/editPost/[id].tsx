@@ -11,7 +11,6 @@ import UploadAcc from "@/components/uploadAcc"
 import axios from "axios"
 import { ipAddress } from "@/constants/ipAddress"
 import * as ImagePicker from 'expo-image-picker';
-import { ColorSpace } from "react-native-reanimated"
 
 function EditPost(){   
     const [text,setText] = useState("")
@@ -21,16 +20,18 @@ function EditPost(){
     const {id} = useLocalSearchParams()
     async function UploadPost(){
         const data = new FormData()
-        data.append('image',{
-            uri:image.uri,
-            name:image.name,
-            type:image.type
+        image.forEach((file) =>{
+            data.append('image',{
+                uri:file.uri,
+                name:file.name,
+                type:file.type
+            })
         })
         data.append('text',text)
         const response = await axios.post(`http://${ipAddress}:3001/posts/update/${id}` ,data ,{
             headers:{
                 'Content-Type': 'multipart/form-data',
-                Authorization:`Bearer ${user.token}`,
+                Authorization:`Bearer ${user?.token}`,
             }
         })
         console.log(response.data)
@@ -40,20 +41,19 @@ function EditPost(){
     async function selectImage(){
         const pickImage = await ImagePicker.launchImageLibraryAsync({
             mediaTypes:ImagePicker.MediaTypeOptions.All,
-            allowsEditing:true,
             aspect:[4,3],
-            quality:1
+            quality:1,
+            allowsMultipleSelection:true
+
         })
         if(!pickImage.canceled){
-            const uri = pickImage.assets[0].uri
-            const name = pickImage.assets[0].fileName
-            const type = pickImage.assets[0].mimeType
-            console.log(uri,name,type)
-            setImage({
-                uri,
-                name,
-                type
-            })
+            const ImageDetails = pickImage.assets.map((image) =>({
+                uri:image.uri,
+                name: image.fileName,
+                type: image.mimeType
+
+            }))
+            setImage(ImageDetails)
         }
 
     }
@@ -61,19 +61,19 @@ function EditPost(){
     async function GetPostData(){
         const respones = await axios.get(`http://${ipAddress}:3001/posts/get-post/${id}`,{
             headers:{
-                Authorization : `Bearer ${user.token}`
+                Authorization : `Bearer ${user?.token}`
             }
         })
+        console.log(respones.data.findPost.media)
         setPostData(respones.data.findPost)
         setText(respones.data.findPost.text)
-        const uri = respones.data.findPost.image
-        setImage({
-            uri
-        })
+        setImage(respones.data.findPost.media)
     }
     useEffect(() =>{
         GetPostData()
     },[])
+
+    console.log(image)
 
     return(
         <View style={styles.container}>
@@ -108,6 +108,8 @@ export default EditPost
 const styles  = StyleSheet.create({
     container:{
         paddingVertical:50,
+        backgroundColor:"#fff",
+        height:"100%"
     },
     header:{
         flexDirection:"row",

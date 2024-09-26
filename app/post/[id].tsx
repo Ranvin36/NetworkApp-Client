@@ -1,7 +1,6 @@
 import axios from "axios"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { View , Text, StyleSheet,TouchableOpacity,Image, FlatList,Dimensions,TextInput} from "react-native"
-import { Video,ResizeMode } from "expo-av"
 import { useSelector } from "react-redux"
 import { rootStore } from "../redux/store"
 import { ipAddress } from "@/constants/ipAddress"
@@ -13,77 +12,115 @@ import * as Haptics from 'expo-haptics'
 import PostComponent from "@/components/postComponent"
 const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
 import { ColorPalatte } from "@/constants/Colors";
+import { HandleAddBookmark, HandleFollowUser, HandleLikePost, HandleRemoveBookmark, HandleUnfollowUser, HandleUnLikePost } from "@/components/CallBacks/CallBackFunctions"
+import CommentBottomSheet from "@/components/CommentBottomSheet"
+import { io } from "socket.io-client"
+import ActionBottomSheet from "@/components/ActionBottomSheet"
+import { BlockUser } from "@/components/CallBacks/CallBackFunctions"
+import { ToastAndroid } from "react-native"
 const Colors = ColorPalatte()
 
 
 function Page(){
+    const socket = io(`http://${ipAddress}:3001`)
+
     const user = useSelector((state:rootStore)=>state.user.user)
-    const translateY = useSharedValue(0)
+    const translateY = useSharedValue(SCREEN_HEIGHT)
+    const actionSheetY = useSharedValue(399)
     const context = useSharedValue({y:0})
-    const {id} = useLocalSearchParams()
+    const actionContext = useSharedValue(0)
+    const {id,index} = useLocalSearchParams()
     const [posts,setPosts] = useState([])
+    const [activePost,setActivePost] = useState({index:0,id:0})
     const [comment,setComment] = useState('')
-    const [activePost,setActivePost] = useState()
     const [isSheetOpened,setIsSheetOpened] = useState(true)
     const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 3)
     const [follows,setFollows] = useState([])
-    const [refresh,setRefresh] = useState(false)
-    const [dummyData,setDummyData] = useState(['Item 1'])
-    const [followCount,setFollowCount] =  useState([0])
+    const [blocked,setBlocked] = useState([])
+    const [loading,setLoading] = useState(false)
     const [activeComments,setActiveComments] = useState([]) 
+    const dynamicIndex = useRef(null)
     useAnimatedReaction(
         () => isSheetOpenedDerived.value,
         (isOpen)=>{
             runOnJS(setIsSheetOpened)(isOpen)
         } 
     )
-    const gesture = Gesture.Pan().onStart((event)=>{
+    const gesture = Gesture.Pan().onStart(()=>{
         context.value = {y:translateY.value}
     }).onUpdate((event)=>{
         translateY.value = event.translationY + context.value.y
         translateY.value = Math.max(translateY.value, -SCREEN_HEIGHT)
     }).onEnd(()=>{
         if(translateY.value > -SCREEN_HEIGHT/2){
-            translateY.value = withSpring(0,{damping:50})
+            translateY.value = withSpring(SCREEN_HEIGHT,{damping:50})
         }
         else if(translateY.value < -SCREEN_HEIGHT/1.7){
             translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
         }
     })
 
-    async function GetPosts(){
-        const response = await axios.get(`http://${ipAddress}:3001/posts/${id}`,{
-            headers:{
-                Authorization:`Bearer ${user?.token}`
-            }
-        })
+    const SheetGesture = Gesture.Pan().onStart((event) =>{
+        actionContext.value = event.translationY
+    }).onUpdate((event) =>{
+        actionSheetY.value = event.translationY + actionContext.value
+        actionSheetY.value = Math.max(actionSheetY.value ,10)  
+    }).onEnd((event) =>{
+        if(actionSheetY.value < SCREEN_HEIGHT/8){
+            actionSheetY.value = withSpring(10, {damping:50})
+        }
+        else{
+            runOnJS(CloseBottomSheet)()
+        }
+    })
 
-        setPosts(response.data.data)
+    async function GetPosts(){
+        try{
+
+            const response = await axios.get(`http://${ipAddress}:3001/posts/${id}`,{
+                headers:{
+                    Authorization:`Bearer ${user?.token}`
+                }
+            })
+    
+            setPosts(response.data.data)
+        }
+
+        catch(error){
+            console.log(error)
+        }
     }
     
     
     async function GetFollowers(){
-        const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user?.data._id}`,{
-            headers:{
-                Authorization:`Bearer ${user?.token}`
-            }
-        })
-        setFollows(response.data[0].followingDetails)
-    }
-    async function LikePost(uid){
-        const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
-            headers:{
-                Authorization:`Bearer ${user?.token}`
-            }
-        })
+        try{
+            const response = await axios.get(`http://${ipAddress}:3001/users/get-followers/${user?.data._id}`,{
+                headers:{
+                    Authorization:`Bearer ${user?.token}`
+                }
+            })
+            setFollows(response.data[0].followingDetails)
+        }
 
+        catch(error){
+            console.log(error)
+        }
     }
-    async function unlikePost(uid){
-        const response = await axios.post(`http://${ipAddress}:3001/posts/unlike-posts/${uid}`,null,{
-            headers:{
-                Authorization:`Bearer ${user?.token}`
-            }
-        })
+    async function LikePost(uid:number){
+        try{
+            await HandleLikePost(uid,setPosts,user)
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+    async function unlikePost(uid:number){
+        try{
+            await HandleUnLikePost(uid,setPosts,user)
+        }
+        catch(error){
+            console.log(error)
+        }
     }
 
     const rBottomSheetStyle = useAnimatedStyle(()=>{
@@ -93,144 +130,143 @@ function Page(){
     })
 
     
-    function ViewProfile(id){
-        router.push({ pathname: `viewProfile/${id}`, params: { id } });
+    function OpenBottomSheet(index:number,id:number){
+        // dispatch(setOpened(true))
+        setActivePost({index,id})
+        console.log(index)
+        actionSheetY.value = withSpring(0, {damping:50})
     }
 
-    const toggleBottomSheet = async(id) =>{
-        setActivePost(id)
+    function CloseBottomSheet(){
+        actionSheetY.value = withSpring(SCREEN_HEIGHT, {damping:50})
+    }
+
+    const toggleBottomSheet = async(index:any,id:any) =>{
+        setActivePost({id,index})
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         if(isSheetOpened){
             translateY.value = withSpring(0,{damping:50})
         }
         else{
             translateY.value = withSpring(-SCREEN_HEIGHT+50,{damping:50})
-            const findPosts = posts && posts.find((item) => item._id === id)
-            if(findPosts){
-                setActiveComments(findPosts.comments ? findPosts.comments : [])
-            }
-            else{
-                setActiveComments([])
-                return
-            }
+            setActiveComments(posts[index].comments ? posts[index].comments : [])
+
         }
     }
-
-    async function CreateComment(){
+    async function HandleCreateComment(){
+        setLoading(true)
         const data = {"message":comment}
-        const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
-            headers:{
-                Authorization: `Bearer ${user?.token}`
-            }
-        })
+        socket.emit("createComment",{"message":comment, "userId":user?.data._id,"postId":activePost.id})
+        setLoading(false)
     }
-    async function UnFollowUser(uid){
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-        const response = await axios.delete(`http://${ipAddress}:3001/users/remove-follower/${uid}`,{
-            headers:{
-                Authorization:`Bearer ${user?.token}`
-            }
-        })
 
-        setFollowCount((prev) => [...prev,1])
-    }
-    async function FollowUser(uid){
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+    async function AddBookmark(uid:any){
         try{
-            const response = await axios.post(`http://${ipAddress}:3001/users/add-follower/${uid}`,null,{
-                headers:{
-                    Authorization:`Bearer ${user?.token}`
-                }
-            })
-            setFollowCount((prev) => [...prev, 1])
+
+            await HandleAddBookmark(uid,setPosts,user)
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+    async function RemoveBookmark(uid:any){
+        try{
+
+            await HandleRemoveBookmark(uid,setPosts,user)
         }
         catch(error){
             console.log(error)
         }
     }
 
+    async function UnFollowUser(uid:number){
+        try{
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+            await HandleUnfollowUser(uid,setFollows,follows,user?.token)
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+    async function FollowUser(userData:any){
+        try{
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+            await HandleFollowUser(userData,setFollows,user?.token)
+        }
+        catch(error){
+            console.log(error)
+        }
+        }
+
+    async function BlockUserController(creator:any){
+        try{
+            const data ={"_id":creator._id,"profilePicture":creator.profilePicture,"userId":creator.creator_id[0],"userName":creator.username}
+            const response = await BlockUser(creator.creator_id,user?.token)
+            ToastAndroid.show("User Blocked Successfully" ,ToastAndroid.SHORT)
+            setBlocked((prev) => [...prev,data])
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+
+    function ScrollToPost(){
+        dynamicIndex && dynamicIndex.current.scrollToIndex({
+            index:index,
+            animated:true
+        })
+    }
+
     
         useEffect(() =>{
             GetPosts()
         },[])
+
+        useEffect(() =>{
+            try{
+                ScrollToPost()
+            }
+            catch(error){
+                console.log(error)
+            }
+        },[posts])
     
         useEffect(() =>{
             GetFollowers()
+        },[posts])
+
+        useEffect(() =>{
+            socket.on("receiveComment", (data) =>{
+                setPosts((prev:any) => prev.map((item:any) => item._id == data.postId ?{ 
+                    ...item ,
+                    comments:item.comments ? [...item.comments,data] :[data]} : item) )
+                setActiveComments((prev) => [...prev,data])
+            })
+            return()=>{
+                socket.off("receiveComment")
+            }
         },[])
 
-        console.log(follows)
-
     return(
-        <View style={styles.container}>
-            <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:25}]}>Posts</Text>
-            <FlatList showsVerticalScrollIndicator={false} data={posts} renderItem={({item}) =>{
-                    const creatorImage = item.creator[0].profilePicture
-                    const imgUrl = item.image
-                    const videoUrl = item.video
-                    const like = item.likes
-                    const comments  = item.comments
-                    const ifFollowing = follows && follows.filter((followItem) => followItem._id == item.creator[0]?.creator_id)
-                    const ifLiked = like && like.filter((liked) => liked == user.data._id)
-                    return(
-                        <PostComponent item={item} follows={follows} unlikePost={unlikePost} UnFollowUser={UnFollowUser} toggleBottomSheet={toggleBottomSheet} LikePost={LikePost} FollowUser={FollowUser}/>
-                    )
-            }}/>
-            <View>
-                
+        <View style={styles.layout}>
+            <View style={styles.container}>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Bold",fontSize:25}]}>Posts</Text>
+                <FlatList ref={dynamicIndex} initialScrollIndex={0} showsVerticalScrollIndicator={false} data={posts} renderItem={({item,index}) =>{
+                        return(
+                            <PostComponent item={item} index={index} follows={follows} unlikePost={unlikePost} UnFollowUser={UnFollowUser} openBottomSheet={OpenBottomSheet} LikePost={LikePost} FollowUser={FollowUser} toggleBottomSheet={toggleBottomSheet} AddBookmark={AddBookmark} RemoveBookmark={RemoveBookmark}/>
+                        )
+                }} onScrollToIndexFailed={(info) =>{
+                    const wait = new Promise((resolve) => setTimeout(resolve,500))
+                    wait.then(() =>{
+                        dynamicIndex && dynamicIndex.current.scrollToIndex({
+                            index,
+                            animated:true
+                        })
+                    })
+                }}/>
             </View>
-             <GestureDetector gesture={gesture}>
-                        <Animated.View style={[styles.bottomSheet,rBottomSheetStyle,{display: isSheetOpened ? "flex" :"none" }]}>
-                            <View style={styles.line}></View>
-                            <View style={styles.sheetLayout}>
-                                <View style={{flexDirection:"row",justifyContent:"center",alignItems:"center"}}>
-                                    <View>
-                                        <Text style={{fontFamily:"Poppins-Light",fontSize:18}}>Comments</Text>
-                                    </View>
-                                </View>
-                                <View style={{justifyContent:"space-between",flexDirection:"column"}}>
-                                    <View>
-
-                                        {activeComments && activeComments.length>0?
-                                        activeComments.map((item,index)=>{
-                                            return(
-                                                <View key={index} style={{marginVertical:10}}>
-                                                    <View style={{flexDirection:"row",alignItems:"center"}}>
-                                                        {item.profilePicture 
-                                                                    ?
-                                                        <Image source={{uri:item.profilePicture}} style={{width:50,height:50, borderRadius:50}}/>
-                                                                    :
-
-                                                        <Image source={require('../../assets/images/model.jpg')} style={{width:50,height:50, borderRadius:50}}/>
-                                                    }
-                                                        <View style={{marginHorizontal:5,height:20,justifyContent:"center"}}>
-                                                            <Text style={{fontFamily:"Poppins-Bold"}}>Motion Rades</Text>
-                                                            <Text style={{ fontFamily: "Poppins-Light" }}>{item.message}</Text>
-                                                        </View>
-                                                    </View>
-                                                </View>
-                                            )
-                                        })
-                                        :
-                                        <View style={{alignItems:"center",justifyContent:"center",height:"70%"}}>
-                                            <Text style={{fontFamily:"Poppins-Bold",fontSize:17}}>No Comments Were Found!</Text>
-                                        </View>
-                                        }
-                                    </View>
-                                </View>
-                                </View>
-                        </Animated.View>
-                    </GestureDetector>
-                                    {isSheetOpened &&
-                    
-                                        <View style={{position:"absolute",bottom:SCREEN_HEIGHT/20,zIndex:1,backgroundColor:"#fff",width:SCREEN_WIDTH,padding:10,paddingHorizontal:20,flexDirection:"row",justifyContent:"space-between",alignItems:"center",elevation:1,shadowColor:"#000"}}>
-                                            <View style={{backgroundColor:"#f2f2f2",paddingVertical:10,borderRadius:5}}>
-                                                <TextInput placeholder="Type Your Comment." style={{paddingHorizontal:5,fontFamily:"Poppins-Light",width:SCREEN_WIDTH/1.3}} onChangeText={(e) => setComment(e)}/>
-                                            </View>
-                                            <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:35,height:35,justifyContent:"center",alignItems:"center"}} onPress={CreateComment}>
-                                                <Ionicons name="send-outline" size={20} color="#fff" />
-                                            </TouchableOpacity>
-                                        </View>
-                                    }
+            <CommentBottomSheet gesture={gesture} translateY={translateY} activeComments={activeComments} HandleCreateComment={HandleCreateComment} comment={comment} loading={loading} setComment={setComment}/>
+            <ActionBottomSheet SheetGesture={SheetGesture} BlockUser={BlockUserController} follows={follows} blocked={blocked} actionTranslateY={actionSheetY} posts={posts} HandleFollowUser={FollowUser} HandleUnfollowUser={UnFollowUser} activePost={activePost} CloseBottomSheet={CloseBottomSheet} />
 
         </View>
     )
@@ -239,12 +275,14 @@ export default Page
 
 
 const styles = StyleSheet.create({
-    container:{
-        paddingHorizontal:20,
-        paddingVertical:45,
+    layout:{
+        paddingTop:35,
         flex:1,
         backgroundColor:Colors.theme.backgroundColor,
         height:"100%"
+    },
+    container:{
+        paddingHorizontal:20,
     },   
     contentScroller:{
         flexDirection:"row",

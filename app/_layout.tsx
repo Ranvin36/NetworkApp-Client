@@ -1,7 +1,7 @@
 import { useFonts } from "expo-font";
 import { router, Stack } from "expo-router";
-import { Provider, useDispatch } from 'react-redux';
-import store from './redux/store';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import store, { rootStore } from './redux/store';
 import { GestureHandlerRootView } from "react-native-gesture-handler";    
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect } from "react";
@@ -19,8 +19,9 @@ export default function RootLayout() {
     "PlaywriteSK-Regular": require('../assets/fonts/PlaywriteSK-Regular.ttf'),
     "wondra": require('../assets/fonts/Wondra.ttf'),
   });
-
+  
   function AppContent() {
+    const token = useSelector((state:rootStore) => state.user.user)
     const dispatch = useDispatch();
 
     async function GetLocalStorageUser() {
@@ -45,7 +46,7 @@ export default function RootLayout() {
             throw Error("Invalid Token")
           }
           dispatch(setUser(userData.user));
-          router.push("/home")
+          router.replace("/home")
         }
         catch(error){
           router.push("/login")
@@ -58,7 +59,7 @@ export default function RootLayout() {
             const tokenStatus = VerifyToken(userData.user.token,userData)
         }
       });
-    }, [dispatch]);
+    }, []);
 
     useEffect(() =>{
         GetColorMode().then((colorMode) => {
@@ -70,12 +71,19 @@ export default function RootLayout() {
       return null;
     }
 
+    console.log(token)
+
     return (
       <GestureHandlerRootView>
+          {!token?.data ?
         <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
           <Stack.Screen name="login" />
           <Stack.Screen name="register" />
           <Stack.Screen name="otpAuth" />
+        </Stack>
+          :
+        <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="settings" />
           <Stack.Screen name="liked" />
           <Stack.Screen name="posts" />
@@ -88,6 +96,7 @@ export default function RootLayout() {
           <Stack.Screen name="forgotPassword" />
           <Stack.Screen name="viewProfile/[id]" />
         </Stack>
+          }
       </GestureHandlerRootView>
     );
   }

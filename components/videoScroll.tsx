@@ -5,8 +5,6 @@ import { AntDesign, MaterialCommunityIcons, Feather, Entypo,Ionicons } from '@ex
 import ReelUploader from "./ReelUploader";
 import { useSelector } from "react-redux";
 import { rootStore } from "@/app/redux/store";
-import axios from "axios";
-import { ipAddress } from "@/constants/ipAddress";
 import { ColorPalatte } from "@/constants/Colors";
 import Animated,{ useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
@@ -24,10 +22,8 @@ type ItemTypes={
 type VideoTypes={
   item:ItemTypes,
   CreateBookmark:()=>void,
-  CreateComment:(id:any)=>void,
   RemoveBookmark:(id:any)=>void,
   index:number,
-  setActivePost:Function,
   setVideos:Function,
   UnlikeClip:(id:any)=>void,
   LikeClip:(id:any)=>void,
@@ -36,7 +32,7 @@ type VideoTypes={
   shouldPlay:boolean
 }
 
-const VideoScroll = React.memo<VideoTypes>(({ item,CreateBookmark,CreateComment,RemoveBookmark,index,setActivePost,shouldPlay,setVideos,UnlikeClip,LikeClip,toggleBottomSheet}) => {
+const VideoScroll = React.memo<VideoTypes>(({ item,CreateBookmark,RemoveBookmark,index,shouldPlay,setVideos,UnlikeClip,LikeClip,toggleBottomSheet}) => {
   const video = useRef<Video | null>(null);
   const user = useSelector((state:rootStore) => state.user.user)
   const [status, setStatus] = useState({ isPlaying: true });
@@ -242,7 +238,7 @@ const VideoScroll = React.memo<VideoTypes>(({ item,CreateBookmark,CreateComment,
 const styles = StyleSheet.create({
   pressable: {
     position: "relative",
-    height:Dimensions.get('window').height
+    height:"100%"
   },
   playOverlay: {
     position: "absolute",
@@ -291,9 +287,8 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   videos: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
-    alignSelf: "center",
+    width:"100%",
+    height: "100%",
   },
 });
 

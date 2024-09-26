@@ -45,7 +45,7 @@ const PostPreview:React.FC<PostTypes>= ({user,image,text,setImage}) => {
             </View>
         </View>
         <View style={{marginVertical:5}}>
-            {image.length>0 ?
+            {image && image.length>0 ?
             <FlatList data={image} pagingEnabled  nestedScrollEnabled={true} keyExtractor={(item) => item.uri}  horizontal renderItem={({item})  =>{
                 return(
                 <View style={{position:"relative"}}>

@@ -13,8 +13,9 @@ import { AntDesign,Entypo,MaterialIcons,MaterialCommunityIcons } from "@expo/vec
 import { setOpened } from "@/app/redux/navbarSlice"
 import CommentBottomSheet from "./CommentBottomSheet"
 import ActionBottomSheet from "./ActionBottomSheet"
-import { BlockUser } from "./CallBacks/CallBackFunctions"
+import { BlockUser, UnBlockUser } from "./CallBacks/CallBackFunctions"
 import { ToastAndroid } from "react-native"
+import { io } from "socket.io-client"
 
 
 type SearchTypes={
@@ -61,20 +62,23 @@ type CommentTypes={
 
 
 const SearchPosts:React.FC<SearchTypes> =({searchParam}) => {
+    const socket = io(`http://${ipAddress}:3001`)
     const user = useSelector((state:rootStore)=>state.user.user)
     const [postData,  setPostData] = useState<PostTypes[]>([])
     const [followCount,  setFollowCount] = useState([0])
     const [follows, setFollows] = useState([])
     const [posts, setPosts] = useState([])
+    const [blocked, setBlocked] = useState([])
     const [activePost, setActivePost] = useState({index:0,id:0})
     const [activateBottomPost, setActiveBottomPost] = useState(0)
     const [activeComments, setActiveComments] = useState<CommentTypes[]>([])
-    const [comments,setComment] = useState("")
+    const [comment,setComment] = useState("")
     const [isSheetOpened, setIsSheetOpened] = useState(false)
     const [bottomSheetOpened, setBottomSheetOpened] = useState(false)
+    const [loading,setLoading] = useState(false)
     const [sheetOpened,setSheetOpened] = useState(false)
-    const offSet = useSharedValue(0)
     const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
+    const offSet = useSharedValue(SCREEN_HEIGHT)
     const translateY = useSharedValue(SCREEN_HEIGHT)
     const context = useSharedValue({y:0})
     const actionContext = useSharedValue({y:0})
@@ -84,10 +88,10 @@ const SearchPosts:React.FC<SearchTypes> =({searchParam}) => {
         actionContext.value = {y:offSet.value}
     }).onUpdate((event) =>{
         offSet.value = event.translationY + actionContext.value.y
-        offSet.value = Math.max(offSet.value , -SCREEN_HEIGHT/30)  
+        offSet.value = Math.max(offSet.value , -SCREEN_HEIGHT/5)  
     }).onEnd((event) =>{
-        if(offSet.value < SCREEN_HEIGHT/8){
-            offSet.value = withSpring(0, {damping:50})
+        if(offSet.value < SCREEN_HEIGHT/7){
+            offSet.value = withSpring(-SCREEN_HEIGHT/5, {damping:50})
         }
         else{
             runOnJS(CloseBottomSheet)()
@@ -131,15 +135,6 @@ const SearchPosts:React.FC<SearchTypes> =({searchParam}) => {
         }
     })
 
-
-    async function CreateComment(){
-        const data = {"message":comments}
-        const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost.id}`,data,{
-            headers:{
-                Authorization: `Bearer ${user?.token}`
-            }
-        })
-    }
     async function UnFollowUser(uid:number){
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         const response = await axios.delete(`http://${ipAddress}:3001/users/remove-follower/${uid}`,{
@@ -163,7 +158,8 @@ const SearchPosts:React.FC<SearchTypes> =({searchParam}) => {
         catch(error){
             console.log(error)
         }
-    }    async function GetPosts(){
+    }   
+     async function GetPosts(){
         const response = await axios.get(`http://${ipAddress}:3001/posts/${id}`,{
             headers:{
                 Authorization:`Bearer ${user?.token}`
@@ -182,21 +178,6 @@ const SearchPosts:React.FC<SearchTypes> =({searchParam}) => {
         })
         setFollows(response.data)
     }
-    async function LikePost(uid:number){
-        const response = await axios.post(`http://${ipAddress}:3001/posts/like-posts/${uid}`,null,{
-            headers:{
-                Authorization:`Bearer ${user?.token}`
-            }
-        })
-
-    }
-    async function unlikePost(uid:number){
-        const response = await axios.post(`http://${ipAddress}:3001/posts/unlike-posts/${uid}`,null,{
-            headers:{
-                Authorization:`Bearer ${user?.token}`
-            }
-        })
-    }    
         useEffect(() =>{
             GetFollowers()
         },[])
@@ -210,11 +191,15 @@ const SearchPosts:React.FC<SearchTypes> =({searchParam}) => {
         function OpenBottomSheet(index:number,id:number){
             dispatch(setOpened(true))
             setActivePost({index:index,id})
-            offSet.value = withSpring(0, {damping:50})
+            offSet.value = withSpring(-SCREEN_HEIGHT/5, {damping:50})
         }
 
-        function HandleCreateComment(){
+        async function HandleCreateComment(){
+            setLoading(true)
+            const data = {"message":comment}
 
+            socket.emit("createComment",{"message":comment, "userId":user?.data._id,"postId":activePost.id})
+            setLoading(false)
         }
 
         function Reaction(){
@@ -253,21 +238,113 @@ const SearchPosts:React.FC<SearchTypes> =({searchParam}) => {
             }
         }
 
+        async function UnBlockController(id:any){
+            try{
+                const response = await UnBlockUser(id,user?.token)
+                ToastAndroid.show("User Unblocked Successfully" ,ToastAndroid.SHORT)
+                setBlocked((prev) => prev.filter((item:any) =>{
+                    item.userId.toString() != id.toString()
+                }))
+            }
+            catch(error){
+                console.log(error)
+            }
+        }
+
+        async function HandleFollowUser(userData:any){
+            try{                
+                const data  ={"_id":userData.creator_id, "name":userData.username,"profilePicture":userData.profilePicture}
+                setFollows((follows:any) => [...follows,data])
+                await FollowUser(userData.creator_id)
+            }
+
+            catch(error){
+                console.log(error)
+            }
+        }
+
+    async function HandleUnfollowUser(uid:number){
+            setFollows((follow:any) => follows.filter((item:any) =>{
+            return item._id.toString() != uid.toString()
+        }))
+        await UnFollowUser(uid)
+    }
+
+    async function AddBookmark(uid:number){
+        try{
+            
+            const data = {"postId":uid , "userId":user?.data._id}
+            setPostData((prev) => prev.map((item) =>  item._id == data.postId ?{
+                ...item,
+                bookmarks: item.bookmarks ? [...item.bookmarks,data.userId] :[data.userId]} :  item))
+            socket.emit("createBookmark",data)
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+    
+    async function RemoveBookmark(uid:number){
+        try{
+            
+            const data ={"postId" : uid  , "userId":user?.data._id}
+            setPostData((prev:any) => prev.map((post:any) => post._id == data.postId?{
+                ...post,
+                 bookmarks:post.bookmarks ? post.bookmarks.filter((likes:number) => likes.toString()!= data.userId) : null  
+             }:post))
+            socket.emit("removeBookmark",data)
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+
+    async function HandleLikePost(uid:number){
+        const data = {"postId":uid , "userId":user?.data._id}
+        setPostData((prev) => prev.map((item) => item._id == data.postId ?{ 
+                ...item ,
+                likes:item.likes ? [...item.likes,data.userId] :[data.userId]} : item) )
+        socket.emit("likePost",data)
+        // await LikePost(uid,user,dummyData,setDummyData)
+    }
+    
+    async function HandleUnLikePost(uid:number){
+        const data = {"postId":uid , "userId":user?.data._id}
+        setPostData((prev:any) => prev.map((post:any) => post._id == data.postId?{
+            ...post,
+            likes:post.likes ? post.likes.filter((likes:number) => likes.toString() != data.userId) : null  
+
+        }:post))
+        socket.emit("unlikePost",data)
+    }
+
+    useEffect(() =>{
+        socket.on("receiveComment", (data) =>{
+            setPosts((prev:any) => prev.map((item) => item._id == data.postId ?{ 
+                ...item ,
+                comments:item.comments ? [...item.comments,data] :[data]} : item) )
+            setActiveComments((prev) => [...prev,data])
+        })
+        return()=>{
+            socket.off("receiveComment")
+        }
+    },[])
         useEffect(() =>{
             Reaction()
         },[isSheetOpened])
+
     return(
         <View style={{paddingBottom:150}}>
             <TouchableOpacity onPress={() =>CloseBottomSheet()} style={{backgroundColor:"#000",display:sheetOpened ?"flex" : "none",width:'100%',height:Dimensions.get('window').height,opacity:0.5,position:"absolute",left:0,top:0,zIndex:1}}></TouchableOpacity>
             <FlatList data={postData} showsVerticalScrollIndicator={false} renderItem={({item,index}) => {
                 return(
                     <View style={{paddingHorizontal:20}}>
-                        <PostComponent item={item} index={index} LikePost={LikePost} unlikePost={unlikePost} follows={follows} FollowUser={FollowUser} UnFollowUser={UnFollowUser} toggleBottomSheet={toggleBottomSheet}  openBottomSheet={OpenBottomSheet} setActivePost={setActiveBottomPost}/> 
+                        <PostComponent item={item} index={index} RemoveBookmark={RemoveBookmark} AddBookmark={AddBookmark} LikePost={HandleLikePost} unlikePost={HandleUnLikePost} follows={follows} FollowUser={HandleFollowUser} UnFollowUser={HandleUnfollowUser} toggleBottomSheet={toggleBottomSheet}  openBottomSheet={OpenBottomSheet} setActivePost={setActiveBottomPost} /> 
 
                     </View>
                 )
             }}/>
-                 <ActionBottomSheet SheetGesture={SheetGesture} BlockUser={BlockUserController} CloseBottomSheet={CloseBottomSheet} posts={postData} actionTranslateY={offSet} activePost={activePost}/>
+                 <ActionBottomSheet SheetGesture={SheetGesture} BlockUser={BlockUserController} CloseBottomSheet={CloseBottomSheet} posts={postData} actionTranslateY={offSet} activePost={activePost} UnblockUser={UnBlockController} blocked={blocked} follows={follows} HandleUnfollowUser={HandleUnfollowUser} HandleFollowUser={HandleFollowUser}/>
                 <CommentBottomSheet gesture={gesture}  translateY={translateY} activeComments={activeComments} HandleCreateComment={HandleCreateComment} setComment={setComment}/>
 
         </View>

@@ -70,7 +70,7 @@ function Register(){
                 
                 <View style={[styles.fieldContainer,{position:"relative"}]}>
                     <AntDesign name="lock" size={22} color={Colors.theme.fontColor}  style={{marginBottom:3}}/>
-                    <TextInput  placeholder="Enter Your Password" placeholderTextColor={Colors.theme.fontColor} style={{fontFamily:"Poppins-Light",width:"100%",marginLeft:5}} onChangeText={(e) => setPassword(e)} secureTextEntry={secretField}/>
+                    <TextInput  placeholder="Enter Your Password" placeholderTextColor={Colors.theme.fontColor} style={{fontFamily:"Poppins-Light",width:"100%",marginLeft:5,color:"#fff"}} onChangeText={(e) => setPassword(e)} secureTextEntry={secretField}/>
                     {secretField ?
                         <TouchableOpacity style={styles.eyeContainer}  onPress={eyeToggle}>
                             <Ionicons name="eye-off" size={24} color={Colors.theme.fontColor} />
@@ -89,7 +89,7 @@ function Register(){
                 <Text style={{fontFamily:"Poppins-Bold",color:"#fff",fontSize:15}}>Sign Up</Text>
             </TouchableOpacity>
             <View style={{marginVertical:20}}>
-                <Text style={[styles.textColor,{fontFamily:"Poppins-Light",textAlign:'center'}]}>Already Have An Account? <Text style={{color:Colors.light.text,fontFamily:"Poppins-Bold"}}>Sign In</Text></Text>
+                <Text style={[styles.textColor,{fontFamily:"Poppins-Light",textAlign:'center'}]}>Already Have An Account? <Link href="/login" style={{color:Colors.light.text,fontFamily:"Poppins-Bold"}}>Sign In</Link></Text>
             </View>
         </View>
     </View>

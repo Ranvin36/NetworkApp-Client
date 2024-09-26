@@ -95,7 +95,7 @@ function Login(){
 
                 <TouchButton text="Login" onPress={LoginBtn} loading={loading}/>
                 <View style={{marginVertical:20}}>
-                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light",textAlign:'center'}]}>Don't Have An Account? <Text style={{color:Colors.light.text,fontFamily:"Poppins-Bold"}}>Sign Up</Text></Text>
+                    <Text style={[styles.textColor,{fontFamily:"Poppins-Light",textAlign:'center'}]}>Don't Have An Account? <Link href="/register" style={{color:Colors.light.text,fontFamily:"Poppins-Bold"}}>Sign Up</Link></Text>
                 </View>
             </View>
         </View>

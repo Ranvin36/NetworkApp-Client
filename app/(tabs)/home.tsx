@@ -4,37 +4,32 @@ import { router } from "expo-router";
 import axios from "axios";
 import { useEffect, useState,useCallback, useRef  } from "react";
 import { Audio } from 'expo-av';
-import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler"
-import Animated , { useAnimatedStyle, useSharedValue, withSpring,scrollTo, useDerivedValue, useAnimatedReaction, runOnJS, withTiming, withRepeat, withSequence, Easing} from "react-native-reanimated";
-import { io, Socket } from "socket.io-client";
+import { Gesture } from "react-native-gesture-handler"
+import Animated , { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withTiming, withRepeat, withSequence, Easing} from "react-native-reanimated";
+import { io } from "socket.io-client";
 import * as Haptics from "expo-haptics"
-import { CameraView , useCameraPermissions } from "expo-camera"
-import  {Video,ResizeMode} from  'expo-av'
 import React from "react";
 import * as ImagePicker from "expo-image-picker"
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
 import { ipAddress } from "@/constants/ipAddress";
 import { rootStore } from "../redux/store";
 import PostComponent from "@/components/postComponent";
-import { CreateComment, FollowUser, LikePost, UnFollowUser, UnlikePost } from "@/components/CallBacks/CallBackFunctions";
+import { CreateComment, FollowUser, LikePost, UnBlockUser, UnFollowUser, UnlikePost } from "@/components/CallBacks/CallBackFunctions";
 import { setOpened } from "../redux/navbarSlice";
 
 // Icon Packs
-import { Feather } from '@expo/vector-icons';
-import { Entypo } from '@expo/vector-icons';
-import { AntDesign,MaterialIcons} from '@expo/vector-icons';
-import { Ionicons,EvilIcons,MaterialCommunityIcons} from '@expo/vector-icons';
+import { AntDesign,MaterialIcons,Entypo,Feather,Ionicons,EvilIcons,MaterialCommunityIcons} from '@expo/vector-icons';
+
+//  Callback Functions
 import StoriesComp from "@/components/storiesComp";
 import { ColorPalatte } from "@/constants/Colors";
-import { duration } from "moment";
 import CommentBottomSheet from "@/components/CommentBottomSheet";
 import ActionBottomSheet from "@/components/ActionBottomSheet";
 import { BlockUser } from "@/components/CallBacks/CallBackFunctions";
+
+
+
 const Colors = ColorPalatte()
-
-
 type PostTypes={
     _id: number,
     user_id: number,
@@ -56,16 +51,11 @@ type PostTypes={
     }]
 }
 
-type StoriesTypes ={
-
-}
-
 const {height : SCREEN_HEIGHT , width : SCREEN_WIDTH} = Dimensions.get('window')
 export default function Home(){
     const socket = io(`http://${ipAddress}:3001`)
     const dispatch = useDispatch()
     const user = useSelector((state:rootStore)=>state.user)
-    const navbarOpen = useSelector((state:rootStore) => state.navbar.navbar)
     const translateY = useSharedValue(SCREEN_HEIGHT)
     const actionSheetY = useSharedValue(399)
     const context = useSharedValue({y:0})
@@ -74,15 +64,13 @@ export default function Home(){
     const [comment,setComment] = useState('')
     let [activePost,setActivePost] = useState({index:0,id:0})
     const [isSheetOpened,setIsSheetOpened] = useState(false)
-    // const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 1.7)
+    const [loading,setLoading] = useState(false)
     const [follows,setFollows] = useState([])
+    const [blocked,setBlocked] = useState([])
     const [refresh,setRefresh] = useState(false)
     const [dummyData,setDummyData] = useState(['Item 1'])
-    const [followCount,setFollowCount] =  useState([0])
     const [activeComments,setActiveComments] = useState([]) 
     const [storyVisible,setStoryVisisble] = useState(false) 
-    // const [actionSheet,setActionSheet] = useState(false) 
-    // const [permission,requestPermission] = useCameraPermissions()
     const [stories, setStories] = useState([])
     const [storyMedia,setStoryMedia] = useState([])
     const [activeStory , setActiveStory] = useState(0)
@@ -92,13 +80,7 @@ export default function Home(){
     const scaleAnim = useSharedValue(0)
     const lineWidth = useSharedValue(10)
     const snapsRef = useRef(0)
-    // useAnimatedReaction(
-    //     () => isSheetOpenedDerived.value,
-    //     (isOpen)=>{
-    //         runOnJS(setIsSheetOpened)(isOpen)
-    //         runOnJS(Reaction)(isOpen)
-    //     } 
-    // )
+
     const gesture = Gesture.Pan().onStart((event)=>{
         context.value = {y:translateY.value}
     }).onUpdate((event)=>{
@@ -179,6 +161,17 @@ export default function Home(){
         await sound.playAsync();
     }
 
+    async function HandleBlockUser(){
+        const response = await axios.get(`http://${ipAddress}:3001/users/block`,{
+            headers:{
+                Authorization : `Bearer ${user?.user?.token}`
+            }
+        })
+
+        setBlocked(response.data.findBlocked.blocked)
+    }
+    
+
     const toggleBottomSheet = async(index:number,id:number) =>{
         // dispatch(setOpened(false))
         setActivePost({index:id,id})
@@ -252,13 +245,15 @@ export default function Home(){
     }
     
     async function HandleCreateComment(){
+        setLoading(true)
         const data = {"message":comment}
         // const response = await axios.post(`http://${ipAddress}:3001/posts/add-comment/${activePost}`,data,{
-        //     headers:{
-        //         Authorization: `Bearer ${user?.user?.token}`
-        //     }
-        // })
+            //     headers:{
+                //         Authorization: `Bearer ${user?.user?.token}`
+                //     }
+                // })
         socket.emit("createComment",{"message":comment, "userId":user?.user?.data._id,"postId":activePost.id})
+        setLoading(false)
     }
 
     const GetFollowers = useCallback(async () =>{
@@ -268,7 +263,7 @@ export default function Home(){
              }
          })
          setFollows(response.data[0].followersDetails)
-     },[user?.user?.data._id, user?.user?.token])
+     },[user?.user?.data._id, user?.user?.token,Refresh])
 
     async function GetStories(){
         const response = await axios.get(`http://${ipAddress}:3001/snapshot/`,{
@@ -286,12 +281,14 @@ export default function Home(){
             name,
             type
         })
+        ToastAndroid.show("Uploading snapshot", ToastAndroid.SHORT)
         const response = await axios.post(`http://${ipAddress}:3001/snapshot/create`,formData,{
             headers:{
                 'Content-Type': 'multipart/form-data',
                 Authorization:`Bearer ${user?.user?.token}`
             }
         })
+        ToastAndroid.show("Snapshot Uploaded Succesfully", ToastAndroid.SHORT)
         console.log(response.data)
     }
 
@@ -408,7 +405,7 @@ export default function Home(){
         
         useEffect(()=>{
             GetFollowers()
-        },[followCount,GetFollowers])
+        },[GetFollowers])
         
         useEffect(()=>{
             getPosts()
@@ -424,15 +421,31 @@ export default function Home(){
         },[storyVisible,activeStory,activeClip])
 
         
-    async function BlockUserController(id:number){
+    async function BlockUserController(creator:any){
         try{
-            const response = await BlockUser(id,user?.user?.token)
+            const data ={"_id":creator._id,"profilePicture":creator.profilePicture,"userId":creator.creator_id[0],"userName":creator.username}
+            const response = await BlockUser(creator.creator_id,user?.user?.token)
             ToastAndroid.show("User Blocked Successfully" ,ToastAndroid.SHORT)
+            setBlocked((prev) => [...prev,data])
         }
         catch(error){
             console.log(error)
         }
     }
+    
+    async function UnBlockController(id:any){
+        try{
+            const response = await UnBlockUser(id,user?.user?.token)
+            ToastAndroid.show("User Unblocked Successfully" ,ToastAndroid.SHORT)
+            setBlocked((prev) => prev.filter((item) =>{
+                item.userId.toString() != id.toString()
+            }))
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+    
 
         // useEffect(() =>{
         //     socket.on("receivePost" , (data) =>{
@@ -500,6 +513,10 @@ export default function Home(){
         useEffect(() =>{
             Reaction()
         },[isSheetOpened])
+
+        useEffect(() =>{
+            HandleBlockUser()
+        },[contentLoading])
 
     return(
         <View>
@@ -584,9 +601,8 @@ export default function Home(){
                                   {stories.length>0 && stories[activeStory].snaps.map((story:any,index:number) =>{
                                    
                                     return(                                        
-                                            <View style={[styles.storyLine,{width:140/stories[activeStory].snaps.length}]}>           
-                                                <Animated.View style={[styles.completionLine,activeClip>=index? completionLineAnimation : null,{maxWidth:140/stories[activeStory].snaps.length}]}></Animated.View>
-                                                
+                                            <View style={[styles.storyLine,{width:140/stories[activeStory].snaps.length}]} key={index}>           
+                                                <Animated.View style={[styles.completionLine,activeClip>=index? completionLineAnimation : null,{maxWidth:140/stories[activeStory].snaps.length}]}></Animated.View>  
                                             </View>
                                     )
                                     })} 
@@ -609,7 +625,7 @@ export default function Home(){
                         </TouchableOpacity>
                     </View>
                     <View style={styles.storyContent}>
-                        <FlatList ref={snapsRef} data={stories[activeStory].snaps}  onMomentumScrollEnd={(e) => {
+                        <FlatList ref={snapsRef} data={stories[activeStory].snaps} keyExtractor={(item) =>item} onMomentumScrollEnd={(e) => {
                             const offset = Math.round(e.nativeEvent.contentOffset.x/SCREEN_WIDTH)
                             setActiveClip(offset)
                         }}  horizontal pagingEnabled renderItem={({item,index})  =>{
@@ -629,9 +645,9 @@ export default function Home(){
                 </Animated.View>
         }
                 
-                    <CommentBottomSheet gesture={gesture} translateY={translateY} activeComments={activeComments} isSheetOpened={isSheetOpened} HandleCreateComment={HandleCreateComment}  setComment={setComment}/>
+                    <CommentBottomSheet gesture={gesture} translateY={translateY} activeComments={activeComments} isSheetOpened={isSheetOpened} HandleCreateComment={HandleCreateComment} comment={comment} loading={loading} setComment={setComment}/>
                                 
-                <ActionBottomSheet SheetGesture={SheetGesture} BlockUser={BlockUserController} CloseBottomSheet={CloseBottomSheet} posts={posts} actionTranslateY={actionSheetY} activePost={activePost}/>
+                <ActionBottomSheet SheetGesture={SheetGesture} BlockUser={BlockUserController} UnblockUser={UnBlockController} CloseBottomSheet={CloseBottomSheet} posts={posts} actionTranslateY={actionSheetY} activePost={activePost} blocked={blocked} follows={follows} HandleFollowUser={HandleFollowUser} HandleUnfollowUser={HandleUnfollowUser}/>
             </View>
 
     )

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity,Platform } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { rootStore } from '@/app/redux/store';
@@ -8,8 +8,9 @@ const Colors = ColorPalatte();
 
 export default function TabBar({ state, descriptors, navigation }) {
   const navbarOpened = useSelector((state:rootStore) => state.navbar.navbar)
+  const platform = Platform.OS === 'ios'
   return (
-    <View style={{ flexDirection: 'row',borderTopLeftRadius:30,paddingVertical:20,borderTopRightRadius:30,display:navbarOpened?"none" :"flex",zIndex:1,backgroundColor:Colors.theme.commentsBg,elevation:10,position:"absolute",bottom:0}}>
+    <View style={{ flexDirection: 'row',borderTopLeftRadius:platform?10:30,paddingVertical: platform?30:20,borderTopRightRadius:platform?10:30,display:navbarOpened?"none" :"flex",zIndex:1,backgroundColor:Colors.theme.commentsBg,elevation:10,position:"absolute",bottom:0}}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =

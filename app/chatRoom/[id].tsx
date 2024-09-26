@@ -32,8 +32,8 @@ function ChatRoom(){
     const SCREEN_HEIGHT = Dimensions.get('window').height
     const translateY = useSharedValue(SCREEN_HEIGHT)
     const context = useSharedValue(0)
-    const messageIds = messages.filter((message) => message.senderId[0] == id).map((messageId) => messageId._id)
-    const unAuthorizedSelection = selectedChats.filter((chats) => {
+    const messageIds = messages && messages.filter((message) => message.senderId[0] == id).map((messageId) => messageId._id)
+    const unAuthorizedSelection = selectedChats && selectedChats.filter((chats) => {
         return messageIds.includes(chats.toString())
     })
 

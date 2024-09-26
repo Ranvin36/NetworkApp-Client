@@ -25,6 +25,7 @@ export default function Page() {
   const isSheetOpenedDerived = useDerivedValue(() => translateY.value < -SCREEN_HEIGHT / 1.7)
   const dispatch = useDispatch()
   const [refreshing,setRefreshing] = useState(false)
+  const [loading,setLoading] = useState(false)
   const [videos,setVideos] = useState([])
   const [isSheetOpened,setIsSheetOpened] = useState(false)
   const [activeComments,setActiveComments] = useState([])
@@ -124,21 +125,24 @@ const toggleBottomSheet = async(index:number,id:any) =>{
   }
 
   async function CreateComment(){
+    setLoading(true)
     const data={
-        "clipId":videos[activePost.index]?._id,
-        "message":comment
+      "clipId":videos[activePost.index]?._id,
+      "message":comment
     }
     try{
-        const response =await  axios.post(`http://${ipAddress}:3001/reels/create-comment`,data,{
-          headers:{
-            Authorization: `Bearer ${user?.token}`
-          }
-        })
-        setActiveComments((prev) => [...prev,{"userId":user?.data._id , "profilePicture":user?.data.profilePicture , "username":user?.data.username , "message":comment}])
+      const response =await  axios.post(`http://${ipAddress}:3001/reels/create-comment`,data,{
+        headers:{
+          Authorization: `Bearer ${user?.token}`
+        }
+      })
+      setActiveComments((prev) => [...prev,{"userId":user?.data._id , "profilePicture":user?.data.profilePicture , "username":user?.data.username , "message":comment}])
     }
     catch(error){
       console.log(error)
     }
+    setComment("")
+    setLoading(false)
   }
 
   const onRefresh = useCallback(() =>{
@@ -185,20 +189,20 @@ const toggleBottomSheet = async(index:number,id:any) =>{
         windowSize={7}
         viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
       />
-        <CommentBottomSheet gesture={gesture} translateY={translateY}   activeComments={activeComments} HandleCreateComment={CreateComment} setComment={setComment}/>
+        <CommentBottomSheet gesture={gesture} translateY={translateY}   activeComments={activeComments} HandleCreateComment={CreateComment} setComment={setComment} loading={loading}/>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
+    flex: 1,
     position:"relative",
-    height:"100%",
     zIndex:-1
   },
   videoContainer: {
     borderBottomWidth: 5,
     borderColor: "#ccc",
+    height:SCREEN_HEIGHT
   },
 });

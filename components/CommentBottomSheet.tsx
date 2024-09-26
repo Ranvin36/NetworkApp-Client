@@ -1,9 +1,11 @@
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler} from "react-native-gesture-handler"
 import  Animated,{useAnimatedStyle} from "react-native-reanimated"
-import { StyleSheet,View,Image,Text,ScrollView, Dimensions,TextInput,TouchableOpacity} from "react-native"
+import { StyleSheet,View,Image,Text,ScrollView, Dimensions,TextInput,TouchableOpacity, ActivityIndicator} from "react-native"
 import { ColorPalatte } from "@/constants/Colors"
 import { Ionicons } from "@expo/vector-icons"
 import React from "react"
+import { useSelector } from "react-redux"
+import { rootStore } from "@/app/redux/store"
 
 
 const Colors  = ColorPalatte()
@@ -14,12 +16,14 @@ interface CommentsSheet{
     gesture: any,
     translateY: any,
     activeComments: Array<any>,
-    isSheetOpened: boolean,
     HandleCreateComment: () => void,
-    setComment: (comment:string)=>void
+    setComment: (comment:string)=>void,
+    comment:string,
+    loading: boolean
 }
 
-const CommentBottomSheet:React.FC<CommentsSheet>= ({gesture,translateY,activeComments,isSheetOpened,HandleCreateComment,setComment}) =>{
+const CommentBottomSheet:React.FC<CommentsSheet>= ({gesture,translateY,activeComments,loading,comment,HandleCreateComment,setComment}) =>{
+    const user = useSelector((state:rootStore) => state.user.user?.data)
     const rBottomSheetStyle = useAnimatedStyle(() =>{
         return{
             transform : [{translateY: translateY.value}]
@@ -36,7 +40,19 @@ const CommentBottomSheet:React.FC<CommentsSheet>= ({gesture,translateY,activeCom
                                         <Text style={{fontFamily:"Poppins-Light",fontSize:18,color:Colors.theme.fontColor}}>Comments</Text>
                                     </View>
                                 </View>
-                                <View style={{justifyContent:"space-between",flexDirection:"column"}}>
+                                <View style={{width:SCREEN_WIDTH,borderBottomWidth:1,borderTopWidth:1,borderColor:"#ccc",marginVertical:15,flexDirection:"row",paddingHorizontal:20,paddingVertical:10,justifyContent:"space-between",alignItems:"center"}}>
+                                    <View style={{flexDirection:"row",alignItems:"center"}}>
+                                        <Image source={{uri:user?.profilePicture}} style={{width:40,height:40,borderRadius:50}}/>
+                                        <View>
+                                                <TextInput placeholder="Type Your Comment." placeholderTextColor={Colors.theme.fontColor} value={comment} style={{paddingHorizontal:5,width:200,color:Colors.theme.fontColor,fontFamily:"Poppins-Light"}} onChangeText={(e) => setComment(e)}/>
+                                        </View>
+                                    </View>
+                                        <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:30,height:30,justifyContent:"center",alignItems:"center"}} onPress={HandleCreateComment}>
+                                            {loading ? <ActivityIndicator/>:<Ionicons name="send-outline" size={20} color="#fff" />                                        }
+                                            {/* <ActivityIndicator color="#fff"/> */}
+                                        </TouchableOpacity>
+                                    </View>
+                                <View style={{justifyContent:"space-between",flexDirection:"column",paddingHorizontal:20}}>
                                     <ScrollView>
 
                                         {activeComments && activeComments.length>0?
@@ -60,22 +76,13 @@ const CommentBottomSheet:React.FC<CommentsSheet>= ({gesture,translateY,activeCom
                                             )
                                         })
                                         :
-                                        <View style={{alignItems:"center",justifyContent:"center",height:"70%"}}>
-                                            <Text style={{fontFamily:"Poppins-Bold",fontSize:17}}>No Comments Were Found!</Text>
+                                        <View style={{justifyContent:"center",flex:1,height:SCREEN_HEIGHT/2}}>
+                                            <Text style={{fontFamily:"Poppins-Light",textAlign:"center",color:"#ccc",fontSize:15}}>No Comments</Text>
                                         </View>
                                         }
                                     </ScrollView>
                                 </View>
                                 </View>
-
-                                    <View style={{position:"absolute",bottom:20,zIndex:1,backgroundColor:Colors.theme.backgroundColor,width:SCREEN_WIDTH,padding:10,paddingHorizontal:20,flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
-                                        <View style={{backgroundColor:Colors.theme.backgroundTransparent,paddingVertical:10,borderRadius:5}}>
-                                            <TextInput placeholder="Type Your Comment." placeholderTextColor={Colors.theme.fontColor} style={{paddingHorizontal:5,color:Colors.theme.fontColor,fontFamily:"Poppins-Light",width:SCREEN_WIDTH/1.3}} onChangeText={(e) => setComment(e)}/>
-                                        </View>
-                                        <TouchableOpacity style={{backgroundColor:Colors.light.text,borderRadius:50,width:35,height:35,justifyContent:"center",alignItems:"center"}} onPress={HandleCreateComment}>
-                                            <Ionicons name="send-outline" size={20} color="#fff" />
-                                        </TouchableOpacity>
-                                    </View>
                                 
                         </Animated.View>
                     </GestureDetector>
@@ -100,7 +107,7 @@ const styles = StyleSheet.create({
     line:{
         width:75,
         height:4,
-        backgroundColor:"#000",
+        backgroundColor:Colors.theme.fontColor,
         alignSelf:"center",
         borderRadius:10,
         marginVertical:10
@@ -110,7 +117,8 @@ const styles = StyleSheet.create({
     },
     sheetLayout:{
         paddingVertical:5,
-        paddingHorizontal:20
+
+        // paddingHorizontal:20
     },
 
 })

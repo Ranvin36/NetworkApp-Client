@@ -19,8 +19,8 @@ export default OtpDigits
 const styles = StyleSheet.create({
     box:{
         borderWidth:1,
-        width:60,
-        height:60,
+        width:70,
+        height:65,
         marginHorizontal:5,
         borderRadius:5,
         textAlign:"center",
