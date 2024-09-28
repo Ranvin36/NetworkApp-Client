@@ -72,7 +72,7 @@ export default function Home(){
     const [activeComments,setActiveComments] = useState([]) 
     const [storyVisible,setStoryVisisble] = useState(false) 
     const [stories, setStories] = useState([])
-    const [storyMedia,setStoryMedia] = useState([])
+    // const [storyMedia,setStoryMedia] = useState([])
     const [activeStory , setActiveStory] = useState(0)
     const [activeClip , setActiveClip] = useState(0)
     const [page,setPage]=  useState(1)
@@ -155,10 +155,6 @@ export default function Home(){
         else{
             dispatch(setOpened(false))
         }
-    }
-    async function PlaySound(){
-        const {sound}  = await Audio.Sound.createAsync(require('../../assets/videos/ding.mp3'))
-        await sound.playAsync();
     }
 
     async function HandleBlockUser(){
@@ -349,11 +345,6 @@ export default function Home(){
                 }]
             }
         })
-
-        async function GetLocalStorageUser(){
-            const getUser = await AsyncStorage.getItem('user')
-            return getUser != null ? JSON.parse(getUser) : null;
-        }
 
         const completionLineAnimation = useAnimatedStyle(() =>{
             return{

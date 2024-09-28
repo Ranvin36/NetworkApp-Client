@@ -25,13 +25,6 @@ const Block:React.FC = () =>{
     }
 
     async function UnBlockUser(uid:number){
-        // console.log(uid)
-        // const response = await axios.post(`http://${ipAddress}:3001/users/unblock/${uid}`,null,{
-        //     headers:{
-        //         Authorization : `Bearer ${user?.token}`
-        //     }
-        // })
-        // console.log(response.data)
         const data = {"userId": user?.data._id , "opponentId":uid}
         socket.emit("unBlockUser" , data )
         
@@ -58,13 +51,19 @@ const Block:React.FC = () =>{
                 <BackArrow/>
                 <Text style={{fontFamily:"Poppins-Bold",fontSize:25,color:Colors.theme.fontColor,marginLeft:10}}>Blocked</Text>
             </View>
-            <View style={styles.blockedUsers}>
-                <FlatList data={blockedUsers} renderItem={({item}) =>{
-                    return(
-                       <BlockedUser item={item} UnBlockUser={UnBlockUser}/>
-                    )
-                }}/>
-            </View>
+            {blockedUsers.length>0 ?              
+                <View>
+                    <FlatList data={blockedUsers} renderItem={({item}) =>{
+                        return(
+                        <BlockedUser item={item} UnBlockUser={UnBlockUser}/>
+                        )
+                    }}/>
+                </View>
+                          :
+                <View style={styles.noBlockedUsers}>
+                    <Text style={{fontFamily:"Poppins-Light",color:"#ccc"}}>No Blocked Users</Text>
+                </View>
+            }
 
         </View>
     )
@@ -88,13 +87,14 @@ const styles = StyleSheet.create({
         alignItems:'center',
         marginVertical:10
     },
+    noBlockedUsers:{
+        alignItems:"center",
+        height:"80%",
+        justifyContent:"center"},
     profilePicture:{
         width:50,
         height:50,
         borderRadius:50,
-    },
-    blockedUsers:{
-
     },
     text:{
         fontFamily:"Poppins-Light"

@@ -56,7 +56,6 @@ function Profile() {
     const [clips,setClips] =  useState([])
     const [posts, setPosts] = useState<PostTypes[]>([])
     const [refreshing, setRefreshing] = useState(false)
-    const [editUsername, setEditUsername] = useState(false)
     const [loading,setLoading]  = useState(false)
     const [popupOpened,setPopUpOpened]  = useState(false)
     const [selectedIndex, setSelectedIndex] = useState(0)
@@ -66,11 +65,7 @@ function Profile() {
     const scrollViewRef = useRef()
     const postLayout = Dimensions.get('window').width / 3
     const screenWidth = Dimensions.get('window').width
-    const tabWidth = screenWidth / 3
-    const navigation = useNavigation()
-    // const videos = posts.filter((item) => item.video)
     const post = posts.filter((item) => item.image) 
-    // console.log(clips ,  "DATA")
 
     async function UpdateProfilePic() {
         const selectImage = await ImagePicker.launchImageLibraryAsync({
@@ -125,11 +120,6 @@ function Profile() {
         position.value = 0;
     }, [selectedIndex])
 
-    const scrollHandler = useAnimatedScrollHandler({
-        onScroll: (event) => {
-   
-        }
-    });
 
     function TabClick(index: number) {
         setSelectedIndex(index)
@@ -247,24 +237,6 @@ function Profile() {
         setLoading(false)
     }
     
-    async function ChangeUsername(){
-        if(username){
-                const data = {"username":username}
-                const response = await axios.post(`http://${ipAddress}:3001/users/change-username/`,data,{
-                    headers:{
-                        Authorization: `Bearer ${user?.token}`
-                    }
-                }) 
-                console.log(response.data)
-        
-                setEditUsername(false)
-            }
-            else{
-            setUsername(user.data.username)
-            setEditUsername(false)
-            
-        }
-    }
 
     async function PopUpController(){
         setPopUpOpened((prev) => !prev)
@@ -302,12 +274,6 @@ function Profile() {
         position.value=40
     },[])
 
-    function ResetUsername(){
-        setEditUsername(false)
-        if(user && user.data && user.data.username){
-            setUsername(user.data.username)
-        }
-    }
 
 
     return (
@@ -366,22 +332,8 @@ function Profile() {
                 </View>
                 <View style={{ marginVertical: 10 }}>
                     <View style={{flexDirection:"row",justifyContent:"center",alignItems:"center"}}>
-                        <TextInput onChangeText={setUsername} value={username} style={[styles.textColor,{ fontFamily: "Poppins-Bold", textAlign: "center", fontSize: 15}]} editable={editUsername}/>
-                        {/* <Text style={{ fontFamily: "Poppins-Bold", textAlign: "center", fontSize: 15 }}>{user && user.data.username}</Text> */}
-                        {!editUsername ?                    
-                            <TouchableOpacity style={{marginLeft:10}} onPress={() => setEditUsername((prev) => !prev)}>
-                                <Feather name="edit-2" size={10} color={Colors.theme.fontColor} />
-                            </TouchableOpacity>
-                            :
-                            <>                            
-                            <TouchableOpacity style={{marginLeft:10}} onPress={ChangeUsername}>
-                                <AntDesign name="checkcircleo" size={15} color={Colors.theme.fontColor} />                 
-                            </TouchableOpacity>
-                            <TouchableOpacity style={{marginLeft:10}} onPress={ResetUsername}>
-                                <AntDesign name="closecircleo" size={15} color={Colors.theme.fontColor} />          
-                            </TouchableOpacity>
-                            </>
-                        }
+                        <TextInput onChangeText={setUsername} value={username} style={[styles.textColor,{ fontFamily: "Poppins-Bold", textAlign: "center", fontSize: 15}]}/>
+
                     </View>
                     <Text style={[styles.textColor,{ textAlign: "center", fontFamily: "Poppins-Light"}]}>{user?.data.bio && user?.data.bio}</Text>
                 </View>
@@ -411,7 +363,6 @@ function Profile() {
                     horizontal
                     pagingEnabled
                     scrollEventThrottle={16}
-                    onScroll={scrollHandler}
                     onMomentumScrollEnd={(event) => {
                         const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth)
                         setSelectedIndex(index)

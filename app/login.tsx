@@ -19,10 +19,8 @@ const Colors = ColorPalatte()
 function Login(){
     const [email,setEmail] = useState('')
     const [password,setPassword] = useState('')
-    const [receivedOtp,setReceivedOtp] = useState([])
     const [secretField, setSecretField] = useState(true)
     const [loading, setLoading] = useState(false)
-    const selector = useSelector((state:rootStore)=>state.user)
     const dispatch = useDispatch()
     const router = useRouter()
     async function SetOtp(token:string){
@@ -33,7 +31,8 @@ function Login(){
             }
         })
         dispatch(setOtp(response.data))
-        router.push("/otpAuth")
+        console.log(data)
+        router.push({pathname:"/otpAuth" , params:{token}})
     }
     async function LoginBtn(){
         try{
@@ -44,7 +43,6 @@ function Login(){
             dispatch(setUser(response.data))
             SetOtp(response.data.token)
             setLoading(false)
-            console.log("DONE")
         }
         catch(error){
             console.log(error)

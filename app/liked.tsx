@@ -1,4 +1,4 @@
-import { StyleSheet, View , Text , Image, FlatList, TouchableOpacity} from "react-native"
+import { StyleSheet, View , Text , Image, FlatList, TouchableOpacity, Dimensions} from "react-native"
 import Stories from "@/dummyData/stories"
 import { useEffect, useState,useMemo} from "react"
 import axios, { Axios } from "axios"
@@ -9,17 +9,23 @@ import { router } from "expo-router"
 import { Skeleton } from "moti/skeleton"
 import { ColorPalatte } from "@/constants/Colors";
 import PageHeader from "@/components/pageHeader"
+import moment from "moment"
 const Colors = ColorPalatte()
 
 type ItemTypes={
     username:string,
     profilePicture:string,
+    
 }
 
 type LikedTypes ={
     creator:ItemTypes[],
-    text:string
+    text:string,
+    createdAt: Date,
+    updatedAt: Date,
 }
+
+const {width:SCREEN_WIDTH, height:SCREEN_HEIGHT} = Dimensions.get('window')
 
 function Liked() {
     const SkeletonCommonProps = {
@@ -41,14 +47,6 @@ function Liked() {
     const [loading,setLoading] = useState(true)
     async function GetLikedPosts(){
         setLoading(true)
-        // const response = await axios.get(`http://${ipAddress}:3001/users/get-user/${user?.data._id}`,{
-        //     headers:{
-        //         Authorization:`Bearer ${user?.token}`
-        //     }
-        // })
-
-        // const likedPost = response.data.data.likes
-        // const data = {LikeIds : likedPost}
         const posts = await axios.post(`http://${ipAddress}:3001/posts/liked`,null,{
             headers:{
                 Authorization:`Bearer ${user?.token}`
@@ -58,16 +56,15 @@ function Liked() {
         setLoading(false)
     }
     
-
     useEffect(() => {
         GetLikedPosts()
     },[])
-
     return(
         <View style={styles.container}>
             <PageHeader text="Liked"/>
             <View style={styles.containerLayout}>
                 <FlatList<LikedTypes> data={likedPosts}  renderItem={({item}) =>{
+                    const dateTime = moment(item.updatedAt).format("dd h:mm a")
                         return(
                         <TouchableOpacity style={styles.favouritesLayout} onPress={() => router.push("/profileLike")}>
                                 <View style={styles.flexElements}>
@@ -76,20 +73,20 @@ function Liked() {
                                     </Skeleton>
                                     <View style={{marginHorizontal:5}}>
                                         <View style={{marginBottom:5}}>
-                                        <Skeleton height={25} colorMode="light" width={"80%"}>
+                                        <Skeleton height={25} colorMode="light" width={"50%"}>
                                             {loading ? null : <Text style={[styles.textColor,{fontFamily:"Poppins-Bold"}]}>{item?.creator?.[0]?.username || 'Loading'}</Text>}
                                             
                                         </Skeleton>
                                         </View>
 
-                                        <Skeleton height={25} colorMode="light" width={'70%'}>
+                                        <Skeleton height={25} colorMode="light" width={'50%'}>
                                             {loading ? null : <Text style={[styles.textColor,{fontFamily:"Poppins-Regular",marginTop:-5}]}>{item?.text|| 'Loading'}</Text>    }
                                         
                                         </Skeleton>
                                     </View>
                                 </View>
-                                <View style={{marginLeft:20}}>
-                                    <Text style={{fontFamily:"Poppins-Light"}}>Tue. 15:30</Text>
+                                <View>
+                                    <Text style={{fontFamily:"Poppins-Light"}}>{dateTime}</Text>
                                 </View>
                         </TouchableOpacity>
                         )
@@ -108,7 +105,7 @@ const styles = StyleSheet.create({
         paddingVertical:10,
         paddingHorizontal:20,
         height:"100%",
-        backgroundColor:Colors.theme.backgroundColor
+        backgroundColor:Colors.theme.backgroundColor,
     },
     containerLayout:{
         marginVertical:10
@@ -121,7 +118,6 @@ const styles = StyleSheet.create({
     },
     flexElements:{
         flexDirection:"row",
-        justifyContent:"space-between",
         alignItems:"center"
     },
     textColor:{

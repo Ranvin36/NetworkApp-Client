@@ -15,7 +15,7 @@ import { MaterialIcons, Ionicons, Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import axios from "axios";
 import { ipAddress } from "@/constants/ipAddress";
-import { updateProfilePic } from "./redux/userSlice";
+import { setUser, updateProfilePic } from "./redux/userSlice";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 
@@ -75,6 +75,7 @@ const EditProfile: React.FC = () => {
       }
     );
     console.log(response.data);
+    dispatch(setUser(response.data))
     setLoading(false)
     router.push("/profile");
   }
@@ -154,7 +155,10 @@ const EditProfile: React.FC = () => {
                     styles.dropDownProps,
                     selected == 0 ? styles.selectedOption : null,
                   ]}
-                  onPress={() => setSelected(0)}
+                  onPress={() => {
+                    setSelected(0)
+                    setDropDownOpened(true);
+                  }}
                 >
                   <View style={{ marginRight: 5 }}>
                     <Ionicons name="male" size={24} color={Colors.theme.fontColor} />
@@ -168,7 +172,10 @@ const EditProfile: React.FC = () => {
                     styles.dropDownProps,
                     selected == 1 ? styles.selectedOption : null,
                   ]}
-                  onPress={() => setSelected(1)}
+                  onPress={() => {
+                    setSelected(1)
+                    setDropDownOpened(true);
+                  }}
                 >
                   <View style={{ marginRight: 5 }}>
                     <Ionicons name="female" size={24} color={Colors.theme.fontColor} />

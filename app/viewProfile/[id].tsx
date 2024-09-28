@@ -13,8 +13,10 @@ import BackArrow from "@/components/backArrow"
 import { Entypo,AntDesign,Feather } from "@expo/vector-icons"
 import { Video,ResizeMode } from "expo-av"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
-import  {FollowUser,UnFollowUser} from "../../components/CallBacks/CallBackFunctions"
+import  {FollowUser,UnBlockUser,UnFollowUser} from "../../components/CallBacks/CallBackFunctions"
 import { ColorPalatte } from "@/constants/Colors";
+import ActionBottomSheet from "@/components/ActionBottomSheet"
+import BlockedUser from "@/components/blockedUser"
 const Colors = ColorPalatte()
 
 function Page(){
@@ -22,38 +24,32 @@ function Page(){
   const {id} = useLocalSearchParams()
   const user = useSelector((state:rootStore)=>state.user)
   const [profileUser,setProfileUser] = useState([])
+  const [blocked,setBlocked] = useState([])
   const [selectedIndex,setSelectedIndex] = useState(0)
-  const [selected, setSelected] = useState([])
-  const [followCount, setFollowCount] = useState([])
   const [follows, setFollows] = useState([])
   const [clips, setClips] = useState([])
   const [posts,setPosts] = useState([])
+  const [activePost] = useState({index:0,id:0})
   const position = useSharedValue(40)
   const [bottomSheetOpened,setBottomSheetOpened] = useState(false)
   const scrollViewRef = useRef()
-  const offSet = useSharedValue(SCREEN_HEIGHT)
+  const actionSheetY = useSharedValue(SCREEN_HEIGHT)
   const context = useSharedValue(0)
-  const isBottomSheetOpened = useDerivedValue(() => offSet.value == 0 )
-  const postVideo = posts &&  posts.filter((item) => item.video)
-  const postImages= posts &&  posts.filter((item) => item.image)
-  const isBlocked = user.user?.data.blocked.filter((item) => item == id)
-  const gesture = Gesture.Pan().onStart((event) =>{
-      context.value = offSet.value
-  }).onUpdate((event) =>{
-      offSet.value = event.translationY + context.value
-      offSet.value = Math.max(offSet.value , -SCREEN_HEIGHT/10)
-  }).onEnd((event) =>{
-      if(offSet.value > -SCREEN_HEIGHT/30){
-          offSet.value=withSpring(SCREEN_HEIGHT , {damping:50})
-          runOnJS(openBottomSheet)()
-      }
-      else if(offSet.value > -SCREEN_HEIGHT/20){
-          offSet.value=withSpring(0 , {damping:50})
-      }
-      if(offSet.value < -SCREEN_HEIGHT/30){
-          offSet.value=withSpring(0 , {damping:50})
-      }
-  })
+
+  const SheetGesture = Gesture.Pan().onStart((event) =>{
+    context.value = event.translationY
+}).onUpdate((event) =>{
+    actionSheetY.value = event.translationY + context.value
+    actionSheetY.value = Math.max(actionSheetY.value ,10)  
+}).onEnd((event) =>{
+    if(actionSheetY.value < SCREEN_HEIGHT/8){
+        actionSheetY.value = withSpring(10, {damping:50})
+    }
+    else{
+        runOnJS(CloseBottomSheet)()
+    }
+})
+
 
   async function GetUser(){
     const response  = await axios.get(`http://${ipAddress}:3001/users/get-user/${id}`,{
@@ -105,30 +101,17 @@ function Page(){
         animated: true
     })
   }
-
-  function openBottomSheet(){
-    if(bottomSheetOpened){
-      setBottomSheetOpened(false)
-        offSet.value=withSpring(SCREEN_HEIGHT , {damping:50})
-      }
-      else{
-        setBottomSheetOpened(true)
-        offSet.value=withSpring(0 , {damping:50})
-
-    }    
-  }
-
-  const animateBottomSheet = useAnimatedStyle(() =>{
-    return{
-      transform: [{translateY:offSet.value}]
-    }
-  })
   
-  async function HandleFollowUser(){
-    await FollowUser(id,user)
+  async function HandleFollowUser(userData:any){
+    const data  ={"_id":userData.creator_id, "name":userData.username,"profilePicture":userData.profilePicture}
+    setFollows((follows:any) => [...follows,data])
+    await FollowUser(userData.creator_id,user)
 }
-async function HandleUnfollowUser(){
-    await UnFollowUser(id,user)
+async function HandleUnfollowUser(uid:number){
+    setFollows((follow:any) => follows.filter((item) =>{
+        return item._id.toString() != uid.toString()
+    }))
+    await UnFollowUser(uid,user)
 }
 
 const GetFollowers = useCallback(async () =>{
@@ -140,23 +123,43 @@ const GetFollowers = useCallback(async () =>{
   setFollows(response.data[0].followingDetails)
 },[user?.user?.data._id, user?.user?.token])
 
-
-  async function BlockUser(){
-    try{
-        openBottomSheet()
-        const response = await axios.post(`http://${ipAddress}:3001/users/block/${id}`,null,{
-          headers:{
-            Authorization:`Bearer ${user?.user?.token}`
-          }
-        })
-        ToastAndroid.show("User Blocked Sucessfully", ToastAndroid.SHORT)
-    }
-    catch(error){
-      console.log(error)
-      ToastAndroid.show("Failed To Block User", ToastAndroid.SHORT)
-    }
-
+        
+async function BlockUserController(creator:any){
+  try{
+      const data ={"_id":creator._id,"profilePicture":creator.profilePicture,"userId":creator.creator_id[0],"userName":creator.username}
+      const response = await BlockedUser(creator.creator_id,user?.user?.token)
+      ToastAndroid.show("User Blocked Successfully" ,ToastAndroid.SHORT)
+      setBlocked((prev) => [...prev,data])
   }
+  catch(error){
+      console.log(error)
+  }
+}
+
+async function UnBlockController(id:any){
+  try{
+      const response = await UnBlockUser(id,user?.user?.token)
+      ToastAndroid.show("User Unblocked Successfully" ,ToastAndroid.SHORT)
+      setBlocked((prev) => prev.filter((item) =>{
+          item.userId.toString() != id.toString()
+      }))
+  }
+  catch(error){
+      console.log(error)
+  }
+}
+
+function CloseBottomSheet(){
+  setBottomSheetOpened(false)
+  // setActionSheet(false)
+  actionSheetY.value = withSpring(SCREEN_HEIGHT, {damping:50})
+}
+function openBottomSheet(index:number , id:number){
+  setBottomSheetOpened(true)
+  // setActivePost({index:index,id})
+  actionSheetY.value = withSpring(0, {damping:50})
+}
+
 
   useEffect(()=>{
     GetUser()
@@ -185,10 +188,11 @@ const GetFollowers = useCallback(async () =>{
 
   const isFollowing = follows && follows.filter((item:any) => item._id ===  id) 
 
+
   return(
     <View>
       <View style={styles.container}>
-          <TouchableOpacity style={{position:"absolute" , backgroundColor:"#000",opacity:0.5, display:bottomSheetOpened  ?"flex" :"none", width:Dimensions.get('window').width , left:0, top:0,height:SCREEN_HEIGHT,zIndex:1}} onPress={openBottomSheet}></TouchableOpacity>
+          <TouchableOpacity style={{position:"absolute" , backgroundColor:"#000",opacity:0.5, display:bottomSheetOpened  ?"flex" :"none", width:Dimensions.get('window').width , left:0, top:0,height:SCREEN_HEIGHT,zIndex:1}} onPress={CloseBottomSheet}></TouchableOpacity>
         
         <View style={{flexDirection:"row",justifyContent:"space-between",marginVertical:20,paddingHorizontal:20,alignItems:"center"}}>
           <View>
@@ -304,33 +308,7 @@ const GetFollowers = useCallback(async () =>{
 
 
       </View>
-      <GestureDetector gesture={gesture}>
-              <Animated.View style={[styles.bottomSheet,animateBottomSheet]}>
-                        <View style={{width:30,borderRadius:20,height:3,backgroundColor:"#ccc",alignSelf:"center",marginTop:20}}></View>
-                        <View style={styles.bottomSheetLayout}>
-                          <View style={styles.textWrap}>
-                            <AntDesign name="warning" size={22} color={Colors.theme.fontColor} />
-                            <Text style={styles.bottomSheetText}>Report</Text>
-                          </View>
-                          <TouchableOpacity style={styles.textWrap} onPress={BlockUser}>
-                            <AntDesign name="deleteuser" size={22} color={Colors.theme.fontColor} />
-                            <Text style={styles.bottomSheetText}>{isBlocked.length>0 ? "Unblock" : "Block"}</Text>
-                          </TouchableOpacity>
-                          <View style={styles.textWrap}>
-                            <Feather name="activity" size={24} color={Colors.theme.fontColor} />
-                            <Text style={styles.bottomSheetText}>Profile Activity</Text>
-                          </View>
-                          <View style={styles.textWrap}>
-                            <AntDesign name="save" size={24} color={Colors.theme.fontColor} />
-                            <Text style={styles.bottomSheetText}>Save Profile</Text>
-                          </View>
-                          <View style={styles.textWrap}>
-                            <AntDesign name="save" size={24} color={Colors.theme.fontColor} />
-                            <Text style={styles.bottomSheetText}>Enable Notifications From This Account</Text>
-                          </View>
-                        </View>
-              </Animated.View>
-      </GestureDetector>
+      <ActionBottomSheet SheetGesture={SheetGesture} posts={posts} actionTranslateY={actionSheetY} activePost={activePost} BlockUser={BlockUserController} UnblockUser={UnBlockController}  CloseBottomSheet={CloseBottomSheet} blocked={blocked} follows={follows} HandleFollowUser={HandleFollowUser} HandleUnfollowUser={HandleUnfollowUser}/>
     </View>
   )
 }
