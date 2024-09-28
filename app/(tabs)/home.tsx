@@ -1,16 +1,14 @@
-import { View,Text, StyleSheet, StatusBar,Image, FlatList ,TextInput, TouchableOpacity ,ScrollView , RefreshControl, Dimensions,ImageBackground, ToastAndroid} from "react-native"
+import { View,Text, StyleSheet, StatusBar,Image, FlatList ,TextInput, TouchableOpacity ,ScrollView , RefreshControl, Dimensions, ToastAndroid} from "react-native"
 import { useDispatch, useSelector } from "react-redux"
 import { router } from "expo-router";
 import axios from "axios";
 import { useEffect, useState,useCallback, useRef  } from "react";
-import { Audio } from 'expo-av';
 import { Gesture } from "react-native-gesture-handler"
 import Animated , { useAnimatedStyle, useSharedValue, withSpring, runOnJS, withTiming, withRepeat, withSequence, Easing} from "react-native-reanimated";
 import { io } from "socket.io-client";
 import * as Haptics from "expo-haptics"
 import React from "react";
 import * as ImagePicker from "expo-image-picker"
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ipAddress } from "@/constants/ipAddress";
 import { rootStore } from "../redux/store";
 import PostComponent from "@/components/postComponent";
@@ -68,11 +66,11 @@ export default function Home(){
     const [follows,setFollows] = useState([])
     const [blocked,setBlocked] = useState([])
     const [refresh,setRefresh] = useState(false)
+    const [actionSheet,setActionSheet] = useState(false)
     const [dummyData,setDummyData] = useState(['Item 1'])
     const [activeComments,setActiveComments] = useState([]) 
     const [storyVisible,setStoryVisisble] = useState(false) 
     const [stories, setStories] = useState([])
-    // const [storyMedia,setStoryMedia] = useState([])
     const [activeStory , setActiveStory] = useState(0)
     const [activeClip , setActiveClip] = useState(0)
     const [page,setPage]=  useState(1)
@@ -80,7 +78,6 @@ export default function Home(){
     const scaleAnim = useSharedValue(0)
     const lineWidth = useSharedValue(10)
     const snapsRef = useRef(0)
-
     const gesture = Gesture.Pan().onStart((event)=>{
         context.value = {y:translateY.value}
     }).onUpdate((event)=>{
@@ -114,12 +111,6 @@ export default function Home(){
         router.push({ pathname: `viewProfile/${id}`, params: { id } });
     }
 
-    const sheetStyle = useAnimatedStyle(() =>{
-        return{
-            transform:[{translateY:actionSheetY.value}]
-        }
-    })
-
     const Refresh = useCallback(()=>{
         setRefresh(true)
         setPage(1)
@@ -129,12 +120,6 @@ export default function Home(){
             setRefresh(false)
         },2000)
     },[])
-
-    const rBottomSheetStyle = useAnimatedStyle(() =>{
-        return{
-            transform : [{translateY: translateY.value}]
-        }
-    })
 
     const getPosts = useCallback(async() => {
         setContentLoading(true)
@@ -379,11 +364,12 @@ export default function Home(){
         }
 
         function CloseBottomSheet(){
-            // setActionSheet(false)
+            setActionSheet(false)
             dispatch(setOpened(false))
             actionSheetY.value = withSpring(SCREEN_HEIGHT, {damping:50})
         }
         function OpenBottomSheet(index:number , id:number){
+            setActionSheet(true)
             dispatch(setOpened(true))
             setActivePost({index:index,id})
             actionSheetY.value = withSpring(0, {damping:50})
@@ -511,6 +497,7 @@ export default function Home(){
 
     return(
         <View>
+            <TouchableOpacity style={{position:"absolute",top:0,left:0,backgroundColor:"#000",opacity:0.5,display:!actionSheet?"none":"flex",width:"100%",height:"100%",zIndex:1}} onPress={() =>CloseBottomSheet()}></TouchableOpacity>
         <ScrollView style={styles.container} onScroll={({nativeEvent}) =>{
             if(isCloseToBottom(nativeEvent)){
                 setPage((prev)=> prev+1)

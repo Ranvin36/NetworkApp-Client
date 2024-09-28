@@ -21,10 +21,11 @@ export async function LikePost(uid:number,user:any,dummyData:any,setDummyData:an
 
 
 export async function UnFollowUser(uid:number,user:any){
+    const token =  user.token ? user.token  : user.user.token
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     const response = await axios.delete(`http://${ipAddress}:3001/users/remove-follower/${uid}`,{
         headers:{
-            Authorization:`Bearer ${user.user.token}`
+            Authorization:`Bearer ${token}`
         }
     })
 }

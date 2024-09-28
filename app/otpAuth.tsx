@@ -25,7 +25,7 @@ const Colors = ColorPalatte();
 function OtpAuth() {
     const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
     const [validOtp, setValidOtp] = useState(true);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [resendOtp, setResendOtp] = useState(false);
     const {token} = useLocalSearchParams()
     const dispatch = useDispatch();
